@@ -23,7 +23,7 @@
       "scene": { "lighting": "warm practical lamp + soft key" }
     }
   },
-  "budget": {"tier": "cheap", "max_regen": 2},
+  "budget": {"tier": "cheap", "max_regen": 1},
   "prompt": {
     "positive": "Cinematic realism, night interior, match anchor layout, stable character identity, stable props.",
     "negative": "no outfit change, no face drift, no extra fingers"

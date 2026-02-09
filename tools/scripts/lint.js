@@ -79,6 +79,47 @@ for (const s of shots) {
       }
     }
   }
+
+  // --- STRONG LINT RULES ---
+
+  const scene = scenes.get(shot.scene_ref.replace('scenes/', ''));
+  if (scene) {
+    // Rule 1: Anchor Consistency (Warning for now)
+    // Check if shot prompt includes scene anchors (implied via build-prompts, but good to check explicit overrides if any)
+    // Here we check if the SCENE has anchors, but the SHOT logic might override/ignore them? 
+    // Actually build-prompts.js forces them in. 
+    // Let's check if the shot explicitly defined 'references' that might conflict or be empty?
+    // For now, let's check Forbidden words in the *Shot Spec* fields (positive/negative) if they exist raw.
+    
+    if (scene.forbidden && Array.isArray(scene.forbidden)) {
+      const textsToCheck = [
+        shot.prompt?.positive,
+        shot.prompt?.negative,
+        shot.action?.beats?.join(' ')
+      ].filter(Boolean).join(' ').toLowerCase();
+
+      for (const badWord of scene.forbidden) {
+        if (textsToCheck.includes(badWord.toLowerCase())) {
+          err(`Forbidden word detected: "${badWord}" (banned by scene ${shot.scene_ref})`, s.file);
+        }
+      }
+    }
+  } else {
+     // Scene ref not found handled by schema validation usually, but good to check logic
+     err(`Referenced scene not found in scenes/: ${shot.scene_ref}`, s.file);
+  }
+
+  // Rule 2: Budget/Tier Sanity
+  if (shot.budget?.tier === 'cheap') {
+     // Example constraint: cheap shots shouldn't have > 2 characters to save complexity/tokens? 
+     // Or just check max_regen
+     if (shot.budget.max_regen > 1) {
+       warn(`Cheap tier shot has max_regen > 1 (${shot.budget.max_regen}). Consider lowering for draft.`, s.file);
+     }
+     if (shot.characters && shot.characters.length > 2) {
+       warn(`Cheap tier shot has ${shot.characters.length} characters. Complex scenes might fail in cheap mode.`, s.file);
+     }
+  }
 }
 
 // output report
