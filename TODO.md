@@ -1,34 +1,69 @@
 # TODO (AI Film Studio OS)
 
-> 原则：先补齐框架链条，避免在细节上消耗过多 token；需要时再逐条完善。
+> 目标：构建可规模化、可审查、可回滚的 AI 影视制作流水线。
+> 原则：先补齐逻辑链条（Schema/Spec/Lint），再接入生成模型（避免 Token 浪费）。
 
-## P0 — 框架链条（骨架优先）
-- [x] Repo skeleton + spec dirs + schema
-- [x] validate.js / lint.js 基础可跑
-- [x] project.json（全片入口 + timeline）
-- [x] build-prompts.js（Spec -> Prompt JSON -> Final）
-- [x] script-split.js（自然语言剧本分段骨架）
+## ✅ P0 — 核心骨架（已完成）
+- [x] **Repo Structure**: 建立符合工程标准的目录结构 (`schema/`, `shots/`, `tools/` 等)。
+- [x] **Spec & Schema**: 完成 Scene, Character, Prop, Shot, Project 的 JSON Schema 定义。
+- [x] **Validation**: 实现 `validate.js`，确保所有 JSON 符合 Schema。
+- [x] **Linting (Basic)**: 实现 `lint.js`，检查基础引用完整性 (Scene/Cam 引用是否存在)。
+- [x] **Project Entry**: 实现 `project.json` 全片入口与 Timeline 定义。
+- [x] **Prompt Compiler (v1)**: 实现 `build-prompts.js`，将 Spec 编译为结构化 Prompt。
+- [x] **Script Splitter (Skeleton)**: 实现 `script-split.js`，自然语言剧本分段骨架。
 
-## P1 — 下一批“骨架补齐”（先占位，不深挖）
-- [ ] State 连续性骨架：
-  - [ ] schema/state.schema.json
-  - [ ] states/<shot_id>.out.json 示例
-  - [ ] shot.continuity.state_in_ref 使用说明
-  - [ ] lint: state_in_ref 文件存在性检查（先做轻量）
+---
 
-- [ ] Prompt 编译增强（轻量）
-  - [ ] 检查引用文件存在性（anchors/refs 路径是否存在）
-  - [ ] compiled_from 写入更完整（版本号/commit hash 可选）
+## 🚧 P1 — 逻辑闭环（正在进行）
+> 重点：打通“连续性”与“资源完整性”的检查逻辑。
 
-- [ ] 剧本分拆 -> 要素抽取（骨架）
-  - [ ] 输出 shots_draft/*.json（仅草稿，需人工确认）
-  - [ ] 输出冲突提示（最小集：服装/道具/昼夜）
+### 1. State 连续性状态机（解决“穿帮”问题）
+- [ ] **Schema 定义**: `schema/state.schema.json`
+  - 定义镜头输出状态：`characters.{id}.{pose,outfit}`, `props.{id}.{location,state}`, `scene.{light,door_status}`。
+- [ ] **Shot 字段增强**: 在 `shot.schema.json` 中完善 `continuity` 字段。
+  - `state_in_ref`: 引用上一镜头的 `state.json`。
+  - `state_out_diff`: 定义本镜头产生的状态变更。
+- [ ] **Lint 规则升级**:
+  - 检查 `state_in` 与上一镜头 `state_out` 是否断档。
+  - (进阶) 检查关键道具是否“凭空消失”或“瞬间移动”。
 
-## P2 — 细化（按需再做）
-- [ ] 强 lint 规则：连续性、禁忌项分级（MUST/SHOULD/MAY）
-- [ ] 版本与成本管理：renders/<shot_id>/takes.json + 失败标签
-- [ ] fixups 工单系统 schema + 处理脚本
-- [ ] 将“cheap pass -> final pass”做成可执行 pipeline
+### 2. Prompt 编译增强（资源预检）
+- [ ] **引用完整性检查**: 
+  - `build-prompts.js` 需检查所有 `references.images` (Anchors, Character Refs) 路径是否真实存在。
+  - 缺失资源时抛出 ERROR/WARN。
+- [ ] **Traceability**: 
+  - `final.json` 中注入 version/commit hash，确保生成结果可从源码复现。
 
-## Notes
-- 任何需要外部模型/工具调用的步骤，先写成脚本接口与输出格式，再接具体模型。
+### 3. 剧本要素提取（智能化准备）
+- [ ] **Extractor 接口**: 升级 `script-split.js`，预留 LLM 调用接口。
+- [ ] **Draft 生成**: 
+  - 输入：剧本段落。
+  - 输出：`shots_draft/*.json` (包含 `scene_hint`, `action_beats`, `dialogue`)。
+- [ ] **冲突预警**: 
+  - 自动检测文本中的“白天/黑夜”冲突、“室内/室外”跳变。
+
+---
+
+## 📅 P2 — 生产力工具（待排期）
+> 重点：版本管理与成本控制，从“能跑”变成“好用”。
+
+### 1. 强 Lint 规则库 (Quality Gate)
+- [ ] **Consistency**: 同一 Scene 下，不同 Shot 是否引用了相同的 Anchors？
+- [ ] **Forbidden Check**: Prompt 中是否包含 Scene Spec 定义的 `forbidden` 词汇？(Severity: ERROR)。
+- [ ] **Budget Check**: 检查 `cheap` 模式下是否包含昂贵的运镜或过多角色。
+
+### 2. Render 版本管理 (Asset Management)
+- [ ] **Takes 记录**: `renders/<shot_id>/takes.json`。
+  - 记录：`take_id`, `prompt_hash`, `seed`, `model_version`, `cost`, `status` (pass/fail)。
+- [ ] **Review 标记**: 允许人工给 Take 打标签 (`bad_hands`, `lighting_mismatch`, `approved`)。
+
+### 3. Fixups 工单系统 (Post-Production)
+- [ ] **Fixup Schema**: 定义修复任务 (`inpaint`, `upscale`, `face_restore`)。
+- [ ] **Workflow**: `shot.json` -> 生成 -> 发现瑕疵 -> 提交 `fixups/*.json` -> 执行修复 -> 更新 `takes.json`。
+
+---
+
+## 📂 P3 — 高级特性（未来规划）
+- [ ] **Nano Banana 集成**: 自动生成 Scene Anchors 并入库。
+- [ ] **Audio 驱动**: 在 Timeline 中集成音频轨道，生成 Beat Sheet。
+- [ ] **Web UI**: 简单的本地看板，可视化查看 Timeline 和 Lint 结果。
