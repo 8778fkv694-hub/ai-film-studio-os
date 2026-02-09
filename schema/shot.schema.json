@@ -43,9 +43,21 @@
     "continuity": {
       "type": "object",
       "properties": {
-        "state_in_ref": {"type": "string"},
-        "must_match_prev": {"type": "array", "items": {"type": "string"}},
-        "handoff_to_next": {"type": "array", "items": {"type": "string"}}
+        "state_in_ref": {
+          "type": "string",
+          "description": "Path to the state JSON file from the previous shot (e.g. states/S000.json)"
+        },
+        "state_changes": {
+          "type": "object",
+          "description": "Changes to the state that occur during this shot",
+          "properties": {
+            "characters": { "type": "object" },
+            "props": { "type": "object" },
+            "scene": { "type": "object" }
+          }
+        },
+        "must_match_prev": { "type": "array", "items": { "type": "string" } },
+        "handoff_to_next": { "type": "array", "items": { "type": "string" } }
       },
       "additionalProperties": true
     },

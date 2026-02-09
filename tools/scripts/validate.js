@@ -24,6 +24,7 @@ const schemas = {
   character: loadSchema('character.schema.json'),
   prop: loadSchema('prop.schema.json'),
   shot: loadSchema('shot.schema.json'),
+  state: loadSchema('state.schema.json'),
   project: loadSchema('project.schema.json')
 };
 
@@ -67,6 +68,7 @@ const allOk = [
   validateDir('characters', 'character.schema.json'),
   validateDir('props', 'prop.schema.json'),
   validateDir('shots', 'shot.schema.json'),
+  validateDir('states', 'state.schema.json'),
   validateFile('project.json', 'project.schema.json')
 ].every(Boolean);
 

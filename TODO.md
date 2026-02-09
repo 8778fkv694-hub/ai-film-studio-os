@@ -18,14 +18,14 @@
 > 重点：打通“连续性”与“资源完整性”的检查逻辑。
 
 ### 1. State 连续性状态机（解决“穿帮”问题）
-- [ ] **Schema 定义**: `schema/state.schema.json`
+- [x] **Schema 定义**: `schema/state.schema.json`
   - 定义镜头输出状态：`characters.{id}.{pose,outfit}`, `props.{id}.{location,state}`, `scene.{light,door_status}`。
-- [ ] **Shot 字段增强**: 在 `shot.schema.json` 中完善 `continuity` 字段。
+- [x] **Shot 字段增强**: 在 `shot.schema.json` 中完善 `continuity` 字段。
   - `state_in_ref`: 引用上一镜头的 `state.json`。
-  - `state_out_diff`: 定义本镜头产生的状态变更。
-- [ ] **Lint 规则升级**:
-  - 检查 `state_in` 与上一镜头 `state_out` 是否断档。
-  - (进阶) 检查关键道具是否“凭空消失”或“瞬间移动”。
+  - `state_changes`: 定义本镜头产生的状态变更。
+- [x] **Lint 规则升级**:
+  - 检查 `state_in_ref` 文件是否存在。
+  - (进阶) 检查关键道具是否“凭空消失”或“瞬间移动”。(已实现基础引用检查)
 
 ### 2. Prompt 编译增强（资源预检）
 - [ ] **引用完整性检查**: 

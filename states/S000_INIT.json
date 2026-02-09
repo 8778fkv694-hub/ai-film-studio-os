@@ -1,0 +1,20 @@
+{
+  "shot_id": "S000_INIT",
+  "characters": {
+    "charA_v1": {
+      "outfit": "white_hoodie + black_jeans",
+      "location": "outside_kitchen",
+      "holding": []
+    }
+  },
+  "props": {
+    "mug_red_v1": {
+      "location": "cupboard",
+      "state": "clean"
+    }
+  },
+  "scene": {
+    "lighting": "off",
+    "time": "night"
+  }
+}

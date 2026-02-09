@@ -66,8 +66,19 @@ for (const s of shots) {
   }
 
   // continuity fields sanity
-  const handoff = shot?.continuity?.handoff_to_next || [];
-  if (!Array.isArray(handoff)) err('continuity.handoff_to_next must be array', s.file);
+  const continuity = shot?.continuity;
+  if (continuity) {
+    if (continuity.handoff_to_next && !Array.isArray(continuity.handoff_to_next)) {
+      err('continuity.handoff_to_next must be array', s.file);
+    }
+    // Check state_in_ref existence
+    if (continuity.state_in_ref) {
+      const statePath = path.join(ROOT, continuity.state_in_ref);
+      if (!fs.existsSync(statePath)) {
+        err(`state_in_ref file not found: ${continuity.state_in_ref}`, s.file);
+      }
+    }
+  }
 }
 
 // output report

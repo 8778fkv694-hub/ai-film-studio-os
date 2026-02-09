@@ -16,8 +16,12 @@
     ]
   },
   "continuity": {
-    "must_match_prev": [],
-    "handoff_to_next": ["mug_red_v1=on_table"]
+    "state_in_ref": "states/S000_INIT.json",
+    "state_changes": {
+      "characters": { "charA_v1": { "location": "at_table", "pose": "sitting" } },
+      "props": { "mug_red_v1": { "location": "on_table" } },
+      "scene": { "lighting": "warm practical lamp + soft key" }
+    }
   },
   "budget": {"tier": "cheap", "max_regen": 2},
   "prompt": {
