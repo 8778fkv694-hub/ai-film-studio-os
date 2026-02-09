@@ -1,0 +1,16 @@
+{
+  "id": "charA_v1",
+  "name": "Protagonist A",
+  "must_keep": {
+    "hair": "short_black",
+    "outfit": "white_hoodie + black_jeans",
+    "accessories": ["silver_ring_left_hand"]
+  },
+  "references": {
+    "images": [
+      "assets/characters/charA_v1/front.jpg",
+      "assets/characters/charA_v1/side.jpg",
+      "assets/characters/charA_v1/fullbody.jpg"
+    ]
+  }
+}

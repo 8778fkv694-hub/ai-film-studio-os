@@ -1,0 +1,8 @@
+{
+  "id": "mug_red_v1",
+  "name": "Red Mug",
+  "must_keep": true,
+  "references": {
+    "images": ["assets/props/mug_red_v1/ref.jpg"]
+  }
+}

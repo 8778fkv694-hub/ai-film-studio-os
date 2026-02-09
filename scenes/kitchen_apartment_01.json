@@ -1,0 +1,21 @@
+{
+  "id": "kitchen_apartment_01",
+  "name": "Kitchen - Apartment (Night)",
+  "style_ref": "styles/cinematic_v1.json",
+  "anchors": [
+    {"id": "A", "img": "assets/scenes/kitchen_apartment_01/anchor_A.jpg", "use_for": ["layout", "palette"]},
+    {"id": "B", "img": "assets/scenes/kitchen_apartment_01/anchor_B.jpg", "use_for": ["blocking", "props_positions"]},
+    {"id": "C", "img": "assets/scenes/kitchen_apartment_01/anchor_C.jpg", "use_for": ["details_consistency"]}
+  ],
+  "must_keep": {
+    "time": "night",
+    "lighting": "warm practical lamp + soft key",
+    "set_elements": ["wood_table_center", "window_left", "lamp_right", "white_tile_wall"]
+  },
+  "forbidden": ["daylight", "office furniture"],
+  "cam_setups": {
+    "cam_01_establish": {"shot_size": "wide", "movement": "locked", "lens": "24mm"},
+    "cam_02_dialog": {"shot_size": "medium", "movement": "slow_dolly_in", "lens": "35mm"},
+    "cam_03_ots": {"shot_size": "over_shoulder", "movement": "locked", "lens": "50mm"}
+  }
+}

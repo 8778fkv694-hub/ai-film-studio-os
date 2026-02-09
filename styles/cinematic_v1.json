@@ -1,0 +1,7 @@
+{
+  "id": "cinematic_v1",
+  "name": "Cinematic Realism v1",
+  "mood_keywords": ["cinematic", "moody", "controlled lighting"],
+  "palette": ["warm highlights", "cool shadows"],
+  "forbidden": ["cartoon", "neon cyberpunk (unless explicitly requested)"]
+}

@@ -1,0 +1,9 @@
+# dependencies
+**/node_modules/
+
+# renders/output
+renders/
+reports/*.report.json
+
+# OS
+.DS_Store

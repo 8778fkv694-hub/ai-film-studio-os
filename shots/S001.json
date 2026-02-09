@@ -1,0 +1,27 @@
+{
+  "shot_id": "S001",
+  "duration_s": 6,
+  "scene_ref": "scenes/kitchen_apartment_01.json",
+  "cam_setup_ref": "cam_01_establish",
+  "characters": [
+    {"ref": "characters/charA_v1.json"}
+  ],
+  "props": [
+    {"ref": "props/mug_red_v1.json", "state": "on_table"}
+  ],
+  "action": {
+    "beats": [
+      "Establish the kitchen layout, quiet night mood",
+      "A sits at the table, red mug visible"
+    ]
+  },
+  "continuity": {
+    "must_match_prev": [],
+    "handoff_to_next": ["mug_red_v1=on_table"]
+  },
+  "budget": {"tier": "cheap", "max_regen": 2},
+  "prompt": {
+    "positive": "Cinematic realism, night interior, match anchor layout, stable character identity, stable props.",
+    "negative": "no outfit change, no face drift, no extra fingers"
+  }
+}
