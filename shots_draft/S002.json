@@ -1,0 +1,33 @@
+{
+  "shot_id": "S002",
+  "duration_s": 4,
+  "scene_ref": "scenes/kitchen_apartment_01.json",
+  "cam_setup_ref": "TODO",
+  "characters": [
+    {
+      "ref": "characters/charA_v1.json"
+    }
+  ],
+  "props": [],
+  "action": {
+    "beats": [
+      "PROTAGONIST A sits at the wood table in the center. He wears a white hoodie and black jeans. He spins a silver ring on his left hand."
+    ]
+  },
+  "continuity": {
+    "must_match_prev": [],
+    "handoff_to_next": []
+  },
+  "budget": {
+    "tier": "cheap",
+    "max_regen": 1
+  },
+  "prompt": {
+    "positive": "INT. KITCHEN - NIGHT, PROTAGONIST A sits at the wood table in the center. He wears a white hoodie and black jeans. He spins a silver ring on his left hand.",
+    "negative": "default negative"
+  },
+  "_draft_meta": {
+    "original_text": "PROTAGONIST A sits at the wood table in the center. He wears a white hoodie and black jeans. He spins a silver ring on his left hand.",
+    "warnings": []
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "shot_id": "S003",
+  "duration_s": 4,
+  "scene_ref": "scenes/kitchen_apartment_01.json",
+  "cam_setup_ref": "TODO",
+  "characters": [],
+  "props": [
+    {
+      "ref": "props/mug_red_v1.json",
+      "state": "TODO: infer state"
+    }
+  ],
+  "action": {
+    "beats": [
+      "A RED MUG sits on the table in front of him. Steam rises from it."
+    ]
+  },
+  "continuity": {
+    "must_match_prev": [],
+    "handoff_to_next": []
+  },
+  "budget": {
+    "tier": "cheap",
+    "max_regen": 1
+  },
+  "prompt": {
+    "positive": "INT. KITCHEN - NIGHT, A RED MUG sits on the table in front of him. Steam rises from it.",
+    "negative": "default negative"
+  },
+  "_draft_meta": {
+    "original_text": "A RED MUG sits on the table in front of him. Steam rises from it.",
+    "warnings": []
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "shot_id": "S004",
+  "duration_s": 4,
+  "scene_ref": "scenes/kitchen_apartment_01.json",
+  "cam_setup_ref": "TODO",
+  "characters": [
+    {
+      "ref": "characters/charA_v1.json"
+    }
+  ],
+  "props": [],
+  "action": {
+    "beats": [
+      "PROTAGONIST A\n(whispering)\nIt's quiet. Too quiet."
+    ]
+  },
+  "continuity": {
+    "must_match_prev": [],
+    "handoff_to_next": []
+  },
+  "budget": {
+    "tier": "cheap",
+    "max_regen": 1
+  },
+  "prompt": {
+    "positive": "INT. KITCHEN - NIGHT, PROTAGONIST A\n(whispering)\nIt's quiet. Too quiet.",
+    "negative": "default negative"
+  },
+  "_draft_meta": {
+    "original_text": "PROTAGONIST A\n(whispering)\nIt's quiet. Too quiet.",
+    "warnings": []
+  }
+}

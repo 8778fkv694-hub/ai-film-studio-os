@@ -1,0 +1,29 @@
+{
+  "shot_id": "S006",
+  "duration_s": 4,
+  "scene_ref": "TODO: match scene manually",
+  "cam_setup_ref": "TODO",
+  "characters": [],
+  "props": [],
+  "action": {
+    "beats": [
+      "Rain pours down on the pavement. A black car drives past slowly."
+    ]
+  },
+  "continuity": {
+    "must_match_prev": [],
+    "handoff_to_next": []
+  },
+  "budget": {
+    "tier": "cheap",
+    "max_regen": 1
+  },
+  "prompt": {
+    "positive": "EXT. STREET - NIGHT, Rain pours down on the pavement. A black car drives past slowly.",
+    "negative": "default negative"
+  },
+  "_draft_meta": {
+    "original_text": "Rain pours down on the pavement. A black car drives past slowly.",
+    "warnings": []
+  }
+}

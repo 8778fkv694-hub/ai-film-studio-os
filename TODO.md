@@ -35,12 +35,12 @@
   - `final.json` 中注入 version/commit hash，确保生成结果可从源码复现。 (已实现：meta.git_commit)
 
 ### 3. 剧本要素提取（智能化准备）
-- [ ] **Extractor 接口**: 升级 `script-split.js`，预留 LLM 调用接口。
-- [ ] **Draft 生成**: 
-  - 输入：剧本段落。
-  - 输出：`shots_draft/*.json` (包含 `scene_hint`, `action_beats`, `dialogue`)。
-- [ ] **冲突预警**: 
-  - 自动检测文本中的“白天/黑夜”冲突、“室内/室外”跳变。
+- [x] **Extractor 接口**: 升级 `script-split.js`，预留 LLM 调用接口。 (已实现 Mock Extractor class)
+- [x] **Draft 生成**: 
+  - 输入：剧本段落 (`docs/script.txt`)。
+  - 输出：`shots_draft/*.json` (包含 `scene_hint`, `action_beats`, `characters`, `props`)。
+- [x] **冲突预警**: 
+  - 自动检测文本中的“白天/黑夜”冲突。(已实现: Conflict Warning Log)
 
 ---
 

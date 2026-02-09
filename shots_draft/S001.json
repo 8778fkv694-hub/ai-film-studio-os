@@ -1,0 +1,29 @@
+{
+  "shot_id": "S001",
+  "duration_s": 4,
+  "scene_ref": "scenes/kitchen_apartment_01.json",
+  "cam_setup_ref": "TODO",
+  "characters": [],
+  "props": [],
+  "action": {
+    "beats": [
+      "The room is dimly lit by a warm practical lamp on the right. Rain streaks the window on the left."
+    ]
+  },
+  "continuity": {
+    "must_match_prev": [],
+    "handoff_to_next": []
+  },
+  "budget": {
+    "tier": "cheap",
+    "max_regen": 1
+  },
+  "prompt": {
+    "positive": "INT. KITCHEN - NIGHT, The room is dimly lit by a warm practical lamp on the right. Rain streaks the window on the left.",
+    "negative": "default negative"
+  },
+  "_draft_meta": {
+    "original_text": "The room is dimly lit by a warm practical lamp on the right. Rain streaks the window on the left.",
+    "warnings": []
+  }
+}
