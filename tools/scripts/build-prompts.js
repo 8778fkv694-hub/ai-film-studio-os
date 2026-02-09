@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { execSync } from 'node:child_process';
 
 const ROOT = path.resolve(path.dirname(new URL(import.meta.url).pathname), '../../');
 
@@ -16,7 +17,15 @@ function joinLines(arr) {
   return (arr || []).map(s => String(s).trim()).filter(Boolean).join(', ');
 }
 
-function compileShotPrompt(shotFile) {
+function getGitHash() {
+  try {
+    return execSync('git rev-parse --short HEAD', { cwd: ROOT, encoding: 'utf8' }).trim();
+  } catch (e) {
+    return 'unknown';
+  }
+}
+
+function compileShotPrompt(shotFile, gitHash) {
   const shot = readJson(`shots/${shotFile}`);
   const scene = readJson(shot.scene_ref);
   const style = shot.style_ref ? readJson(shot.style_ref) : (scene.style_ref ? readJson(scene.style_ref) : null);
@@ -48,11 +57,20 @@ function compileShotPrompt(shotFile) {
   negative.push('no extra fingers');
   negative.push('no text artifacts');
 
-  // references
+  // references collection
   const refImages = [];
   for (const a of (scene.anchors || [])) refImages.push(a.img);
   for (const ch of characters) for (const img of (ch.references?.images || [])) refImages.push(img);
   for (const pr of props) for (const img of (pr.references?.images || [])) refImages.push(img);
+
+  // RESOURCE PRE-CHECK
+  const missingAssets = [];
+  for (const imgPath of refImages) {
+    const absPath = path.join(ROOT, imgPath);
+    if (!fs.existsSync(absPath)) {
+      missingAssets.push(imgPath);
+    }
+  }
 
   const promptSpec = {
     shot_id: shot.shot_id,
@@ -73,6 +91,13 @@ function compileShotPrompt(shotFile) {
       quality_tier: shot?.budget?.tier || 'cheap'
     },
     meta: {
+      compiler_version: '1.1.0',
+      git_commit: gitHash,
+      compiled_at: new Date().toISOString(),
+      validation: {
+        missing_assets: missingAssets,
+        status: missingAssets.length > 0 ? 'WARN' : 'OK'
+      },
       compiled_from: {
         shot: `shots/${shotFile}`,
         scene: shot.scene_ref,
@@ -91,20 +116,41 @@ function compileShotPrompt(shotFile) {
     meta: promptSpec.meta
   };
 
-  return { promptSpec, finalPrompt };
+  return { promptSpec, finalPrompt, missingAssets };
 }
 
 function main() {
   ensureDir('prompts');
   const shotFiles = fs.readdirSync(path.join(ROOT, 'shots')).filter(f => f.endsWith('.json')).sort();
   const out = [];
+  const gitHash = getGitHash();
+  let totalMissing = 0;
+
+  console.log(`[Build] Starting prompt compilation (Commit: ${gitHash})...`);
+
   for (const f of shotFiles) {
-    const { promptSpec, finalPrompt } = compileShotPrompt(f);
+    const { promptSpec, finalPrompt, missingAssets } = compileShotPrompt(f, gitHash);
+    
+    // Write output
     fs.writeFileSync(path.join(ROOT, 'prompts', `${promptSpec.shot_id}.prompt.json`), JSON.stringify(promptSpec, null, 2));
     fs.writeFileSync(path.join(ROOT, 'prompts', `${promptSpec.shot_id}.final.json`), JSON.stringify(finalPrompt, null, 2));
+    
+    // Log status
+    if (missingAssets.length > 0) {
+      console.warn(`[WARN] Shot ${promptSpec.shot_id} missing ${missingAssets.length} assets:`);
+      missingAssets.forEach(m => console.warn(`  - ${m}`));
+      totalMissing += missingAssets.length;
+    }
+    
     out.push(promptSpec.shot_id);
   }
-  console.log(`build-prompts: ok (${out.length} shots)`, out.join(', '));
+
+  console.log(`[Build] Completed (${out.length} shots).`);
+  if (totalMissing > 0) {
+    console.warn(`[WARN] Total missing assets: ${totalMissing}. Fix paths or create placeholder files before rendering.`);
+  } else {
+    console.log('[Build] All assets verified OK.');
+  }
 }
 
 main();

@@ -28,11 +28,11 @@
   - (进阶) 检查关键道具是否“凭空消失”或“瞬间移动”。(已实现基础引用检查)
 
 ### 2. Prompt 编译增强（资源预检）
-- [ ] **引用完整性检查**: 
+- [x] **引用完整性检查**: 
   - `build-prompts.js` 需检查所有 `references.images` (Anchors, Character Refs) 路径是否真实存在。
-  - 缺失资源时抛出 ERROR/WARN。
-- [ ] **Traceability**: 
-  - `final.json` 中注入 version/commit hash，确保生成结果可从源码复现。
+  - 缺失资源时抛出 ERROR/WARN。 (已实现：Missing assets log WARN & meta.validation record)
+- [x] **Traceability**: 
+  - `final.json` 中注入 version/commit hash，确保生成结果可从源码复现。 (已实现：meta.git_commit)
 
 ### 3. 剧本要素提取（智能化准备）
 - [ ] **Extractor 接口**: 升级 `script-split.js`，预留 LLM 调用接口。

@@ -12,6 +12,21 @@
     "assets/props/mug_red_v1/ref.jpg"
   ],
   "meta": {
+    "compiler_version": "1.1.0",
+    "git_commit": "4460eb8",
+    "compiled_at": "2026-02-09T22:37:58.398Z",
+    "validation": {
+      "missing_assets": [
+        "assets/scenes/kitchen_apartment_01/anchor_A.jpg",
+        "assets/scenes/kitchen_apartment_01/anchor_B.jpg",
+        "assets/scenes/kitchen_apartment_01/anchor_C.jpg",
+        "assets/characters/charA_v1/front.jpg",
+        "assets/characters/charA_v1/side.jpg",
+        "assets/characters/charA_v1/fullbody.jpg",
+        "assets/props/mug_red_v1/ref.jpg"
+      ],
+      "status": "WARN"
+    },
     "compiled_from": {
       "shot": "shots/S001.json",
       "scene": "scenes/kitchen_apartment_01.json",
