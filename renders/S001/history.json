@@ -1,0 +1,17 @@
+{
+  "shot_id": "S001",
+  "best_take": null,
+  "takes": [
+    {
+      "take_id": "S001_take_1",
+      "timestamp": "2026-02-09T22:44:50.252Z",
+      "status": "success",
+      "prompt_hash": "5240a4d4",
+      "model": "seedance-2.0-turbo",
+      "seed": 489031,
+      "cost_estimate": 0.05,
+      "file_path": "renders/S001/takes/S001_take_1770677090252.mp4",
+      "duration_s": 6
+    }
+  ]
+}

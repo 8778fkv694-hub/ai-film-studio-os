@@ -8,7 +8,11 @@ const ajv = new Ajv2020({ allErrors: true, strict: false });
 addFormats(ajv);
 
 function readJson(p) {
-  return JSON.parse(fs.readFileSync(p, 'utf-8'));
+  try {
+    return JSON.parse(fs.readFileSync(p, 'utf-8'));
+  } catch(e) {
+    throw new Error(`Failed to read JSON ${p}: ${e.message}`);
+  }
 }
 
 function loadSchema(name) {
@@ -25,11 +29,14 @@ const schemas = {
   prop: loadSchema('prop.schema.json'),
   shot: loadSchema('shot.schema.json'),
   state: loadSchema('state.schema.json'),
+  render_history: loadSchema('render_history.schema.json'),
   project: loadSchema('project.schema.json')
 };
 
 function validateDir(dir, schemaId) {
   const abs = path.join(ROOT, dir);
+  if (!fs.existsSync(abs)) return true;
+
   const files = fs.readdirSync(abs).filter(f => f.endsWith('.json'));
   const validate = ajv.getSchema(schemaId) || ajv.getSchema(schemaId + '.json');
   if (!validate) throw new Error('schema not found: ' + schemaId);
@@ -37,6 +44,8 @@ function validateDir(dir, schemaId) {
   let ok = true;
   for (const f of files) {
     const p = path.join(abs, f);
+    if (fs.lstatSync(p).isDirectory()) continue; 
+    
     const obj = readJson(p);
     const valid = validate(obj);
     if (!valid) {
@@ -50,6 +59,12 @@ function validateDir(dir, schemaId) {
 
 function validateFile(relPath, schemaId) {
   const abs = path.join(ROOT, relPath);
+  if (!fs.existsSync(abs)) {
+    // Optional file logic could be handled here, but if called, usually expected.
+    // We'll assume if it's missing it fails validation unless wrapped.
+    // For project.json it's expected.
+    return false; 
+  }
   const validate = ajv.getSchema(schemaId) || ajv.getSchema(schemaId + '.json');
   if (!validate) throw new Error('schema not found: ' + schemaId);
   const obj = readJson(abs);
@@ -69,6 +84,20 @@ const allOk = [
   validateDir('props', 'prop.schema.json'),
   validateDir('shots', 'shot.schema.json'),
   validateDir('states', 'state.schema.json'),
+  // Validate render histories
+  (() => {
+    const rendersDir = path.join(ROOT, 'renders');
+    if (!fs.existsSync(rendersDir)) return true;
+    const shotDirs = fs.readdirSync(rendersDir).filter(d => fs.lstatSync(path.join(rendersDir, d)).isDirectory());
+    let ok = true;
+    for (const d of shotDirs) {
+      const historyPath = path.join('renders', d, 'history.json');
+      if (fs.existsSync(path.join(ROOT, historyPath))) {
+        if (!validateFile(historyPath, 'render_history.schema.json')) ok = false;
+      }
+    }
+    return ok;
+  })(),
   validateFile('project.json', 'project.schema.json')
 ].every(Boolean);
 

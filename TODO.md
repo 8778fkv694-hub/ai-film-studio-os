@@ -53,7 +53,7 @@
 - [ ] **Budget Check**: 检查 `cheap` 模式下是否包含昂贵的运镜或过多角色。
 
 ### 2. Render 版本管理 (Asset Management)
-- [ ] **Takes 记录**: `renders/<shot_id>/takes.json`。
+- [x] **Takes 记录**: `renders/<shot_id>/takes.json` (实际上实现了 `history.json` + `manage-renders.js`)。
   - 记录：`take_id`, `prompt_hash`, `seed`, `model_version`, `cost`, `status` (pass/fail)。
 - [ ] **Review 标记**: 允许人工给 Take 打标签 (`bad_hands`, `lighting_mismatch`, `approved`)。
 
