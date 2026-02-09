@@ -1,0 +1,12 @@
+{
+  "fixup_id": "FIX_S001_01",
+  "target_shot_id": "S001",
+  "target_take_id": "S001_take_1",
+  "type": "inpaint",
+  "instruction": "Fix distorted left hand fingers, ensure only 5 fingers.",
+  "status": "completed",
+  "params": {
+    "denoise_strength": 0.4
+  },
+  "result_ref": "renders/S001/fixups/FIX_S001_01_fixed.mp4"
+}

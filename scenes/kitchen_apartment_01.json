@@ -3,9 +3,9 @@
   "name": "Apartment Kitchen Night",
   "style_ref": "styles/cinematic_v1.json",
   "anchors": [
-    { "img": "assets/scenes/kitchen_apartment_01/anchor_A.jpg", "note": "wide shot from door" },
-    { "img": "assets/scenes/kitchen_apartment_01/anchor_B.jpg", "note": "close up stove" },
-    { "img": "assets/scenes/kitchen_apartment_01/anchor_C.jpg", "note": "window view" }
+    { "id": "A", "img": "assets/scenes/kitchen_apartment_01/anchor_A.jpg", "note": "wide shot from door", "use_for": ["establish", "wide"] },
+    { "id": "B", "img": "assets/scenes/kitchen_apartment_01/anchor_B.jpg", "note": "close up stove", "use_for": ["closeup"] },
+    { "id": "C", "img": "assets/scenes/kitchen_apartment_01/anchor_C.jpg", "note": "window view", "use_for": ["detail"] }
   ],
   "must_keep": {
     "set_elements": ["red fridge", "wooden table", "rainy window"],

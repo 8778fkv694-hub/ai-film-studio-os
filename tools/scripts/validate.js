@@ -30,6 +30,7 @@ const schemas = {
   shot: loadSchema('shot.schema.json'),
   state: loadSchema('state.schema.json'),
   render_history: loadSchema('render_history.schema.json'),
+  fixup: loadSchema('fixup.schema.json'),
   project: loadSchema('project.schema.json')
 };
 
@@ -84,6 +85,7 @@ const allOk = [
   validateDir('props', 'prop.schema.json'),
   validateDir('shots', 'shot.schema.json'),
   validateDir('states', 'state.schema.json'),
+  validateDir('fixups', 'fixup.schema.json'),
   // Validate render histories
   (() => {
     const rendersDir = path.join(ROOT, 'renders');

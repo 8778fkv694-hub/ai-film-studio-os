@@ -58,8 +58,8 @@
 - [ ] **Review 标记**: 允许人工给 Take 打标签 (`bad_hands`, `lighting_mismatch`, `approved`)。
 
 ### 3. Fixups 工单系统 (Post-Production)
-- [ ] **Fixup Schema**: 定义修复任务 (`inpaint`, `upscale`, `face_restore`)。
-- [ ] **Workflow**: `shot.json` -> 生成 -> 发现瑕疵 -> 提交 `fixups/*.json` -> 执行修复 -> 更新 `takes.json`。
+- [x] **Fixup Schema**: 定义修复任务 (`inpaint`, `upscale`, `face_restore`)。 (已实现)
+- [x] **Workflow**: `shot.json` -> 生成 -> 发现瑕疵 -> 提交 `fixups/*.json` -> 执行修复 -> 更新 `takes.json`。 (已实现 process-fixups.js)
 
 ---
 
