@@ -82,9 +82,16 @@
 ```bash
 cd ai-film-studio
 npm --prefix tools install
+
+# Gate 0: 编译/静态检查（生成前必须过）
 node tools/scripts/validate.js
 node tools/scripts/lint.js
-# 下一步：编译 prompts / 分拆剧本（见 tools/scripts/）
+
+# 生成前：编译提示词（Spec -> prompts/*.json）
+node tools/scripts/build-prompts.js
+
+# 生成前：剧本分段（骨架）
+node tools/scripts/script-split.js docs/script.txt
 ```
 
 ---

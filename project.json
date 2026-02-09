@@ -1,0 +1,22 @@
+{
+  "id": "demo_project",
+  "name": "Demo Project (Skeleton)",
+  "description": "A minimal project to prove the pipeline: spec -> validate/lint -> prompt build -> render.",
+  "default_style_ref": "styles/cinematic_v1.json",
+  "defaults": {
+    "language": "en",
+    "fps": 24,
+    "budget": {
+      "cheap": {"note": "low cost preview"},
+      "final": {"note": "high quality render"}
+    }
+  },
+  "inventory": {
+    "scenes": ["scenes/kitchen_apartment_01.json"],
+    "characters": ["characters/charA_v1.json"],
+    "props": ["props/mug_red_v1.json"]
+  },
+  "timeline": [
+    {"shot_id": "S001", "shot_file": "shots/S001.json", "tier": "cheap"}
+  ]
+}

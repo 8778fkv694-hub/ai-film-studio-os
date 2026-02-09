@@ -23,7 +23,8 @@ const schemas = {
   scene: loadSchema('scene.schema.json'),
   character: loadSchema('character.schema.json'),
   prop: loadSchema('prop.schema.json'),
-  shot: loadSchema('shot.schema.json')
+  shot: loadSchema('shot.schema.json'),
+  project: loadSchema('project.schema.json')
 };
 
 function validateDir(dir, schemaId) {
@@ -46,12 +47,27 @@ function validateDir(dir, schemaId) {
   return ok;
 }
 
+function validateFile(relPath, schemaId) {
+  const abs = path.join(ROOT, relPath);
+  const validate = ajv.getSchema(schemaId) || ajv.getSchema(schemaId + '.json');
+  if (!validate) throw new Error('schema not found: ' + schemaId);
+  const obj = readJson(abs);
+  const valid = validate(obj);
+  if (!valid) {
+    console.error(`INVALID ${relPath}`);
+    console.error(validate.errors);
+    return false;
+  }
+  return true;
+}
+
 const allOk = [
   validateDir('styles', 'style.schema.json'),
   validateDir('scenes', 'scene.schema.json'),
   validateDir('characters', 'character.schema.json'),
   validateDir('props', 'prop.schema.json'),
-  validateDir('shots', 'shot.schema.json')
+  validateDir('shots', 'shot.schema.json'),
+  validateFile('project.json', 'project.schema.json')
 ].every(Boolean);
 
 if (allOk) {

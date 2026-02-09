@@ -17,10 +17,25 @@ function listJson(dir) {
 
 const shots = listJson('shots');
 const scenes = new Map(listJson('scenes').map(x => [x.file.replace('scenes/', ''), x.obj]));
+const projectPath = path.join(ROOT, 'project.json');
+const project = fs.existsSync(projectPath) ? readJson(projectPath) : null;
 
 const issues = [];
 function err(msg, where) { issues.push({ level: 'ERROR', where, msg }); }
 function warn(msg, where) { issues.push({ level: 'WARN', where, msg }); }
+
+// Project timeline lint (if project.json exists)
+if (project) {
+  const shotFiles = new Set(shots.map(s => `shots/${path.basename(s.abs)}`));
+  const seenIds = new Set();
+  for (const item of (project.timeline || [])) {
+    if (seenIds.has(item.shot_id)) warn(`duplicate shot_id in timeline: ${item.shot_id}`, 'project.json');
+    seenIds.add(item.shot_id);
+    if (!item.shot_file || !shotFiles.has(item.shot_file)) {
+      err(`timeline shot_file not found in shots/: ${item.shot_file}`, 'project.json');
+    }
+  }
+}
 
 for (const s of shots) {
   const shot = s.obj;
