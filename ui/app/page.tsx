@@ -2,6 +2,8 @@ import fs from 'fs';
 import path from 'path';
 import Link from 'next/link';
 
+import Player from '@/components/Player';
+
 // Mock function to read shots (Server Component logic)
 function getShots() {
   const shotsDir = path.resolve(process.cwd(), '../shots');
@@ -33,6 +35,15 @@ export default function Home() {
           {project ? `${project.name} (${project.id})` : 'No project.json found'}
         </p>
       </header>
+
+      {/* Main Player Area */}
+      <section className="mb-12">
+        <h2 className="text-2xl font-semibold mb-6 flex items-center gap-2">
+          <span className="w-2 h-8 bg-emerald-500 rounded-full"></span>
+          Animatic Preview (TTS + Slides)
+        </h2>
+        <Player shots={shots} />
+      </section>
 
       <section className="mb-12">
         <h2 className="text-2xl font-semibold mb-6 flex items-center gap-2">
