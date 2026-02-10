@@ -4,6 +4,7 @@ import Link from 'next/link';
 
 import Player from '@/components/Player';
 import ProjectManager from '@/components/ProjectManager';
+import LintReport from '@/components/LintReport';
 
 // Mock function to read shots (Server Component logic)
 function getShots() {
@@ -41,6 +42,15 @@ export default function Home() {
         <ProjectManager />
       </section>
 
+      {/* Lint Report */}
+      <section className="mb-12">
+        <h2 className="text-2xl font-semibold mb-6 flex items-center gap-2">
+          <span className="w-2 h-8 bg-red-500 rounded-full"></span>
+          Quality Gate (Lint Report)
+        </h2>
+        <LintReport />
+      </section>
+
       {/* Main Player Area */}
       <section className="mb-12">
         <h2 className="text-2xl font-semibold mb-6 flex items-center gap-2">
@@ -55,17 +65,21 @@ export default function Home() {
           <span className="w-2 h-8 bg-blue-500 rounded-full"></span>
           Timeline ({shots.length} Shots)
         </h2>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {shots.map((shot: any) => (
-            <div key={shot.shot_id} className="bg-slate-900 border border-slate-800 rounded-lg p-4 hover:border-slate-600 transition-colors">
+            <Link
+              key={shot.shot_id}
+              href={`/shots/${shot.shot_id}`}
+              className="bg-slate-900 border border-slate-800 rounded-lg p-4 hover:border-blue-600 hover:bg-slate-900/80 transition-all group block"
+            >
               <div className="flex justify-between items-start mb-2">
-                <span className="font-mono text-xl font-bold text-blue-300">{shot.shot_id}</span>
+                <span className="font-mono text-xl font-bold text-blue-300 group-hover:text-blue-200 transition-colors">{shot.shot_id}</span>
                 <span className="text-xs px-2 py-1 rounded bg-slate-800 text-slate-400 border border-slate-700">
                   {shot.duration_s}s
                 </span>
               </div>
-              
+
               <div className="text-sm text-slate-400 mb-4 line-clamp-3 h-16">
                 {shot.action?.beats?.[0] || "No action description"}
               </div>
@@ -78,14 +92,12 @@ export default function Home() {
                   {shot.budget?.tier || 'standard'}
                 </span>
               </div>
-            </div>
-          ))}
-        </div>
-      </section>
 
-      <section>
-        <div className="p-4 bg-yellow-900/20 border border-yellow-900/50 rounded text-yellow-200 text-sm">
-          ⚠️ This is a static dashboard preview. Run <code>npm run dev</code> locally to interact.
+              <div className="mt-3 text-xs text-blue-500 opacity-0 group-hover:opacity-100 transition-opacity">
+                View Details &rarr;
+              </div>
+            </Link>
+          ))}
         </div>
       </section>
     </main>
