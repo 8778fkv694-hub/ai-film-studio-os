@@ -3,6 +3,7 @@ import path from 'path';
 import Link from 'next/link';
 
 import Player from '@/components/Player';
+import ProjectManager from '@/components/ProjectManager';
 
 // Mock function to read shots (Server Component logic)
 function getShots() {
@@ -35,6 +36,10 @@ export default function Home() {
           {project ? `${project.name} (${project.id})` : 'No project.json found'}
         </p>
       </header>
+
+      <section className="mb-12">
+        <ProjectManager />
+      </section>
 
       {/* Main Player Area */}
       <section className="mb-12">

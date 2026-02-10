@@ -71,5 +71,6 @@
 ### 3. Web UI (Dashboard)
 - [x] **Scaffold**: Next.js 14 + Tailwind CSS 基础骨架 (`ui/` 目录)。
 - [x] **Home Page**: 读取 `project.json` 和 `shots/*.json` 展示 Timeline 概览。
+- [x] **Project Manager**: `project.json` 可视化编辑、导入/导出、覆盖保存。(已实现 ProjectManager.tsx + API)
 - [ ] **Shot Detail**: 镜头详情页，展示 Prompt、Specs 和 Render 历史。
-- [ ] **Player**: 在网页上直接播放生成的 mp4。
+- [x] **Player**: 在网页上直接播放生成的 mp4。 (已实现 Animatic Player)
