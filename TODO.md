@@ -49,8 +49,8 @@
 
 ### 1. 强 Lint 规则库 (Quality Gate)
 - [x] **Forbidden Check**: Prompt 中是否包含 Scene Spec 定义的 `forbidden` 词汇？(Severity: ERROR)。(已实现)
-- [x] **Budget Check**: 检查 `cheap` 模式下是否包含昂贵的运镜或过多角色。(已实现：cheap 模式下 max_regen <= 1, chars <= 2)
-- [ ] **Consistency**: 同一 Scene 下，不同 Shot 是否引用了相同的 Anchors？
+- [x] **Budget Check**: 检查 `cheap` 模式下是否包含昂贵的运镜或过多角色。(已实现)
+- [x] **Consistency**: 同一 Scene 下，不同 Shot 是否引用了相同的 Anchors？(已实现：检查 shot.references 是否遗漏 scene.anchors)
 
 ### 2. Render 版本管理 (Asset Management)
 - [x] **Takes 记录**: `renders/<shot_id>/takes.json` (实际上实现了 `history.json` + `manage-renders.js`)。

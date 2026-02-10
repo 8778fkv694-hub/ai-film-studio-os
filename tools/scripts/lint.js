@@ -109,15 +109,22 @@ for (const s of shots) {
      err(`Referenced scene not found in scenes/: ${shot.scene_ref}`, s.file);
   }
 
-  // Rule 2: Budget/Tier Sanity
-  if (shot.budget?.tier === 'cheap') {
-     // Example constraint: cheap shots shouldn't have > 2 characters to save complexity/tokens? 
-     // Or just check max_regen
-     if (shot.budget.max_regen > 1) {
-       warn(`Cheap tier shot has max_regen > 1 (${shot.budget.max_regen}). Consider lowering for draft.`, s.file);
-     }
-     if (shot.characters && shot.characters.length > 2) {
-       warn(`Cheap tier shot has ${shot.characters.length} characters. Complex scenes might fail in cheap mode.`, s.file);
+  // Rule 3: Anchor Consistency (Project-wide)
+  // Check if multiple shots refer to the same scene but use different effective anchors?
+  // Actually, anchors are defined in the SCENE spec, and built into the prompt by build-prompts.js.
+  // So unless the SHOT overrides references, they should be consistent by definition.
+  // BUT, if the shot explicitly DEFINES 'references' (overriding scene), we must warn.
+  if (shot.references && shot.references.images && shot.references.images.length > 0) {
+     // This means the shot is trying to add/override references manually.
+     // We should check if it *includes* the scene anchors.
+     if (scene.anchors && scene.anchors.length > 0) {
+       const sceneAnchorPaths = scene.anchors.map(a => a.img);
+       const shotRefPaths = shot.references.images;
+       
+       const missingAnchors = sceneAnchorPaths.filter(a => !shotRefPaths.includes(a));
+       if (missingAnchors.length > 0) {
+         warn(`Shot defines custom references but misses scene anchors: ${missingAnchors.join(', ')}. Scene consistency at risk.`, s.file);
+       }
      }
   }
 }
