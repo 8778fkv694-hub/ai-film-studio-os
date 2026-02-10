@@ -66,4 +66,8 @@
 ## 📂 P3 — 高级特性（未来规划）
 - [ ] **Nano Banana 集成**: 自动生成 Scene Anchors 并入库。
 - [ ] **Audio 驱动**: 在 Timeline 中集成音频轨道，生成 Beat Sheet。
-- [ ] **Web UI**: 简单的本地看板，可视化查看 Timeline 和 Lint 结果。
+### 3. Web UI (Dashboard)
+- [x] **Scaffold**: Next.js 14 + Tailwind CSS 基础骨架 (`ui/` 目录)。
+- [x] **Home Page**: 读取 `project.json` 和 `shots/*.json` 展示 Timeline 概览。
+- [ ] **Shot Detail**: 镜头详情页，展示 Prompt、Specs 和 Render 历史。
+- [ ] **Player**: 在网页上直接播放生成的 mp4。
