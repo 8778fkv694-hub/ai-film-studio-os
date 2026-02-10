@@ -15,6 +15,11 @@
       "A sits at the table, red mug visible"
     ]
   },
+  "dialogue": {
+    "speaker": "charA_v1",
+    "text": "It's quiet. Too quiet.",
+    "voice_id": "en-US-GuyNeural"
+  },
   "continuity": {
     "state_in_ref": "states/S000_INIT.json",
     "state_changes": {

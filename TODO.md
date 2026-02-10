@@ -64,8 +64,10 @@
 ---
 
 ## 📂 P3 — 高级特性（未来规划）
-- [ ] **Nano Banana 集成**: 自动生成 Scene Anchors 并入库。
-- [ ] **Audio 驱动**: 在 Timeline 中集成音频轨道，生成 Beat Sheet。
+### 4. Audio & Playback
+- [x] **Schema**: 增加 `shot.dialogue` 字段。 (已实现)
+- [x] **TTS Gen**: `gen-tts.js` 批量生成对白音频 (Edge TTS)。 (已实现)
+- [ ] **Player UI**: Web 播放器支持“图片+音频”同步播放。
 ### 3. Web UI (Dashboard)
 - [x] **Scaffold**: Next.js 14 + Tailwind CSS 基础骨架 (`ui/` 目录)。
 - [x] **Home Page**: 读取 `project.json` 和 `shots/*.json` 展示 Timeline 概览。
