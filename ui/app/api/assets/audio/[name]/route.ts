@@ -2,8 +2,11 @@ import fs from 'fs';
 import path from 'path';
 import { NextResponse } from 'next/server';
 
-export async function GET(request: Request, { params }: { params: { name: string } }) {
-  const name = params.name;
+export async function GET(
+  request: Request,
+  { params }: { params: Promise<{ name: string }> }
+) {
+  const { name } = await params;
   // Security: Prevent traversal
   if (!name || name.includes('..') || !name.endsWith('.mp3')) {
     return new NextResponse('Invalid filename', { status: 400 });

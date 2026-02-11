@@ -27,17 +27,17 @@ export default function ProjectManager() {
   };
 
   const handleSave = async () => {
-    setStatus('Saving...');
+    setStatus('保存中...');
     try {
       const res = await fetch('/api/project', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(project)
       });
-      if (res.ok) setStatus('Saved!');
-      else setStatus('Error saving');
+      if (res.ok) setStatus('已保存!');
+      else setStatus('保存失败');
     } catch (e) {
-      setStatus('Error saving');
+      setStatus('保存失败');
     }
     setTimeout(() => setStatus(''), 2000);
   };
@@ -60,22 +60,22 @@ export default function ProjectManager() {
       try {
         const json = JSON.parse(event.target?.result as string);
         setProject(json);
-        setStatus('Loaded (Unsaved)');
+        setStatus('已加载 (未保存)');
       } catch (e) {
-        setStatus('Invalid JSON');
+        setStatus('无效的 JSON');
       }
     };
     reader.readAsText(file);
   };
 
-  if (loading) return <div className="p-4 text-slate-400">Loading project...</div>;
-  if (!project) return <div className="p-4 text-red-400">Failed to load project.json</div>;
+  if (loading) return <div className="p-4 text-slate-400">加载项目中...</div>;
+  if (!project) return <div className="p-4 text-red-400">加载 project.json 失败</div>;
 
   return (
     <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold flex items-center gap-2">
-          <span className="text-2xl">📦</span> Project Management
+          <span className="text-2xl">📦</span> 项目管理
         </h2>
         <div className="text-sm font-mono text-emerald-400">{status}</div>
       </div>
@@ -84,26 +84,26 @@ export default function ProjectManager() {
         {/* Meta Editor */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm text-slate-400 mb-1">Project ID</label>
-            <input 
-              type="text" 
+            <label className="block text-sm text-slate-400 mb-1">项目 ID</label>
+            <input
+              type="text"
               value={project.id || ''}
               onChange={e => setProject({...project, id: e.target.value})}
               className="w-full bg-slate-950 border border-slate-700 rounded px-3 py-2 text-white focus:ring-2 focus:ring-blue-500 outline-none"
             />
           </div>
           <div>
-            <label className="block text-sm text-slate-400 mb-1">Project Name</label>
-            <input 
-              type="text" 
+            <label className="block text-sm text-slate-400 mb-1">项目名称</label>
+            <input
+              type="text"
               value={project.name || ''}
               onChange={e => setProject({...project, name: e.target.value})}
               className="w-full bg-slate-950 border border-slate-700 rounded px-3 py-2 text-white focus:ring-2 focus:ring-blue-500 outline-none"
             />
           </div>
           <div className="md:col-span-2">
-            <label className="block text-sm text-slate-400 mb-1">Description</label>
-            <textarea 
+            <label className="block text-sm text-slate-400 mb-1">项目描述</label>
+            <textarea
               value={project.description || ''}
               onChange={e => setProject({...project, description: e.target.value})}
               className="w-full bg-slate-950 border border-slate-700 rounded px-3 py-2 text-white focus:ring-2 focus:ring-blue-500 outline-none h-20"
@@ -113,31 +113,31 @@ export default function ProjectManager() {
 
         {/* Actions */}
         <div className="flex flex-wrap gap-4 pt-4 border-t border-slate-800">
-          <button 
+          <button
             onClick={handleSave}
             className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded transition"
           >
-            <Save size={18} /> Sync / Overwrite
+            <Save size={18} /> 同步 / 覆盖
           </button>
 
-          <button 
+          <button
             onClick={fetchProject}
             className="flex items-center gap-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded transition"
           >
-            <RefreshCw size={18} /> Reload Disk
+            <RefreshCw size={18} /> 重新加载
           </button>
 
           <div className="w-px h-10 bg-slate-800 mx-2"></div>
 
-          <button 
+          <button
             onClick={handleExport}
             className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded transition"
           >
-            <Download size={18} /> Export JSON
+            <Download size={18} /> 导出 JSON
           </button>
 
           <label className="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded transition cursor-pointer">
-            <Upload size={18} /> Import JSON
+            <Upload size={18} /> 导入 JSON
             <input type="file" accept=".json" onChange={handleImport} className="hidden" />
           </label>
         </div>

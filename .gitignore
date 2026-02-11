@@ -7,3 +7,10 @@ reports/*.report.json
 
 # OS
 .DS_Store
+
+# Next.js
+.next/
+ui/.next/
+out/
+build/
+dist/

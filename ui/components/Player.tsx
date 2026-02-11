@@ -26,7 +26,7 @@ export default function Player({ shots }: PlayerProps) {
   // Reset when shot changes
   useEffect(() => {
     if (!currentShot) return;
-    
+
     // Play audio if available
     if (audioRef.current) {
       audioRef.current.src = `/api/assets/audio/${currentShot.shot_id}.mp3`;
@@ -66,13 +66,13 @@ export default function Player({ shots }: PlayerProps) {
     setIsPlaying(!isPlaying);
   };
 
-  if (!currentShot) return <div className="text-slate-500">No shots loaded.</div>;
+  if (!currentShot) return <div className="text-slate-500">暂无镜头数据。</div>;
 
   return (
     <div className="w-full bg-black rounded-xl overflow-hidden border border-slate-800 shadow-2xl">
       {/* Viewport (16:9 Aspect Ratio) */}
       <div className="relative w-full aspect-video bg-slate-900 flex items-center justify-center">
-        
+
         {/* Placeholder / Image */}
         <div className="text-center p-8">
           <div className="text-6xl mb-4">🎬</div>
@@ -104,9 +104,9 @@ export default function Player({ shots }: PlayerProps) {
           <button onClick={handlePrev} className="p-2 hover:bg-slate-800 rounded-full text-slate-400 hover:text-white transition">
             <SkipBack size={24} />
           </button>
-          
-          <button 
-            onClick={togglePlay} 
+
+          <button
+            onClick={togglePlay}
             className="w-12 h-12 flex items-center justify-center bg-blue-600 hover:bg-blue-500 text-white rounded-full transition shadow-lg hover:shadow-blue-500/20"
           >
             {isPlaying ? <Pause size={24} fill="currentColor" /> : <Play size={24} fill="currentColor" className="ml-1" />}
@@ -118,7 +118,7 @@ export default function Player({ shots }: PlayerProps) {
         </div>
 
         <div className="text-slate-500 font-mono text-sm">
-          Shot {currentIndex + 1} / {shots.length} • {currentShot.duration_s}s
+          镜头 {currentIndex + 1} / {shots.length} · {currentShot.duration_s}秒
         </div>
       </div>
     </div>
