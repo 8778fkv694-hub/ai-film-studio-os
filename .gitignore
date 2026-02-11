@@ -5,5 +5,9 @@
 renders/
 reports/*.report.json
 
+# Next.js
+ui/.next/
+ui/next-env.d.ts
+
 # OS
 .DS_Store
