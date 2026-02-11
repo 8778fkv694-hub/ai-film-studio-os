@@ -6,15 +6,26 @@ import Player from '@/components/Player';
 import ProjectManager from '@/components/ProjectManager';
 import LintReport from '@/components/LintReport';
 
-// Mock function to read shots (Server Component logic)
+// Load shots from both shots/ (finalized) and shots_draft/ (pending review)
 function getShots() {
-  const shotsDir = path.resolve(process.cwd(), '../shots');
-  if (!fs.existsSync(shotsDir)) return [];
-  const files = fs.readdirSync(shotsDir).filter(f => f.endsWith('.json'));
-  return files.map(f => {
-    const content = fs.readFileSync(path.join(shotsDir, f), 'utf-8');
-    return JSON.parse(content);
-  });
+  const ROOT = path.resolve(process.cwd(), '..');
+  const result: any[] = [];
+
+  for (const dir of ['shots', 'shots_draft']) {
+    const fullDir = path.join(ROOT, dir);
+    if (!fs.existsSync(fullDir)) continue;
+    const files = fs.readdirSync(fullDir).filter(f => f.endsWith('.json'));
+    for (const f of files) {
+      const content = JSON.parse(fs.readFileSync(path.join(fullDir, f), 'utf-8'));
+      // Avoid duplicates (shots/ takes priority over shots_draft/)
+      if (!result.find(s => s.shot_id === content.shot_id)) {
+        content._source = dir; // track origin for UI badge
+        result.push(content);
+      }
+    }
+  }
+
+  return result.sort((a, b) => a.shot_id.localeCompare(b.shot_id));
 }
 
 function getProject() {
@@ -84,13 +95,18 @@ export default function Home() {
                 {shot.action?.beats?.[0] || "No action description"}
               </div>
 
-              <div className="flex gap-2 mt-4 text-xs font-mono text-slate-500">
+              <div className="flex gap-2 mt-4 text-xs font-mono text-slate-500 flex-wrap">
                 <span className="bg-slate-950 px-2 py-1 rounded border border-slate-800">
                   {shot.scene_ref?.replace('scenes/', '').replace('.json', '')}
                 </span>
                 <span className="bg-slate-950 px-2 py-1 rounded border border-slate-800">
                   {shot.budget?.tier || 'standard'}
                 </span>
+                {shot._source === 'shots_draft' && (
+                  <span className="px-2 py-1 rounded bg-yellow-900/30 text-yellow-400 border border-yellow-800">
+                    draft
+                  </span>
+                )}
               </div>
 
               <div className="mt-3 text-xs text-blue-500 opacity-0 group-hover:opacity-100 transition-opacity">

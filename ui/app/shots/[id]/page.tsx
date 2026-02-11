@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import Link from 'next/link';
 import ReviewPanel from '@/components/ReviewPanel';
+import ShotEditor from '@/components/ShotEditor';
 
 const ROOT = path.resolve(process.cwd(), '..');
 
@@ -15,8 +16,15 @@ function readJsonSafe(filePath: string) {
 }
 
 function getShotData(id: string) {
-  const shot = readJsonSafe(path.join(ROOT, 'shots', `${id}.json`));
+  // Check finalized first, then drafts
+  let shot = readJsonSafe(path.join(ROOT, 'shots', `${id}.json`));
+  let source = 'shots';
+  if (!shot) {
+    shot = readJsonSafe(path.join(ROOT, 'shots_draft', `${id}.json`));
+    source = 'shots_draft';
+  }
   if (!shot) return null;
+  shot._source = source;
 
   const finalPrompt = readJsonSafe(path.join(ROOT, 'prompts', `${id}.final.json`));
   const renderHistory = readJsonSafe(path.join(ROOT, 'renders', id, 'history.json'));
@@ -57,12 +65,18 @@ function getShotData(id: string) {
 }
 
 function getAllShotIds(): string[] {
-  const shotsDir = path.join(ROOT, 'shots');
-  if (!fs.existsSync(shotsDir)) return [];
-  return fs.readdirSync(shotsDir)
-    .filter(f => f.endsWith('.json'))
-    .map(f => f.replace('.json', ''))
-    .sort();
+  const ids: string[] = [];
+  for (const dir of ['shots', 'shots_draft']) {
+    const fullDir = path.join(ROOT, dir);
+    if (!fs.existsSync(fullDir)) continue;
+    fs.readdirSync(fullDir)
+      .filter(f => f.endsWith('.json'))
+      .forEach(f => {
+        const id = f.replace('.json', '');
+        if (!ids.includes(id)) ids.push(id);
+      });
+  }
+  return ids.sort();
 }
 
 const STATUS_COLORS: Record<string, string> = {
@@ -129,6 +143,11 @@ export default function ShotDetailPage({ params }: { params: { id: string } }) {
           <span className="text-sm px-3 py-1 rounded bg-slate-800 text-slate-400 border border-slate-700">
             {shot.budget?.tier || 'standard'}
           </span>
+          {shot._source === 'shots_draft' && (
+            <span className="text-sm px-3 py-1 rounded bg-yellow-900/50 text-yellow-300 border border-yellow-700">
+              DRAFT
+            </span>
+          )}
         </div>
         <p className="text-slate-400">
           {scene ? `${scene.name} (${scene.id})` : shot.scene_ref || 'No scene'}
@@ -139,6 +158,11 @@ export default function ShotDetailPage({ params }: { params: { id: string } }) {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Column: Shot Spec */}
         <div className="lg:col-span-2 space-y-6">
+
+          {/* Shot Editor */}
+          <section>
+            <ShotEditor shotId={id} initialShot={shot} />
+          </section>
 
           {/* Action Beats */}
           <section className="bg-slate-900 border border-slate-800 rounded-lg p-5">
