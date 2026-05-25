@@ -41,6 +41,70 @@ function readJson(p: string) {
   }
 }
 
+function runValidate(): { passed: boolean; errors: string[] } {
+  const errors: string[] = [];
+  const shotsDir = path.join(ROOT, 'shots');
+  if (!fs.existsSync(shotsDir)) {
+    errors.push('shots/ 目录不存在');
+    return { passed: false, errors };
+  }
+
+  const shotFiles = fs.readdirSync(shotsDir).filter(f => f.endsWith('.json'));
+  if (shotFiles.length === 0) {
+    errors.push('没有找到分镜文件');
+    return { passed: false, errors };
+  }
+
+  const shotIds = new Set<string>();
+
+  for (const f of shotFiles) {
+    const shotPath = path.join(shotsDir, f);
+    const shot = readJson(shotPath);
+    if (!shot) {
+      errors.push(`${f}: 文件格式错误`);
+      continue;
+    }
+
+    if (!shot.shot_id) {
+      errors.push(`${f}: 缺少 shot_id`);
+      continue;
+    }
+
+    if (shotIds.has(shot.shot_id)) {
+      errors.push(`${shot.shot_id}: shot_id 重复`);
+    }
+    shotIds.add(shot.shot_id);
+
+    if (!shot.scene_ref) {
+      errors.push(`${shot.shot_id}: 缺少 scene_ref`);
+    } else if (!fs.existsSync(path.join(ROOT, shot.scene_ref))) {
+      errors.push(`${shot.shot_id}: scene_ref 文件不存在 (${shot.scene_ref})`);
+    }
+
+    for (const ch of shot.characters || []) {
+      if (!ch.ref) {
+        errors.push(`${shot.shot_id}: 角色引用缺少 ref`);
+      } else if (!fs.existsSync(path.join(ROOT, ch.ref))) {
+        errors.push(`${shot.shot_id}: 角色文件不存在 (${ch.ref})`);
+      }
+    }
+
+    for (const pr of shot.props || []) {
+      if (!pr.ref) {
+        errors.push(`${shot.shot_id}: 道具引用缺少 ref`);
+      } else if (!fs.existsSync(path.join(ROOT, pr.ref))) {
+        errors.push(`${shot.shot_id}: 道具文件不存在 (${pr.ref})`);
+      }
+    }
+
+    if (shot.continuity?.state_in_ref && !fs.existsSync(path.join(ROOT, shot.continuity.state_in_ref))) {
+      errors.push(`${shot.shot_id}: state_in_ref 文件不存在 (${shot.continuity.state_in_ref})`);
+    }
+  }
+
+  return { passed: errors.length === 0, errors };
+}
+
 export async function GET() {
   try {
     // Read project
@@ -73,14 +137,20 @@ export async function GET() {
       }
     }
 
+    // Real inline validation
+    const { passed: validatePassed, errors: validateErrors } = runValidate();
+
     // Read lint report if exists
     const lintReportPath = path.join(ROOT, 'reports/lint.report.json');
     const lintReport = fs.existsSync(lintReportPath) ? readJson(lintReportPath) : null;
-    const issues = lintReport?.issues || [];
+    const lintIssues = lintReport?.issues || [];
+    const lintPassed = lintReport ? lintIssues.filter((i: any) => i.level === 'ERROR').length === 0 : false;
 
-    // Determine check status based on report existence and content
-    const validatePassed = counts.shots > 0; // Simplified: assume passed if shots exist
-    const lintPassed = lintReport ? issues.filter((i: any) => i.level === 'ERROR').length === 0 : false;
+    // Merge validate errors into issues
+    const allIssues = [
+      ...lintIssues.map((i: any) => ({ level: i.level, where: i.where, msg: i.msg })),
+      ...validateErrors.map(e => ({ level: 'ERROR', where: 'validate', msg: e }))
+    ];
 
     return NextResponse.json({
       project: project ? {
@@ -91,11 +161,11 @@ export async function GET() {
       counts,
       totalDuration,
       checks: {
-        validate: validatePassed ? 'passed' : 'pending',
+        validate: validatePassed ? 'passed' : 'failed',
         lint: lintReport ? (lintPassed ? 'passed' : 'failed') : 'pending',
         lastRun: lintReport?.generatedAt || null,
       },
-      issues: issues.slice(0, 20), // Limit to 20 issues
+      issues: allIssues.slice(0, 20),
     });
   } catch (e) {
     return NextResponse.json({ error: '获取状态失败' }, { status: 500 });

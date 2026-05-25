@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { Play, Pause, SkipBack, SkipForward } from 'lucide-react';
 
 interface Shot {
@@ -21,38 +21,52 @@ interface PlayerProps {
 export default function Player({ shots }: PlayerProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [effectiveDuration, setEffectiveDuration] = useState(0);
+  const [audioDuration, setAudioDuration] = useState(0);
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const safetyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const advanceRequestedRef = useRef(false);
 
   const currentShot = shots[currentIndex];
   const currentImage = currentShot?._selected_keyframe || currentShot?._keyframes?.[0] || null;
 
-  const clearAdvanceTimer = () => {
-    if (timerRef.current) {
-      clearTimeout(timerRef.current);
-      timerRef.current = null;
+  const clearSafetyTimer = useCallback(() => {
+    if (safetyTimerRef.current) {
+      clearTimeout(safetyTimerRef.current);
+      safetyTimerRef.current = null;
     }
-  };
+  }, []);
 
-  const scheduleAdvance = (seconds: number) => {
-    clearAdvanceTimer();
-    timerRef.current = setTimeout(() => {
-      handleNext();
-    }, Math.max(1, seconds) * 1000);
-  };
+  const handleNext = useCallback(() => {
+    if (advanceRequestedRef.current) return;
+    advanceRequestedRef.current = true;
+    clearSafetyTimer();
+    if (currentIndex < shots.length - 1) {
+      setCurrentIndex(prev => prev + 1);
+    } else {
+      setIsPlaying(false);
+    }
+  }, [currentIndex, shots.length, clearSafetyTimer]);
 
-  // Reset when shot or playback state changes
+  const handlePrev = useCallback(() => {
+    advanceRequestedRef.current = false;
+    clearSafetyTimer();
+    if (currentIndex > 0) {
+      setCurrentIndex(prev => prev - 1);
+    }
+  }, [currentIndex, clearSafetyTimer]);
+
+  const togglePlay = useCallback(() => {
+    setIsPlaying(prev => !prev);
+  }, []);
+
+  // Switch shot: load audio
   useEffect(() => {
-    if (!currentShot) return;
-    clearAdvanceTimer();
-    setEffectiveDuration(Math.ceil(currentShot.duration_s));
+    advanceRequestedRef.current = false;
+    clearSafetyTimer();
+    setAudioDuration(0);
 
     const audio = audioRef.current;
-    if (!audio) {
-      if (isPlaying) scheduleAdvance(currentShot.duration_s);
-      return clearAdvanceTimer;
-    }
+    if (!audio) return;
 
     audio.pause();
     audio.src = `/api/assets/audio/${currentShot.shot_id}.mp3`;
@@ -61,55 +75,79 @@ export default function Player({ shots }: PlayerProps) {
 
     if (isPlaying) {
       audio.play().catch(() => {
-        scheduleAdvance(currentShot.duration_s);
+        // Audio failed — fall back to timer-based advance
+        safetyTimerRef.current = setTimeout(() => {
+          handleNext();
+        }, Math.max(1, currentShot.duration_s) * 1000);
       });
     }
+  }, [currentIndex, isPlaying, currentShot, handleNext, clearSafetyTimer]);
 
-    return clearAdvanceTimer;
-  }, [currentIndex, isPlaying]);
+  // Audio ended → advance (primary advance mechanism)
+  const handleAudioEnded = useCallback(() => {
+    clearSafetyTimer();
+    handleNext();
+  }, [clearSafetyTimer, handleNext]);
 
-  const handleNext = () => {
-    if (currentIndex < shots.length - 1) {
-      setCurrentIndex(prev => prev + 1);
-    } else {
-      setIsPlaying(false); // End of timeline
-    }
-  };
-
-  const handlePrev = () => {
-    if (currentIndex > 0) {
-      setCurrentIndex(prev => prev - 1);
-    }
-  };
-
-  const togglePlay = () => {
-    setIsPlaying(!isPlaying);
-  };
-
-  const handleAudioMetadata = () => {
-    if (!currentShot || !audioRef.current) return;
-    const audioDuration = Number.isFinite(audioRef.current.duration)
+  // Audio metadata loaded
+  const handleAudioMetadata = useCallback(() => {
+    if (!audioRef.current) return;
+    const dur = Number.isFinite(audioRef.current.duration)
       ? Math.ceil(audioRef.current.duration)
       : 0;
-    const nextDuration = Math.max(Math.ceil(currentShot.duration_s), audioDuration || 0);
-    setEffectiveDuration(nextDuration);
-    if (isPlaying) scheduleAdvance(nextDuration);
-  };
+    setAudioDuration(dur);
 
-  const handleAudioError = () => {
-    if (!currentShot) return;
-    setEffectiveDuration(Math.ceil(currentShot.duration_s));
-    if (isPlaying) scheduleAdvance(currentShot.duration_s);
-  };
+    // Safety fallback: max timer = shot.duration_s + 3 seconds
+    const safetySeconds = currentShot.duration_s + 3;
+    if (isPlaying && safetySeconds > 0) {
+      safetyTimerRef.current = setTimeout(() => {
+        handleNext();
+      }, safetySeconds * 1000);
+    }
+  }, [currentShot, isPlaying, handleNext]);
+
+  // Audio error — fall back to timer
+  const handleAudioError = useCallback(() => {
+    clearSafetyTimer();
+    setAudioDuration(0);
+    if (isPlaying) {
+      safetyTimerRef.current = setTimeout(() => {
+        handleNext();
+      }, Math.max(1, currentShot.duration_s) * 1000);
+    }
+  }, [clearSafetyTimer, currentShot, isPlaying, handleNext]);
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+      switch (e.code) {
+        case 'Space':
+          e.preventDefault();
+          togglePlay();
+          break;
+        case 'ArrowLeft':
+          e.preventDefault();
+          handlePrev();
+          break;
+        case 'ArrowRight':
+          e.preventDefault();
+          handleNext();
+          break;
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [togglePlay, handlePrev, handleNext]);
 
   if (!currentShot) return <div className="text-slate-500">暂无镜头数据。</div>;
 
+  const effectiveDuration = audioDuration || currentShot.duration_s;
+
   return (
     <div className="w-full overflow-hidden rounded-lg border border-slate-800 bg-black shadow-2xl">
-      {/* Viewport (16:9 Aspect Ratio) */}
       <div className="relative w-full aspect-video bg-slate-900 flex items-center justify-center">
 
-        {/* Keyframe / Placeholder */}
         {currentImage ? (
           <img
             src={currentImage}
@@ -131,7 +169,6 @@ export default function Player({ shots }: PlayerProps) {
           </div>
         )}
 
-        {/* Narration Overlay */}
         {currentShot.voiceover?.text && (
           <div className="absolute left-3 right-3 top-3 sm:left-6 sm:right-auto sm:top-6 sm:max-w-xl">
             <div className="rounded bg-slate-950/80 px-3 py-2 text-left text-xs leading-5 text-slate-100 shadow-lg sm:text-sm">
@@ -140,7 +177,6 @@ export default function Player({ shots }: PlayerProps) {
           </div>
         )}
 
-        {/* Subtitle Overlay */}
         {currentShot.dialogue && (
           <div className="absolute bottom-4 left-0 right-0 px-3 text-center sm:bottom-12 sm:px-8">
             <span className="inline-block rounded bg-black/80 px-3 py-2 text-sm font-semibold text-yellow-300 shadow-lg sm:px-4 sm:text-xl">
@@ -149,15 +185,14 @@ export default function Player({ shots }: PlayerProps) {
           </div>
         )}
 
-        {/* Audio Element (Hidden) */}
         <audio
           ref={audioRef}
           onLoadedMetadata={handleAudioMetadata}
           onError={handleAudioError}
+          onEnded={handleAudioEnded}
         />
       </div>
 
-      {/* Controls */}
       <div className="flex flex-col gap-3 border-t border-slate-800 bg-slate-950 p-3 sm:flex-row sm:items-center sm:justify-between sm:p-4">
         <div className="flex items-center gap-4">
           <button onClick={handlePrev} className="p-2 hover:bg-slate-800 rounded-full text-slate-400 hover:text-white transition">
@@ -177,9 +212,9 @@ export default function Player({ shots }: PlayerProps) {
         </div>
 
         <div className="text-slate-500 font-mono text-sm">
-          镜头 {currentIndex + 1} / {shots.length} · {effectiveDuration || currentShot.duration_s}秒
+          镜头 {currentIndex + 1} / {shots.length} · {effectiveDuration}秒
         </div>
       </div>
     </div>
   );
-}
+};
