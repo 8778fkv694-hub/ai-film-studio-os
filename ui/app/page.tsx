@@ -11,6 +11,7 @@ import AssetsTab from '@/components/tabs/AssetsTab';
 import ShotsTab from '@/components/tabs/ShotsTab';
 import PreviewTab from '@/components/tabs/PreviewTab';
 import ToolsTab from '@/components/tabs/ToolsTab';
+import SettingsTab from '@/components/tabs/SettingsTab';
 
 interface Project {
   id: string;
@@ -35,11 +36,6 @@ export default function Home() {
     } catch (e) {
       console.error(e);
     }
-  };
-
-  const handleSave = async () => {
-    // Global save action - can be customized
-    console.log('Global save triggered');
   };
 
   const handleReload = () => {
@@ -69,6 +65,8 @@ export default function Home() {
         return <PreviewTab />;
       case 'tools':
         return <ToolsTab />;
+      case 'settings':
+        return <SettingsTab />;
       default:
         return null;
     }
@@ -78,12 +76,11 @@ export default function Home() {
     <div className="min-h-screen bg-slate-950 flex flex-col">
       <Toolbar
         projectName={project?.name || '加载中...'}
-        onSave={handleSave}
         onReload={handleReload}
         onRunChecks={handleRunChecks}
       />
       <TabNav activeTab={activeTab} onTabChange={setActiveTab} />
-      <main className="flex-1 overflow-hidden">
+      <main className="flex-1 overflow-x-hidden">
         {renderTabContent()}
       </main>
     </div>

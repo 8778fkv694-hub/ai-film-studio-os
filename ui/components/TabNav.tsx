@@ -1,8 +1,8 @@
 "use client";
 
-import { LayoutDashboard, FolderOpen, FileText, MapPin, Users, Clapperboard, Volume2, Wrench } from 'lucide-react';
+import { LayoutDashboard, FolderOpen, FileText, MapPin, Users, Clapperboard, Image as ImageIcon, Wrench, Settings } from 'lucide-react';
 
-export type TabId = 'dashboard' | 'project' | 'script' | 'scenes' | 'assets' | 'shots' | 'preview' | 'tools';
+export type TabId = 'dashboard' | 'project' | 'script' | 'scenes' | 'assets' | 'shots' | 'preview' | 'tools' | 'settings';
 
 interface Tab {
   id: TabId;
@@ -17,8 +17,9 @@ const tabs: Tab[] = [
   { id: 'scenes', label: '场景管理', icon: <MapPin size={18} /> },
   { id: 'assets', label: '角色道具', icon: <Users size={18} /> },
   { id: 'shots', label: '分镜编辑', icon: <Clapperboard size={18} /> },
-  { id: 'preview', label: 'TTS 预演', icon: <Volume2 size={18} /> },
+  { id: 'preview', label: '配音分镜', icon: <ImageIcon size={18} /> },
   { id: 'tools', label: '自动化', icon: <Wrench size={18} /> },
+  { id: 'settings', label: '系统设置', icon: <Settings size={18} /> },
 ];
 
 interface TabNavProps {
@@ -28,13 +29,13 @@ interface TabNavProps {
 
 export default function TabNav({ activeTab, onTabChange }: TabNavProps) {
   return (
-    <nav className="bg-slate-950 border-b border-slate-800 px-6">
-      <div className="flex gap-1">
+    <nav className="bg-slate-950 border-b border-slate-800 px-3 sm:px-6">
+      <div className="flex gap-1 overflow-x-auto">
         {tabs.map((tab) => (
           <button
             key={tab.id}
             onClick={() => onTabChange(tab.id)}
-            className={`flex items-center gap-2 px-4 py-3 text-sm font-medium transition-colors border-b-2 -mb-px ${
+            className={`-mb-px flex flex-shrink-0 items-center gap-2 whitespace-nowrap border-b-2 px-3 py-3 text-sm font-medium transition-colors sm:px-4 ${
               activeTab === tab.id
                 ? 'text-blue-400 border-blue-400 bg-slate-900/50'
                 : 'text-slate-400 border-transparent hover:text-slate-200 hover:bg-slate-900/30'

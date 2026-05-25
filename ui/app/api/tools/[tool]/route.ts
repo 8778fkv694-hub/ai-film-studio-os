@@ -9,6 +9,7 @@ const TOOL_MAP: Record<string, string> = {
   'validate': 'validate.js',
   'lint': 'lint.js',
   'build-prompts': 'build-prompts.js',
+  'build-image-prompts': 'build-image-prompts.js',
   'gen-tts': 'gen-tts.js',
 };
 

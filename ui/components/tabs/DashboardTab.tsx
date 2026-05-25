@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import {
   LayoutDashboard, CheckCircle, AlertTriangle, XCircle,
   FileText, MapPin, Users, Clapperboard, Volume2,
-  ArrowRight, Play, RefreshCw, Sparkles
+  ArrowRight, Play, RefreshCw, Sparkles, Image as ImageIcon
 } from 'lucide-react';
 
 interface ProjectStats {
@@ -20,6 +20,8 @@ interface ProjectStats {
     characters: number;
     props: number;
     audioFiles: number;
+    keyframes: number;
+    imagePromptPackages: number;
   };
   checks: {
     validate: 'pending' | 'running' | 'passed' | 'failed';
@@ -115,9 +117,9 @@ export default function DashboardTab({ onNavigate }: DashboardTabProps) {
   const completionPercent = Math.round((completionItems.filter(i => i.done).length / completionItems.length) * 100);
 
   return (
-    <div className="p-6 space-y-6 max-w-6xl mx-auto">
+    <div className="mx-auto max-w-6xl space-y-6 p-4 sm:p-6">
       {/* Header */}
-      <div className="flex justify-between items-start">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h2 className="text-2xl font-bold flex items-center gap-2 text-slate-200">
             <LayoutDashboard className="text-blue-400" />
@@ -141,7 +143,7 @@ export default function DashboardTab({ onNavigate }: DashboardTabProps) {
       </div>
 
       {/* Status Cards */}
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {/* Validate Status */}
         <StatusCard
           title="结构校验"
@@ -182,11 +184,11 @@ export default function DashboardTab({ onNavigate }: DashboardTabProps) {
       </div>
 
       {/* Run Checks Button */}
-      <div className="flex gap-4">
+      <div className="flex flex-col gap-3 sm:flex-row">
         <button
           onClick={runChecks}
           disabled={runningChecks}
-          className="flex items-center gap-2 px-6 py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg transition font-medium disabled:opacity-50"
+          className="flex items-center justify-center gap-2 px-6 py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg transition font-medium disabled:opacity-50"
         >
           {runningChecks ? (
             <>
@@ -202,7 +204,7 @@ export default function DashboardTab({ onNavigate }: DashboardTabProps) {
         </button>
         <button
           onClick={() => onNavigate('tools')}
-          className="flex items-center gap-2 px-6 py-3 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition"
+          className="flex items-center justify-center gap-2 px-6 py-3 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition"
         >
           查看详细工具
           <ArrowRight size={18} />
@@ -236,7 +238,7 @@ export default function DashboardTab({ onNavigate }: DashboardTabProps) {
       )}
 
       {/* Resource Stats */}
-      <div className="grid grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
         <ResourceCard
           icon={<Clapperboard size={24} />}
           label="正式镜头"
@@ -272,12 +274,19 @@ export default function DashboardTab({ onNavigate }: DashboardTabProps) {
           color="emerald"
           onClick={() => onNavigate('preview')}
         />
+        <ResourceCard
+          icon={<ImageIcon size={24} />}
+          label="关键帧"
+          count={counts.keyframes}
+          color="blue"
+          onClick={() => onNavigate('preview')}
+        />
       </div>
 
       {/* Quick Actions */}
       <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
         <h3 className="text-lg font-semibold text-slate-200 mb-4">快速操作</h3>
-        <div className="grid grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <QuickAction
             title="导入剧本"
             description="从文本文件导入剧本"
@@ -289,13 +298,13 @@ export default function DashboardTab({ onNavigate }: DashboardTabProps) {
             onClick={() => onNavigate('preview')}
           />
           <QuickAction
-            title="预览动态分镜"
-            description="播放带配音的预览"
+            title="配音分镜漫画"
+            description="播放图片和对白"
             onClick={() => onNavigate('preview')}
           />
           <QuickAction
-            title="编译提示词"
-            description="生成 AI 可用的 Prompt"
+            title="图片分镜包"
+            description="生成网页工具可用提示词"
             onClick={() => onNavigate('tools')}
           />
         </div>
@@ -304,15 +313,16 @@ export default function DashboardTab({ onNavigate }: DashboardTabProps) {
       {/* Workflow Guide */}
       <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
         <h3 className="text-lg font-semibold text-slate-200 mb-4">推荐工作流程</h3>
-        <div className="flex items-center justify-between">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
           {[
             { step: 1, label: '剧本拆分', done: counts.drafts > 0 || counts.shots > 0 },
             { step: 2, label: '完善分镜', done: counts.shots > 0 },
             { step: 3, label: '运行检查', done: checks.validate === 'passed' && checks.lint === 'passed' },
-            { step: 4, label: '生成 TTS', done: counts.audioFiles > 0 },
-            { step: 5, label: '编译 Prompt', done: false },
-          ].map((item, idx, arr) => (
-            <div key={item.step} className="flex items-center">
+            { step: 4, label: '编译图片包', done: counts.imagePromptPackages > 0 },
+            { step: 5, label: '回填关键帧', done: counts.keyframes > 0 },
+            { step: 6, label: '配音预演', done: counts.audioFiles > 0 },
+          ].map((item) => (
+            <div key={item.step} className="flex items-center justify-center">
               <div className={`flex flex-col items-center ${item.done ? 'text-emerald-400' : 'text-slate-500'}`}>
                 <div className={`w-10 h-10 rounded-full flex items-center justify-center text-lg font-bold border-2 ${
                   item.done ? 'border-emerald-400 bg-emerald-400/20' : 'border-slate-600 bg-slate-800'
@@ -321,9 +331,6 @@ export default function DashboardTab({ onNavigate }: DashboardTabProps) {
                 </div>
                 <span className="text-xs mt-2">{item.label}</span>
               </div>
-              {idx < arr.length - 1 && (
-                <div className={`w-16 h-0.5 mx-2 ${item.done ? 'bg-emerald-400' : 'bg-slate-700'}`} />
-              )}
             </div>
           ))}
         </div>

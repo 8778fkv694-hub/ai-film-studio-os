@@ -8,7 +8,10 @@ interface Shot {
   duration_s: number;
   action?: { beats?: string[] };
   dialogue?: { text: string; speaker: string };
+  voiceover?: { text: string; speaker?: string };
   scene_ref?: string;
+  _keyframes?: string[];
+  _selected_keyframe?: string | null;
 }
 
 interface PlayerProps {
@@ -18,34 +21,51 @@ interface PlayerProps {
 export default function Player({ shots }: PlayerProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [effectiveDuration, setEffectiveDuration] = useState(0);
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const currentShot = shots[currentIndex];
+  const currentImage = currentShot?._selected_keyframe || currentShot?._keyframes?.[0] || null;
 
-  // Reset when shot changes
+  const clearAdvanceTimer = () => {
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+  };
+
+  const scheduleAdvance = (seconds: number) => {
+    clearAdvanceTimer();
+    timerRef.current = setTimeout(() => {
+      handleNext();
+    }, Math.max(1, seconds) * 1000);
+  };
+
+  // Reset when shot or playback state changes
   useEffect(() => {
     if (!currentShot) return;
+    clearAdvanceTimer();
+    setEffectiveDuration(Math.ceil(currentShot.duration_s));
 
-    // Play audio if available
-    if (audioRef.current) {
-      audioRef.current.src = `/api/assets/audio/${currentShot.shot_id}.mp3`;
-      if (isPlaying) {
-        audioRef.current.play().catch(() => {}); // ignore errors if file missing
-      }
+    const audio = audioRef.current;
+    if (!audio) {
+      if (isPlaying) scheduleAdvance(currentShot.duration_s);
+      return clearAdvanceTimer;
     }
 
-    // Auto-advance timer
+    audio.pause();
+    audio.src = `/api/assets/audio/${currentShot.shot_id}.mp3`;
+    audio.currentTime = 0;
+    audio.load();
+
     if (isPlaying) {
-      if (timerRef.current) clearTimeout(timerRef.current);
-      timerRef.current = setTimeout(() => {
-        handleNext();
-      }, currentShot.duration_s * 1000);
+      audio.play().catch(() => {
+        scheduleAdvance(currentShot.duration_s);
+      });
     }
 
-    return () => {
-      if (timerRef.current) clearTimeout(timerRef.current);
-    };
+    return clearAdvanceTimer;
   }, [currentIndex, isPlaying]);
 
   const handleNext = () => {
@@ -66,40 +86,79 @@ export default function Player({ shots }: PlayerProps) {
     setIsPlaying(!isPlaying);
   };
 
+  const handleAudioMetadata = () => {
+    if (!currentShot || !audioRef.current) return;
+    const audioDuration = Number.isFinite(audioRef.current.duration)
+      ? Math.ceil(audioRef.current.duration)
+      : 0;
+    const nextDuration = Math.max(Math.ceil(currentShot.duration_s), audioDuration || 0);
+    setEffectiveDuration(nextDuration);
+    if (isPlaying) scheduleAdvance(nextDuration);
+  };
+
+  const handleAudioError = () => {
+    if (!currentShot) return;
+    setEffectiveDuration(Math.ceil(currentShot.duration_s));
+    if (isPlaying) scheduleAdvance(currentShot.duration_s);
+  };
+
   if (!currentShot) return <div className="text-slate-500">暂无镜头数据。</div>;
 
   return (
-    <div className="w-full bg-black rounded-xl overflow-hidden border border-slate-800 shadow-2xl">
+    <div className="w-full overflow-hidden rounded-lg border border-slate-800 bg-black shadow-2xl">
       {/* Viewport (16:9 Aspect Ratio) */}
       <div className="relative w-full aspect-video bg-slate-900 flex items-center justify-center">
 
-        {/* Placeholder / Image */}
-        <div className="text-center p-8">
-          <div className="text-6xl mb-4">🎬</div>
-          <h2 className="text-2xl font-bold text-white mb-2">{currentShot.shot_id}</h2>
-          <p className="text-slate-400 font-mono text-sm mb-4">
-            {currentShot.scene_ref?.replace('scenes/', '').replace('.json', '')}
-          </p>
-          <div className="bg-slate-800/50 p-4 rounded text-lg text-blue-200 italic max-w-2xl">
-            "{currentShot.action?.beats?.[0] || '...'}"
+        {/* Keyframe / Placeholder */}
+        {currentImage ? (
+          <img
+            src={currentImage}
+            alt={`${currentShot.shot_id} keyframe`}
+            className="absolute inset-0 h-full w-full object-contain bg-black"
+          />
+        ) : (
+          <div className="text-center p-8">
+            <div className="mx-auto mb-4 h-16 w-16 rounded-lg border border-slate-700 bg-slate-800 flex items-center justify-center text-slate-400">
+              {currentShot.shot_id}
+            </div>
+            <h2 className="text-2xl font-bold text-white mb-2">{currentShot.shot_id}</h2>
+            <p className="text-slate-400 font-mono text-sm mb-4">
+              {currentShot.scene_ref?.replace('scenes/', '').replace('.json', '')}
+            </p>
+            <div className="max-w-2xl rounded bg-slate-800/50 p-3 text-sm italic text-blue-200 sm:p-4 sm:text-lg">
+              "{currentShot.action?.beats?.[0] || '等待回填关键帧'}"
+            </div>
           </div>
-        </div>
+        )}
+
+        {/* Narration Overlay */}
+        {currentShot.voiceover?.text && (
+          <div className="absolute left-3 right-3 top-3 sm:left-6 sm:right-auto sm:top-6 sm:max-w-xl">
+            <div className="rounded bg-slate-950/80 px-3 py-2 text-left text-xs leading-5 text-slate-100 shadow-lg sm:text-sm">
+              {currentShot.voiceover.text}
+            </div>
+          </div>
+        )}
 
         {/* Subtitle Overlay */}
         {currentShot.dialogue && (
-          <div className="absolute bottom-12 left-0 right-0 text-center px-8">
-            <span className="inline-block bg-black/80 text-yellow-300 px-4 py-2 rounded text-xl font-semibold shadow-lg">
-              {currentShot.dialogue.speaker}: {currentShot.dialogue.text}
+          <div className="absolute bottom-4 left-0 right-0 px-3 text-center sm:bottom-12 sm:px-8">
+            <span className="inline-block rounded bg-black/80 px-3 py-2 text-sm font-semibold text-yellow-300 shadow-lg sm:px-4 sm:text-xl">
+              {currentShot.dialogue.text}
             </span>
           </div>
         )}
 
         {/* Audio Element (Hidden) */}
-        <audio ref={audioRef} onEnded={() => { /* allow timer to handle advance for pacing */ }} />
+        <audio
+          ref={audioRef}
+          onLoadedMetadata={handleAudioMetadata}
+          onError={handleAudioError}
+        />
       </div>
 
       {/* Controls */}
-      <div className="bg-slate-950 p-4 border-t border-slate-800 flex items-center justify-between">
+      <div className="flex flex-col gap-3 border-t border-slate-800 bg-slate-950 p-3 sm:flex-row sm:items-center sm:justify-between sm:p-4">
         <div className="flex items-center gap-4">
           <button onClick={handlePrev} className="p-2 hover:bg-slate-800 rounded-full text-slate-400 hover:text-white transition">
             <SkipBack size={24} />
@@ -118,7 +177,7 @@ export default function Player({ shots }: PlayerProps) {
         </div>
 
         <div className="text-slate-500 font-mono text-sm">
-          镜头 {currentIndex + 1} / {shots.length} · {currentShot.duration_s}秒
+          镜头 {currentIndex + 1} / {shots.length} · {effectiveDuration || currentShot.duration_s}秒
         </div>
       </div>
     </div>

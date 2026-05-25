@@ -14,6 +14,25 @@ function countFiles(dir: string, ext = '.json'): number {
   }
 }
 
+function countKeyframes(): number {
+  const rendersDir = path.join(ROOT, 'assets/renders');
+  if (!fs.existsSync(rendersDir)) return 0;
+
+  const imageExts = new Set(['.jpg', '.jpeg', '.png', '.webp', '.svg']);
+  let count = 0;
+
+  for (const shotId of fs.readdirSync(rendersDir)) {
+    const keyframeDir = path.join(rendersDir, shotId, 'keyframes');
+    if (!fs.existsSync(keyframeDir)) continue;
+
+    count += fs.readdirSync(keyframeDir)
+      .filter(file => imageExts.has(path.extname(file).toLowerCase()))
+      .length;
+  }
+
+  return count;
+}
+
 function readJson(p: string) {
   try {
     return JSON.parse(fs.readFileSync(p, 'utf-8'));
@@ -36,6 +55,8 @@ export async function GET() {
       characters: countFiles('characters'),
       props: countFiles('props'),
       audioFiles: countFiles('assets/audio', '.mp3'),
+      keyframes: countKeyframes(),
+      imagePromptPackages: countFiles('prompts/image'),
     };
 
     // Calculate total duration

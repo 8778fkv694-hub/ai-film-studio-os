@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from 'react';
-import { Wrench, CheckCircle, AlertTriangle, FileCheck, Hammer, Play, Terminal, X } from 'lucide-react';
+import { Wrench, CheckCircle, AlertTriangle, FileCheck, Hammer, Play, Terminal, X, Image as ImageIcon } from 'lucide-react';
 
 interface ToolResult {
   success: boolean;
@@ -36,9 +36,17 @@ const tools: Tool[] = [
     command: 'lint'
   },
   {
+    id: 'build-image-prompts',
+    name: '图片分镜包',
+    description: '输出可复制到网页工具的关键帧提示词和 Storyboard 表',
+    icon: <ImageIcon size={24} />,
+    color: 'cyan',
+    command: 'build-image-prompts'
+  },
+  {
     id: 'build-prompts',
-    name: '编译提示词',
-    description: '将 Specs 编译成模型可读的 Final Prompts',
+    name: '视频提示词备用',
+    description: '保留原视频 Prompt 编译链路，后续接 API 时再用',
     icon: <Hammer size={24} />,
     color: 'purple',
     command: 'build-prompts'
@@ -102,13 +110,14 @@ export default function ToolsTab() {
     blue: 'bg-blue-600/20 text-blue-400 border-blue-500/50 hover:bg-blue-600/30',
     yellow: 'bg-yellow-600/20 text-yellow-400 border-yellow-500/50 hover:bg-yellow-600/30',
     purple: 'bg-purple-600/20 text-purple-400 border-purple-500/50 hover:bg-purple-600/30',
+    cyan: 'bg-cyan-600/20 text-cyan-300 border-cyan-500/50 hover:bg-cyan-600/30',
     emerald: 'bg-emerald-600/20 text-emerald-400 border-emerald-500/50 hover:bg-emerald-600/30',
   }[color] || 'bg-slate-600/20 text-slate-400');
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="space-y-6 p-4 sm:p-6">
       {/* Header */}
-      <div className="flex justify-between items-start">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h2 className="text-2xl font-bold flex items-center gap-2">
             <Wrench className="text-purple-400" />
@@ -122,7 +131,7 @@ export default function ToolsTab() {
         <button
           onClick={runAllChecks}
           disabled={running !== null}
-          className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg transition text-sm disabled:opacity-50"
+          className="flex w-full items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm text-white transition hover:bg-emerald-500 disabled:opacity-50 sm:w-auto"
         >
           <CheckCircle size={16} />
           运行全部检查
@@ -130,7 +139,7 @@ export default function ToolsTab() {
       </div>
 
       {/* Tool Cards */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         {tools.map((tool) => {
           const result = results[tool.id];
           const isRunning = running === tool.id;
@@ -231,31 +240,28 @@ export default function ToolsTab() {
       )}
 
       {/* Pipeline Info */}
-      <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
-        <h3 className="text-lg font-semibold mb-4 text-slate-200">推荐工作流程</h3>
-        <div className="flex items-center gap-4">
-          <div className="flex-1 text-center p-4 bg-slate-950 rounded-lg border border-slate-800">
+      <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 sm:p-6">
+        <h3 className="text-lg font-semibold mb-4 text-slate-200">推荐低成本工作流程</h3>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          <div className="text-center p-4 bg-slate-950 rounded-lg border border-slate-800">
             <div className="text-2xl mb-2">1</div>
             <div className="text-sm text-slate-300">结构校验</div>
             <div className="text-xs text-slate-500 mt-1">validate.js</div>
           </div>
-          <div className="text-slate-600">→</div>
-          <div className="flex-1 text-center p-4 bg-slate-950 rounded-lg border border-slate-800">
+          <div className="text-center p-4 bg-slate-950 rounded-lg border border-slate-800">
             <div className="text-2xl mb-2">2</div>
             <div className="text-sm text-slate-300">逻辑检查</div>
             <div className="text-xs text-slate-500 mt-1">lint.js</div>
           </div>
-          <div className="text-slate-600">→</div>
-          <div className="flex-1 text-center p-4 bg-slate-950 rounded-lg border border-slate-800">
+          <div className="text-center p-4 bg-slate-950 rounded-lg border border-slate-800">
             <div className="text-2xl mb-2">3</div>
-            <div className="text-sm text-slate-300">编译提示词</div>
-            <div className="text-xs text-slate-500 mt-1">build-prompts.js</div>
+            <div className="text-sm text-slate-300">图片分镜包</div>
+            <div className="text-xs text-slate-500 mt-1">build-image-prompts.js</div>
           </div>
-          <div className="text-slate-600">→</div>
-          <div className="flex-1 text-center p-4 bg-slate-950 rounded-lg border border-slate-800">
+          <div className="text-center p-4 bg-slate-950 rounded-lg border border-slate-800">
             <div className="text-2xl mb-2">4</div>
-            <div className="text-sm text-slate-300">生成渲染</div>
-            <div className="text-xs text-slate-500 mt-1">manage-renders.js</div>
+            <div className="text-sm text-slate-300">配音预演</div>
+            <div className="text-xs text-slate-500 mt-1">gen-tts.js + Preview</div>
           </div>
         </div>
       </div>
@@ -265,7 +271,7 @@ export default function ToolsTab() {
         <strong className="text-slate-300">重要提示：</strong>
         必须看到 <span className="text-emerald-400">结构校验: 通过</span> 和{' '}
         <span className="text-emerald-400">逻辑检查: 通过</span> 才能继续后续步骤！
-        这能帮你省下巨额的废片学费。
+        当前推荐先输出图片分镜包，把外部网页工具生成的关键帧回填后再做配音预演。
       </div>
     </div>
   );
