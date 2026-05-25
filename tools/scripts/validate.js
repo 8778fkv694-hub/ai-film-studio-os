@@ -1,9 +1,10 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import Ajv2020 from 'ajv/dist/2020.js';
 import addFormats from 'ajv-formats';
 
-const ROOT = path.resolve(path.dirname(new URL(import.meta.url).pathname), '../../');
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../');
 const ajv = new Ajv2020({ allErrors: true, strict: false });
 addFormats(ajv);
 
