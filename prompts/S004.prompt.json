@@ -1,16 +1,16 @@
 {
   "shot_id": "S004",
-  "duration_s": 12,
+  "duration_s": 5,
   "language": "zh",
   "task_type": "video_generation",
-  "video_prompt": "style: Cinematic Realism v1, mood: cinematic, moody, controlled lighting, color palette: warm highlights, cool shadows. cinematic live-action video shot. scene: Apartment Kitchen Night. red fridge, wooden table, rainy window. lighting: dim warm lamp + blue moonlight. character (charA_v1): short_black, white_hoodie + black_jeans, silver_ring_left_hand. prop (mug_red_v1): state: story_clue, visually consistent. 门外传来电梯停靠的声音，可这栋楼的电梯上周就坏了。, 林澈低声说：不可能。. Narration: \"门外传来电梯停靠的声音，可这栋楼的电梯上周就坏了。\". 林澈 says: \"不可能。\". Camera motion: detail insert shot, smooth focus pull, macro lens feel, very slight movement. continuity locks: charA_v1 (location: apartment_kitchen_or_hallway, pose: listening); mug_red_v1 (location: near_main_character, state: warm_and_unexplained). young Chinese man tense listening pose near apartment door, rainy night atmosphere, dim corridor light under door, suspense building from sound outside, red mug visible on table in background. Shot-to-shot continuity: maintain identical character identity, scene layout, lighting and prop positions as established in previous shot. Visual style must match preceding frame. Do not introduce new visual elements not present in the reference images. Character identity locked to reference images. No face morphing or outfit variation.. Scene layout locked to context reference frame. Do not reposition props or alter lighting source.. All props match reference images exactly. Prop must_keep: shape, color, size, material unchanged.. Camera transition smooth from previous shot continuity frame. No abrupt jump cut between shots. Stable visual consistency across entire clip. No character drift, no prop mutation, no scene layout shift.",
-  "video_prompt_keywords": "cinematic, moody, controlled lighting, red fridge, wooden table, rainy window, dim warm lamp + blue moonlight, charA_v1, short_black, white_hoodie + black_jeans, silver_ring_left_hand, mug_red_v1, 门外传来电梯停靠的声音，可这栋楼的电梯上周就坏了。, 林澈低声说：不可能。, 林澈 says: \"不可能。\", young Chinese man tense listening pose near apartment door, rainy night atmosphere, dim corridor light under door, suspense building from sound outside, red mug visible on table in background",
-  "video_prompt_short": "style: Cinematic Realism v1, mood: cinematic, moody, controlled lighting, color palette: warm highlights, cool shadows. cinematic live-action video shot. scene: Apartment Kitchen Night. red fridge, wooden table, rainy window. lighting: dim warm lamp + blue moonlight. character (charA_v1): short_black, white_hoodie + black_jeans, silver_ring_left_hand. prop (mug_red_v1): state: story_clue, visually consistent. 门外传来电梯停靠的声音，可这栋楼的电梯上周就坏了。, 林澈低声说：不可能。. Narration: \"门外传来电梯停靠的声音，可这栋楼的电梯上周就坏了。\". 林澈 sa...",
-  "negative_prompt": "cartoon, neon cyberpunk (unless explicitly requested), sunlight, daylight, modern led lights, crowd, no text artifacts, no logo, no watermark, no extra fingers, no face drift, multiple characters, duplicate person, clone, inconsistent lighting, wrong angle, lens distortion, chromatic aberration, mouth mismatch, silent face, frozen expression, unnatural dubbing, face morphing, character drift, outfit change, prop mutation, scene layout shift, extra fingers, distorted limbs, text artifacts, burnt-in subtitles, logo, watermark, motion blur excessive, flickering, framing jump cut",
-  "camera_intent": "comic_panel_04",
-  "camera_motion": "detail insert shot, smooth focus pull, macro lens feel, very slight movement",
-  "continuity_notes": "continuity locks: charA_v1 (location: apartment_kitchen_or_hallway, pose: listening); mug_red_v1 (location: near_main_character, state: warm_and_unexplained)",
-  "continuity_locks": "continuity locks: charA_v1 (location: apartment_kitchen_or_hallway, pose: listening); mug_red_v1 (location: near_main_character, state: warm_and_unexplained)",
+  "video_prompt": "style: Cinematic Realism v1, mood: cinematic, moody, controlled lighting, color palette: warm highlights, cool shadows. cinematic live-action video shot. scene: Apartment Kitchen Night. red fridge, wooden table, rainy window. lighting: dim warm lamp + blue moonlight. character (charA_v1): short_black, white_hoodie + black_jeans, silver_ring_left_hand. 林澈转头看向门口, 门外传来电梯停靠的提示音, 林澈表情从困惑变为恐惧. Narration: \"门外传来电梯停靠的声音，可这栋楼的电梯上周就坏了。\". 林澈 says: \"不可能。\". Camera motion: medium shot, subtle hand-held camera feel, focus on subject action. Medium shot of young man in kitchen, looking toward apartment door, fear dawning on face, dim interior, door in background, eerie stillness, cinematic lighting, suspense. Shot-to-shot continuity: maintain identical character identity, scene layout, lighting and prop positions as established in previous shot. Visual style must match preceding frame. Do not introduce new visual elements not present in the reference images. Character identity locked to reference images. No face morphing or outfit variation.. Scene layout locked to context reference frame. Do not reposition props or alter lighting source.. Camera transition smooth from previous shot continuity frame. No abrupt jump cut between shots. Stable visual consistency across entire clip. No character drift, no prop mutation, no scene layout shift.",
+  "video_prompt_keywords": "cinematic, moody, controlled lighting, red fridge, wooden table, rainy window, dim warm lamp + blue moonlight, charA_v1, short_black, white_hoodie + black_jeans, silver_ring_left_hand, 林澈转头看向门口, 门外传来电梯停靠的提示音, 林澈表情从困惑变为恐惧, 林澈 says: \"不可能。\", Medium shot of young man in kitchen, looking toward apartment door, fear dawning on face, dim interior, door in background, eerie stillness, cinematic lighting, suspense",
+  "video_prompt_short": "style: Cinematic Realism v1, mood: cinematic, moody, controlled lighting, color palette: warm highlights, cool shadows. cinematic live-action video shot. scene: Apartment Kitchen Night. red fridge, wooden table, rainy window. lighting: dim warm lamp + blue moonlight. character (charA_v1): short_black, white_hoodie + black_jeans, silver_ring_left_hand. 林澈转头看向门口, 门外传来电梯停靠的提示音, 林澈表情从困惑变为恐惧. Narration: \"门外传来电梯停靠的声音，可这栋楼的电梯上周就坏了。\". 林澈 says: \"不可能。\". Camera motion: medium shot, subtle hand-held came...",
+  "negative_prompt": "cartoon, neon cyberpunk (unless explicitly requested), sunlight, daylight, modern led lights, crowd, bright, daytime, cartoon, anime, oversaturated, multiple characters, duplicate person, clone, inconsistent lighting, wrong angle, lens distortion, chromatic aberration, mouth mismatch, silent face, frozen expression, unnatural dubbing, face morphing, character drift, outfit change, prop mutation, scene layout shift, extra fingers, distorted limbs, text artifacts, burnt-in subtitles, logo, watermark, motion blur excessive, flickering, framing jump cut",
+  "camera_intent": "comic_panel_02",
+  "camera_motion": "medium shot, subtle hand-held camera feel, focus on subject action",
+  "continuity_notes": null,
+  "continuity_locks": null,
   "structured_context": {
     "scene_name": "Apartment Kitchen Night",
     "scene_elements": [
@@ -40,26 +40,21 @@
         ]
       }
     ],
-    "props": [
-      {
-        "id": "mug_red_v1",
-        "name": "Red Mug",
-        "state": "story_clue"
-      }
-    ],
+    "props": [],
     "action_beats": [
-      "门外传来电梯停靠的声音，可这栋楼的电梯上周就坏了。",
-      "林澈低声说：不可能。"
+      "林澈转头看向门口",
+      "门外传来电梯停靠的提示音",
+      "林澈表情从困惑变为恐惧"
     ],
     "dialogue": {
       "speaker": "林澈",
       "text": "不可能。",
-      "voice_id": "zh-CN-YunxiNeural"
+      "voice_id": "charA_v1"
     },
     "voiceover": {
       "speaker": "旁白",
       "text": "门外传来电梯停靠的声音，可这栋楼的电梯上周就坏了。",
-      "voice_id": "zh-CN-XiaoxiaoNeural"
+      "voice_id": "narrator"
     }
   },
   "reference_images": [
@@ -93,49 +88,6 @@
         "detail"
       ],
       "exists": true
-    },
-    {
-      "kind": "character_reference",
-      "id": "charA_v1",
-      "path": "assets/characters/charA_v1/front.svg",
-      "note": "Protagonist A",
-      "use_for": [
-        "identity",
-        "wardrobe"
-      ],
-      "exists": true
-    },
-    {
-      "kind": "character_reference",
-      "id": "charA_v1",
-      "path": "assets/characters/charA_v1/side.svg",
-      "note": "Protagonist A",
-      "use_for": [
-        "identity",
-        "wardrobe"
-      ],
-      "exists": true
-    },
-    {
-      "kind": "character_reference",
-      "id": "charA_v1",
-      "path": "assets/characters/charA_v1/fullbody.svg",
-      "note": "Protagonist A",
-      "use_for": [
-        "identity",
-        "wardrobe"
-      ],
-      "exists": true
-    },
-    {
-      "kind": "prop_reference",
-      "id": "mug_red_v1",
-      "path": "assets/props/mug_red_v1/ref.svg",
-      "note": "Red Mug",
-      "use_for": [
-        "prop lock"
-      ],
-      "exists": true
     }
   ],
   "conditioning_keyframes": [
@@ -157,8 +109,7 @@
       "scene:red fridge",
       "scene:wooden table",
       "scene:rainy window",
-      "character:charA_v1",
-      "prop:mug_red_v1"
+      "character:charA_v1"
     ],
     "forbidden": [
       "sunlight",
@@ -170,14 +121,10 @@
   "ref_image_paths": [
     "assets/scenes/kitchen_apartment_01/anchor_A.svg",
     "assets/scenes/kitchen_apartment_01/anchor_B.svg",
-    "assets/scenes/kitchen_apartment_01/anchor_C.svg",
-    "assets/characters/charA_v1/front.svg",
-    "assets/characters/charA_v1/side.svg",
-    "assets/characters/charA_v1/fullbody.svg",
-    "assets/props/mug_red_v1/ref.svg"
+    "assets/scenes/kitchen_apartment_01/anchor_C.svg"
   ],
   "params": {
-    "duration_s": 12,
+    "duration_s": 5,
     "tier": "cheap",
     "max_regen": 1
   },
@@ -200,8 +147,8 @@
   },
   "meta": {
     "compiler_version": "video-prompts-2.0.0",
-    "git_commit": "8baf57e",
-    "compiled_at": "2026-05-25T05:39:44.792Z",
+    "git_commit": "8020ce7",
+    "compiled_at": "2026-05-25T10:32:28.036Z",
     "compiled_from": {
       "shot": "shots/S004.json",
       "scene": "scenes/kitchen_apartment_01.json",
@@ -209,9 +156,7 @@
       "characters": [
         "characters/charA_v1.json"
       ],
-      "props": [
-        "props/mug_red_v1.json"
-      ]
+      "props": []
     }
   }
 }

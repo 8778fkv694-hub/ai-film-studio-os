@@ -1,15 +1,15 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { parseArgs } from './shared/dirs.js';
 
-const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../');
+const { workDir, projectRoot, remainingArgs } = parseArgs();
 
 function readJson(p) {
   return JSON.parse(fs.readFileSync(p, 'utf-8'));
 }
 
 function listJson(dir) {
-  const abs = path.join(ROOT, dir);
+  const abs = path.join(workDir, dir);
   return fs.readdirSync(abs)
     .filter(f => f.endsWith('.json'))
     .sort()
@@ -18,7 +18,7 @@ function listJson(dir) {
 
 const shots = listJson('shots');
 const scenes = new Map(listJson('scenes').map(x => [x.file.replace('scenes/', ''), x.obj]));
-const projectPath = path.join(ROOT, 'project.json');
+const projectPath = path.join(workDir, 'project.json');
 const project = fs.existsSync(projectPath) ? readJson(projectPath) : null;
 
 const issues = [];
@@ -74,7 +74,7 @@ for (const s of shots) {
     }
     // Check state_in_ref existence
     if (continuity.state_in_ref) {
-      const statePath = path.join(ROOT, continuity.state_in_ref);
+      const statePath = path.join(workDir, continuity.state_in_ref);
       if (!fs.existsSync(statePath)) {
         err(`state_in_ref file not found: ${continuity.state_in_ref}`, s.file);
       }
@@ -106,8 +106,13 @@ for (const s of shots) {
     }
   } else {
      // Scene ref not found handled by schema validation usually, but good to check logic
-     err(`Referenced scene not found in scenes/: ${shot.scene_ref}`, s.file);
-  }
+     const isTodo = String(shot.scene_ref || '').startsWith('TODO:');
+     if (isTodo) {
+       warn(`Scene ref is placeholder: ${shot.scene_ref}. Create scenes/ or edit shot to fix.`, s.file);
+     } else {
+       err(`Referenced scene not found in scenes/: ${shot.scene_ref}`, s.file);
+     }
+   }
 
   // Rule 3: Anchor Consistency (Project-wide)
   // Check if multiple shots refer to the same scene but use different effective anchors?
@@ -131,8 +136,8 @@ for (const s of shots) {
 
 // output report
 const report = { generatedAt: new Date().toISOString(), issueCount: issues.length, issues };
-fs.mkdirSync(path.join(ROOT, 'reports'), { recursive: true });
-fs.writeFileSync(path.join(ROOT, 'reports', 'lint.report.json'), JSON.stringify(report, null, 2));
+fs.mkdirSync(path.join(workDir, 'reports'), { recursive: true });
+fs.writeFileSync(path.join(workDir, 'reports', 'lint.report.json'), JSON.stringify(report, null, 2));
 
 const errors = issues.filter(x => x.level === 'ERROR');
 for (const i of issues) {

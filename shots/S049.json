@@ -1,0 +1,40 @@
+{
+  "shot_id": "S049",
+  "duration_s": 6,
+  "scene_ref": "scenes/kitchen_apartment_01.json",
+  "cam_setup_ref": "comic_panel_01",
+  "characters": [
+    {
+      "ref": "characters/charA_v1.json"
+    }
+  ],
+  "props": [],
+  "action": {
+    "beats": [
+      "Lin Che pushes open the door.",
+      "All corridor lights turn on in sequence.",
+      "The broken elevator rings for the first time."
+    ]
+  },
+  "dialogue": {
+    "speaker": "Protagonist A",
+    "text": "这次，我不回头。",
+    "voice_id": "charA_v1"
+  },
+  "voiceover": {
+    "speaker": "Narrator",
+    "text": "林澈推开门，走廊灯全部亮起，坏掉的电梯第一次响铃。",
+    "voice_id": "narrator_default"
+  },
+  "budget": {
+    "tier": "cheap",
+    "max_regen": 1
+  },
+  "prompt": {
+    "positive": "Wide shot, corridor, Lin Che pushing door open, lights turning on one by one, elevator ringing, dramatic lighting, cinematic, 24mm lens, high contrast",
+    "negative": "dark, underexposed, flat lighting"
+  },
+  "context_refs": [
+    "assets/renders/S048/keyframes/frame_01.jpg"
+  ]
+}

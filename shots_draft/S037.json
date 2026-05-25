@@ -1,0 +1,45 @@
+{
+  "shot_id": "S037",
+  "duration_s": 4,
+  "scene_ref": "scenes/kitchen_apartment_01.json",
+  "cam_setup_ref": "comic_panel_02",
+  "characters": [
+    {
+      "ref": "characters/charA_v1.json"
+    }
+  ],
+  "props": [
+    {
+      "ref": "props/mug_red_v1.json",
+      "state": "appearing on counter"
+    }
+  ],
+  "action": {
+    "beats": [
+      "灯光闪烁后熄灭又亮起",
+      "镜子外多了一只红杯",
+      "镜子里的人影消失"
+    ]
+  },
+  "dialogue": {
+    "speaker": "Protagonist A",
+    "text": "你出来了？",
+    "voice_id": "charA_v1"
+  },
+  "voiceover": {
+    "speaker": "Narrator",
+    "text": "灯光熄灭又亮起，镜子外多了一只红杯，镜子里少了一个人。",
+    "voice_id": "narrator_default"
+  },
+  "budget": {
+    "tier": "cheap",
+    "max_regen": 1
+  },
+  "prompt": {
+    "positive": "Medium shot of kitchen counter with a red mug appearing, mirror in background showing empty reflection, flickering light, suspenseful atmosphere",
+    "negative": "static, flat lighting, no mirror"
+  },
+  "context_refs": [
+    "assets/renders/S036/keyframes/frame_01.jpg"
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "id": "clean_room_changing",
+  "name": "更衣区",
+  "style_ref": "styles/cinematic_v1.json",
+  "anchors": [],
+  "must_keep": {
+    "set_elements": ["洁净服挂架", "口罩盒", "鞋套机", "全身镜", "更衣柜"],
+    "lighting": "柔和白光，均匀照明"
+  },
+  "forbidden": ["常服", "敞开洁净服", "裸露头发"]
+}

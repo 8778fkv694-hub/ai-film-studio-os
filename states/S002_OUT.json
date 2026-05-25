@@ -1,20 +1,9 @@
 {
   "shot_id": "S002",
-  "characters": {
-    "charA_v1": {
-      "outfit": "white hoodie, dark pants",
-      "pose": "searching",
-      "location": "old apartment"
-    }
-  },
-  "props": {
-    "mug_red_v1": {
-      "location": "near Lin Che",
-      "state": "warm"
-    }
-  },
+  "characters": {},
+  "props": {},
   "scene": {
-    "lighting": "night rain with warm practical lamp",
+    "lighting": "night rain",
     "weather": "rain",
     "time": "midnight"
   }

@@ -1,9 +1,8 @@
 {
   "shot_id": "S002",
-  "duration_s": 12,
+  "duration_s": 5,
   "scene_ref": "scenes/kitchen_apartment_01.json",
-  "cam_setup_ref": "comic_panel_02",
-  "context_refs": ["assets/renders/S001/keyframes/frame_01.jpg"],
+  "cam_setup_ref": "comic_panel_03",
   "characters": [
     {
       "ref": "characters/charA_v1.json"
@@ -12,55 +11,35 @@
   "props": [
     {
       "ref": "props/mug_red_v1.json",
-      "state": "story_clue"
+      "state": "steaming"
     }
   ],
   "action": {
     "beats": [
-      "桌上有一只红杯，杯沿还冒着热气。那不是他的杯子。",
-      "林澈低声说：谁来过我家？"
+      "林澈走近餐桌，视线锁定红杯",
+      "他伸手试探杯壁温度，蒸汽袅袅",
+      "林澈皱眉，后退一步"
     ]
   },
   "dialogue": {
     "speaker": "林澈",
     "text": "谁来过我家？",
-    "voice_id": "zh-CN-YunxiNeural"
+    "voice_id": "charA_v1"
   },
   "voiceover": {
     "speaker": "旁白",
     "text": "桌上有一只红杯，杯沿还冒着热气。那不是他的杯子。",
-    "voice_id": "zh-CN-XiaoxiaoNeural"
-  },
-  "continuity": {
-    "state_in_ref": "states/S001_OUT.json",
-    "state_changes": {
-      "characters": {
-        "charA_v1": {
-          "location": "apartment_kitchen_or_hallway",
-          "pose": "searching"
-        }
-      },
-      "props": {
-        "mug_red_v1": {
-          "location": "near_main_character",
-          "state": "warm_and_unexplained"
-        }
-      },
-      "scene": {
-        "lighting": "rainy night, warm lamp, cold blue shadow"
-      }
-    },
-    "handoff_to_next": [
-      "红杯仍是关键线索",
-      "雨夜公寓的压迫感延续到 S003"
-    ]
+    "voice_id": "narrator"
   },
   "budget": {
     "tier": "cheap",
     "max_regen": 1
   },
   "prompt": {
-    "positive": "close-up on wooden table, red mug with steam rising, young Chinese man searching pose, rainy night outside window, red mug as mystery clue, dim warm lamp lighting",
-    "negative": "no text artifacts, no logo, no watermark, no extra fingers, no face drift"
-  }
+    "positive": "Close-up of red ceramic mug on wooden table, steam rising, dim kitchen background, young man's hand reaching toward mug, shallow depth of field, warm light on mug, cool shadows, suspense",
+    "negative": "bright, daytime, cartoon, anime, oversaturated"
+  },
+  "context_refs": [
+    "assets/renders/S001/keyframes/frame_01.jpg"
+  ]
 }

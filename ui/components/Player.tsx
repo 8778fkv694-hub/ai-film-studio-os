@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { Play, Pause, SkipBack, SkipForward } from 'lucide-react';
+import { Play, Pause, SkipBack, SkipForward, Settings, X } from 'lucide-react';
 
 interface Shot {
   shot_id: string;
@@ -12,22 +12,48 @@ interface Shot {
   scene_ref?: string;
   _keyframes?: string[];
   _selected_keyframe?: string | null;
+  _video_url?: string | null;
 }
+
+export interface SubtitleStyle {
+  fontSize: number;
+  fontFamily: string;
+  textColor: string;
+  bgOpacity: number;
+  strokeWidth: number;
+}
+
+export const FONT_FAMILIES = [
+  { value: 'sans-serif', label: '默认' },
+  { value: 'serif', label: '宋体' },
+  { value: '"Microsoft YaHei", sans-serif', label: '微软雅黑' },
+  { value: '"PingFang SC", sans-serif', label: '苹方' },
+  { value: '"Noto Sans SC", sans-serif', label: '思源黑体' },
+  { value: 'monospace', label: '等宽' },
+];
 
 interface PlayerProps {
   shots: Shot[];
+  subtitleStyle: SubtitleStyle;
+  onSubtitleStyleChange: (style: SubtitleStyle) => void;
 }
 
-export default function Player({ shots }: PlayerProps) {
+export default function Player({ shots, subtitleStyle, onSubtitleStyleChange }: PlayerProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [audioDuration, setAudioDuration] = useState(0);
+  const [currentLine, setCurrentLine] = useState('');
+  const [showSettings, setShowSettings] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
   const safetyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const advanceRequestedRef = useRef(false);
+  const subtitleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const currentShot = shots[currentIndex];
   const currentImage = currentShot?._selected_keyframe || currentShot?._keyframes?.[0] || null;
+  const currentVideo = currentShot?._video_url || null;
+
 
   const clearSafetyTimer = useCallback(() => {
     if (safetyTimerRef.current) {
@@ -59,45 +85,108 @@ export default function Player({ shots }: PlayerProps) {
     setIsPlaying(prev => !prev);
   }, []);
 
-  // Switch shot: load audio
+  // 将长文本按标点拆成单行
+  const splitLines = (text: string): string[] => {
+    return text.split(/(?<=[。，,.;；!！?？])/).map(s => s.trim()).filter(Boolean);
+  };
+
+  // 字幕逐行播放
+  useEffect(() => {
+    if (subtitleTimerRef.current) {
+      clearTimeout(subtitleTimerRef.current);
+      subtitleTimerRef.current = null;
+    }
+
+    const text = currentShot?.voiceover?.text || currentShot?.dialogue?.text || '';
+    if (!text || !isPlaying) {
+      setCurrentLine('');
+      return;
+    }
+
+    const lines = splitLines(text);
+    let lineIndex = 0;
+    const totalLines = lines.length;
+    const lineDuration = (currentShot.duration_s * 1000) / totalLines;
+
+    const showNextLine = () => {
+      if (lineIndex < totalLines && isPlaying) {
+        setCurrentLine(lines[lineIndex]);
+        lineIndex++;
+        subtitleTimerRef.current = setTimeout(showNextLine, lineDuration);
+      }
+    };
+
+    showNextLine();
+
+    return () => {
+      if (subtitleTimerRef.current) {
+        clearTimeout(subtitleTimerRef.current);
+      }
+    };
+  }, [currentIndex, currentShot, isPlaying]);
+
+  // Switch shot: load audio or video
   useEffect(() => {
     advanceRequestedRef.current = false;
     clearSafetyTimer();
     setAudioDuration(0);
 
     const audio = audioRef.current;
-    if (!audio) return;
+    const video = videoRef.current;
 
-    audio.pause();
-    audio.src = `/api/assets/audio/${currentShot.shot_id}.mp3`;
-    audio.currentTime = 0;
-    audio.load();
+    if (audio) {
+      audio.pause();
+      audio.src = `/api/assets/audio/${currentShot.shot_id}.mp3`;
+      audio.currentTime = 0;
+      audio.load();
+    }
+
+    if (video) {
+      video.pause();
+      if (currentShot._video_url) {
+        video.src = currentShot._video_url;
+        video.currentTime = 0;
+        video.load();
+      } else {
+        video.src = '';
+      }
+    }
 
     if (isPlaying) {
-      audio.play().catch(() => {
-        // Audio failed — fall back to timer-based advance
+      if (currentShot._video_url && video) {
+        video.play().catch(() => {
+          safetyTimerRef.current = setTimeout(() => {
+            handleNext();
+          }, Math.max(1, currentShot.duration_s) * 1000);
+        });
+      } else if (audio) {
+        audio.play().catch(() => {
+          safetyTimerRef.current = setTimeout(() => {
+            handleNext();
+          }, Math.max(1, currentShot.duration_s) * 1000);
+        });
+      } else {
         safetyTimerRef.current = setTimeout(() => {
           handleNext();
         }, Math.max(1, currentShot.duration_s) * 1000);
-      });
+      }
     }
   }, [currentIndex, isPlaying, currentShot, handleNext, clearSafetyTimer]);
 
-  // Audio ended → advance (primary advance mechanism)
-  const handleAudioEnded = useCallback(() => {
+  // Playback ended → advance
+  const handlePlaybackEnded = useCallback(() => {
     clearSafetyTimer();
     handleNext();
   }, [clearSafetyTimer, handleNext]);
 
   // Audio metadata loaded
   const handleAudioMetadata = useCallback(() => {
-    if (!audioRef.current) return;
+    if (!audioRef.current || currentShot._video_url) return;
     const dur = Number.isFinite(audioRef.current.duration)
       ? Math.ceil(audioRef.current.duration)
       : 0;
     setAudioDuration(dur);
 
-    // Safety fallback: max timer = shot.duration_s + 3 seconds
     const safetySeconds = currentShot.duration_s + 3;
     if (isPlaying && safetySeconds > 0) {
       safetyTimerRef.current = setTimeout(() => {
@@ -106,8 +195,24 @@ export default function Player({ shots }: PlayerProps) {
     }
   }, [currentShot, isPlaying, handleNext]);
 
-  // Audio error — fall back to timer
-  const handleAudioError = useCallback(() => {
+  // Video metadata loaded
+  const handleVideoMetadata = useCallback(() => {
+    if (!videoRef.current) return;
+    const dur = Number.isFinite(videoRef.current.duration)
+      ? Math.ceil(videoRef.current.duration)
+      : 0;
+    setAudioDuration(dur);
+
+    const safetySeconds = dur + 3;
+    if (isPlaying && safetySeconds > 0) {
+      safetyTimerRef.current = setTimeout(() => {
+        handleNext();
+      }, safetySeconds * 1000);
+    }
+  }, [isPlaying, handleNext]);
+
+  // Playback error fallback
+  const handlePlaybackError = useCallback(() => {
     clearSafetyTimer();
     setAudioDuration(0);
     if (isPlaying) {
@@ -146,9 +251,18 @@ export default function Player({ shots }: PlayerProps) {
 
   return (
     <div className="w-full overflow-hidden rounded-lg border border-slate-800 bg-black shadow-2xl">
-      <div className="relative w-full aspect-video bg-slate-900 flex items-center justify-center">
-
-        {currentImage ? (
+      <div className="relative aspect-video w-full flex items-center justify-center bg-slate-950">
+        {currentVideo ? (
+          <video
+            ref={videoRef}
+            src={currentVideo}
+            onLoadedMetadata={handleVideoMetadata}
+            onError={handlePlaybackError}
+            onEnded={handlePlaybackEnded}
+            className="absolute inset-0 h-full w-full object-contain bg-black"
+            playsInline
+          />
+        ) : currentImage ? (
           <img
             src={currentImage}
             alt={`${currentShot.shot_id} keyframe`}
@@ -169,18 +283,26 @@ export default function Player({ shots }: PlayerProps) {
           </div>
         )}
 
-        {currentShot.voiceover?.text && (
-          <div className="absolute left-3 right-3 top-3 sm:left-6 sm:right-auto sm:top-6 sm:max-w-xl">
-            <div className="rounded bg-slate-950/80 px-3 py-2 text-left text-xs leading-5 text-slate-100 shadow-lg sm:text-sm">
-              {currentShot.voiceover.text}
-            </div>
-          </div>
-        )}
-
-        {currentShot.dialogue && (
-          <div className="absolute bottom-4 left-0 right-0 px-3 text-center sm:bottom-12 sm:px-8">
-            <span className="inline-block rounded bg-black/80 px-3 py-2 text-sm font-semibold text-yellow-300 shadow-lg sm:px-4 sm:text-xl">
-              {currentShot.dialogue.text}
+        {/* 统一底部字幕（电影风格：白字黑描边） */}
+        {currentLine && (
+          <div className="absolute bottom-8 left-0 right-0 flex justify-center px-4" style={{ zIndex: 10 }}>
+            <span
+              style={{
+                fontSize: `${subtitleStyle.fontSize}px`,
+                fontFamily: subtitleStyle.fontFamily,
+                color: subtitleStyle.textColor,
+                textShadow: subtitleStyle.strokeWidth > 0
+                  ? `${subtitleStyle.strokeWidth}px ${subtitleStyle.strokeWidth}px 0 #000, -${subtitleStyle.strokeWidth}px -${subtitleStyle.strokeWidth}px 0 #000, ${subtitleStyle.strokeWidth}px -${subtitleStyle.strokeWidth}px 0 #000, -${subtitleStyle.strokeWidth}px ${subtitleStyle.strokeWidth}px 0 #000, 0 ${subtitleStyle.strokeWidth}px 0 #000, 0 -${subtitleStyle.strokeWidth}px 0 #000, ${subtitleStyle.strokeWidth}px 0 0 #000, -${subtitleStyle.strokeWidth}px 0 0 #000`
+                  : 'none',
+                padding: '4px 0',
+                maxWidth: '90%',
+                textAlign: 'center',
+                fontWeight: 600,
+                lineHeight: 1.5,
+                letterSpacing: '0.05em',
+              }}
+            >
+              {currentLine}
             </span>
           </div>
         )}
@@ -188,8 +310,8 @@ export default function Player({ shots }: PlayerProps) {
         <audio
           ref={audioRef}
           onLoadedMetadata={handleAudioMetadata}
-          onError={handleAudioError}
-          onEnded={handleAudioEnded}
+          onError={handlePlaybackError}
+          onEnded={handlePlaybackEnded}
         />
       </div>
 
@@ -209,6 +331,89 @@ export default function Player({ shots }: PlayerProps) {
           <button onClick={handleNext} className="p-2 hover:bg-slate-800 rounded-full text-slate-400 hover:text-white transition">
             <SkipForward size={24} />
           </button>
+
+          <div className="relative">
+            <button
+              onClick={() => setShowSettings(!showSettings)}
+              className={`p-2 rounded-full transition ${showSettings ? 'bg-slate-700 text-white' : 'text-slate-500 hover:text-white hover:bg-slate-800'}`}
+              title="字幕设置"
+            >
+              <Settings size={20} />
+            </button>
+
+            {showSettings && (
+              <div className="absolute bottom-full left-0 mb-2 w-72 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl z-50 p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="text-sm font-semibold text-slate-200">字幕样式</h4>
+                  <button onClick={() => setShowSettings(false)} className="text-slate-500 hover:text-white">
+                    <X size={14} />
+                  </button>
+                </div>
+
+                <div className="space-y-3">
+                  <div>
+                    <label className="text-xs text-slate-400 block mb-1">字号 ({subtitleStyle.fontSize}px)</label>
+                    <input type="range" min="14" max="40" value={subtitleStyle.fontSize}
+                      onChange={e => onSubtitleStyleChange({...subtitleStyle, fontSize: Number(e.target.value)})}
+                      className="w-full" />
+                  </div>
+
+                  <div>
+                    <label className="text-xs text-slate-400 block mb-1">字体</label>
+                    <select value={subtitleStyle.fontFamily}
+                      onChange={e => onSubtitleStyleChange({...subtitleStyle, fontFamily: e.target.value})}
+                      className="w-full bg-slate-800 border border-slate-700 rounded px-2 py-1 text-sm text-slate-200">
+                      {FONT_FAMILIES.map(f => (
+                        <option key={f.value} value={f.value}>{f.label}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="text-xs text-slate-400 block mb-1">颜色</label>
+                    <div className="flex gap-2">
+                      {['#ffffff', '#ffff00', '#00ff00', '#ff8800', '#88ccff'].map(c => (
+                        <button key={c} onClick={() => onSubtitleStyleChange({...subtitleStyle, textColor: c})}
+                          className="w-6 h-6 rounded-full border-2 transition"
+                          style={{ backgroundColor: c, borderColor: subtitleStyle.textColor === c ? '#fff' : 'transparent' }} />
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-xs text-slate-400 block mb-1">描边 ({subtitleStyle.strokeWidth}px)</label>
+                    <input type="range" min="0" max="6" value={subtitleStyle.strokeWidth}
+                      onChange={e => onSubtitleStyleChange({...subtitleStyle, strokeWidth: Number(e.target.value)})}
+                      className="w-full" />
+                  </div>
+
+                  <div>
+                    <label className="text-xs text-slate-400 block mb-1">背景 ({subtitleStyle.bgOpacity}%)</label>
+                    <input type="range" min="0" max="90" value={subtitleStyle.bgOpacity}
+                      onChange={e => onSubtitleStyleChange({...subtitleStyle, bgOpacity: Number(e.target.value)})}
+                      className="w-full" />
+                  </div>
+
+                  {/* 效果预览 */}
+                  <div className="bg-black rounded-lg p-3 mt-2">
+                    <div className="text-[10px] text-slate-500 mb-1">预览</div>
+                    <div className="text-center" style={{
+                      fontSize: `${Math.min(subtitleStyle.fontSize, 20)}px`,
+                      fontFamily: subtitleStyle.fontFamily,
+                      color: subtitleStyle.textColor,
+                      textShadow: subtitleStyle.strokeWidth > 0
+                        ? `${subtitleStyle.strokeWidth}px ${subtitleStyle.strokeWidth}px 0 #000, -${subtitleStyle.strokeWidth}px -${subtitleStyle.strokeWidth}px 0 #000, ${subtitleStyle.strokeWidth}px -${subtitleStyle.strokeWidth}px 0 #000, -${subtitleStyle.strokeWidth}px ${subtitleStyle.strokeWidth}px 0 #000, 0 ${subtitleStyle.strokeWidth}px 0 #000, 0 -${subtitleStyle.strokeWidth}px 0 #000, ${subtitleStyle.strokeWidth}px 0 0 #000, -${subtitleStyle.strokeWidth}px 0 0 #000`
+                        : 'none',
+                      fontWeight: 600,
+                      lineHeight: 1.5,
+                    }}>
+                      欢迎参观滤芯洁净车间
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="text-slate-500 font-mono text-sm">

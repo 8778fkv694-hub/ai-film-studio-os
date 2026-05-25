@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { NextResponse } from 'next/server';
+import { getResourcePath } from '@/lib/projects';
 
 const CONTENT_TYPES: Record<string, string> = {
   '.jpg': 'image/jpeg',
@@ -26,7 +27,7 @@ export async function GET(
     return new NextResponse('Unsupported image type', { status: 400 });
   }
 
-  const keyframeDir = path.resolve(process.cwd(), '../assets/renders', shot, 'keyframes');
+  const keyframeDir = path.join(getResourcePath('assets'), 'renders', shot, 'keyframes');
   const filePath = path.resolve(keyframeDir, name);
 
   if (!filePath.startsWith(keyframeDir) || !fs.existsSync(filePath)) {

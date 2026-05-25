@@ -2,13 +2,16 @@ import { NextResponse } from 'next/server';
 import { exec } from 'child_process';
 import { promisify } from 'util';
 import path from 'path';
+import { getCurrentProjectPath } from '@/lib/projects';
 
 const execAsync = promisify(exec);
 
 export async function POST(request: Request) {
   try {
     const projectRoot = path.resolve(process.cwd(), '..');
+    const projectPath = getCurrentProjectPath();
     const toolPath = path.join(projectRoot, 'tools/scripts/gen-tts.js');
+    const projectDirArg = projectPath ? ` --project-dir "${projectPath}"` : '';
 
     // Check if single shot_id is provided
     let shotId: string | null = null;
@@ -20,7 +23,7 @@ export async function POST(request: Request) {
     }
 
     const args = shotId ? `--shot ${shotId}` : '';
-    const { stdout, stderr } = await execAsync(`node "${toolPath}" ${args}`, {
+    const { stdout, stderr } = await execAsync(`node "${toolPath}" ${args}${projectDirArg}`, {
       cwd: projectRoot
     });
 

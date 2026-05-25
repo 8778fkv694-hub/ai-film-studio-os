@@ -1,0 +1,29 @@
+{
+  "shot_id": "S048",
+  "duration_s": 5,
+  "prompt": "style: Cinematic Realism v1, mood: cinematic, moody, controlled lighting, color palette: warm highlights, cool shadows. cinematic live-action video shot. scene: Apartment Kitchen Night. red fridge, wooden table, rainy window. lighting: dim warm lamp + blue moonlight. prop (mug_red_v1): state: empty, on table, visually consistent. Dawn light enters the kitchen., Only an empty red mug and a tape recorder with a tape remain on the table. Narration: \"天快亮时，厨房只剩一只空杯和一盘录音带。\". Protagonist A says: \"我会去自首。\". Camera motion: medium shot, subtle hand-held camera feel, focus on subject action. Medium shot, kitchen table at dawn, empty red mug, tape recorder with tape, soft morning light, quiet atmosphere, cinematic, 35mm lens. Character identity locked to reference images. No face morphing or outfit variation.. Scene layout locked to context reference frame. Do not reposition props or alter lighting source.. All props match reference images exactly. Prop must_keep: shape, color, size, material unchanged.. Camera transition smooth from previous shot continuity frame. No abrupt jump cut between shots. Stable visual consistency across entire clip. No character drift, no prop mutation, no scene layout shift.",
+  "negative": "cartoon, neon cyberpunk (unless explicitly requested), sunlight, daylight, modern led lights, crowd, cluttered, overbright, noisy, multiple characters, duplicate person, clone, inconsistent lighting, wrong angle, lens distortion, chromatic aberration, mouth mismatch, silent face, frozen expression, unnatural dubbing, face morphing, character drift, outfit change, prop mutation, scene layout shift, extra fingers, distorted limbs, text artifacts, burnt-in subtitles, logo, watermark, motion blur excessive, flickering, framing jump cut",
+  "motion": "medium shot, subtle hand-held camera feel, focus on subject action",
+  "condition_images": [
+    "assets/scenes/kitchen_apartment_01/anchor_A.svg",
+    "assets/scenes/kitchen_apartment_01/anchor_B.svg",
+    "assets/scenes/kitchen_apartment_01/anchor_C.svg"
+  ],
+  "context_ref_images": [],
+  "tool_hint": "Copy \"prompt\" and \"negative\" into video generation tool. Upload \"condition_images\" for img2vid start/end frame conditioning if supported. \"context_ref_images\" are previous shot keyframes for visual continuity. Duration is a guideline.",
+  "meta": {
+    "compiler_version": "video-prompts-2.0.0",
+    "git_commit": "8020ce7",
+    "compiled_at": "2026-05-25T10:32:28.066Z",
+    "compiled_from": {
+      "shot": "shots/S048.json",
+      "scene": "scenes/kitchen_apartment_01.json",
+      "style": "styles/cinematic_v1.json",
+      "characters": [],
+      "props": [
+        "props/mug_red_v1.json",
+        "props/tape_recorder_v1.json"
+      ]
+    }
+  }
+}

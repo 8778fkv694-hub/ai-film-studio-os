@@ -1,0 +1,40 @@
+{
+  "shot_id": "S012",
+  "duration_s": 4,
+  "scene_ref": "scenes/kitchen_apartment_01.json",
+  "cam_setup_ref": "comic_panel_01",
+  "characters": [
+    {
+      "ref": "characters/charA_v1.json"
+    }
+  ],
+  "props": [],
+  "action": {
+    "beats": [
+      "Protagonist A walks down the hallway.",
+      "He sees door 503 at the end of the corridor.",
+      "Warm light seeps through the crack under the door, matching the kitchen light."
+    ]
+  },
+  "dialogue": {
+    "speaker": "Protagonist A",
+    "text": "有人吗？",
+    "voice_id": "charA_v1"
+  },
+  "voiceover": {
+    "speaker": "Narrator",
+    "text": "走廊尽头的五零三，门缝里透出和厨房一样的暖光。",
+    "voice_id": "narrator_v1"
+  },
+  "budget": {
+    "tier": "cheap",
+    "max_regen": 1
+  },
+  "prompt": {
+    "positive": "A dim hallway with a door at the end, warm light glowing from under the door, man standing in corridor, suspenseful, cinematic, medium shot",
+    "negative": "bright, cheerful, out of focus"
+  },
+  "context_refs": [
+    "assets/renders/S011/keyframes/frame_01.jpg"
+  ]
+}

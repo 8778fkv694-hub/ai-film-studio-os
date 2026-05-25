@@ -1,0 +1,11 @@
+{
+  "id": "clean_room_air_shower",
+  "name": "风淋室",
+  "style_ref": "styles/cinematic_v1.json",
+  "anchors": [],
+  "must_keep": {
+    "set_elements": ["风淋室门", "气流出风口", "计时器", "自动门", "洁净通道"],
+    "lighting": "冷白光，顶部照明"
+  },
+  "forbidden": ["开门状态下风淋", "未更衣人员"]
+}

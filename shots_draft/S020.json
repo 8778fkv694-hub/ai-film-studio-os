@@ -1,0 +1,44 @@
+{
+  "shot_id": "S020",
+  "duration_s": 4,
+  "scene_ref": "scenes/kitchen_apartment_01.json",
+  "cam_setup_ref": "comic_panel_03",
+  "characters": [
+    {
+      "ref": "characters/charA_v1.json"
+    }
+  ],
+  "props": [
+    {
+      "ref": "props/mug_red_v1.json",
+      "state": "being pushed"
+    }
+  ],
+  "action": {
+    "beats": [
+      "录像里的母亲把红杯推给孩子",
+      "说了一句被噪声吞掉的话"
+    ]
+  },
+  "dialogue": {
+    "speaker": "林澈",
+    "text": "她说了什么？",
+    "voice_id": "charA_v1"
+  },
+  "voiceover": {
+    "speaker": "旁白",
+    "text": "录像里的母亲把红杯推给孩子，说了一句被噪声吞掉的话。",
+    "voice_id": "narrator"
+  },
+  "budget": {
+    "tier": "cheap",
+    "max_regen": 1
+  },
+  "prompt": {
+    "positive": "录像画面特写，母亲的手将红杯推给孩子，嘴唇微动，噪声干扰效果，怀旧噪点",
+    "negative": "模糊，过曝，卡通"
+  },
+  "context_refs": [
+    "assets/renders/S019/keyframes/frame_01.jpg"
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "shot_id": "S018",
+  "duration_s": 4,
+  "scene_ref": "scenes/kitchen_apartment_01.json",
+  "cam_setup_ref": "comic_panel_03",
+  "characters": [],
+  "props": [
+    {
+      "ref": "props/mug_red_v1.json",
+      "state": "on shelf"
+    }
+  ],
+  "action": {
+    "beats": [
+      "柜子里塞满录像带",
+      "每一盘都贴着他的名字"
+    ]
+  },
+  "dialogue": {
+    "speaker": "林澈",
+    "text": "林澈，一九九九。",
+    "voice_id": "charA_v1"
+  },
+  "voiceover": {
+    "speaker": "旁白",
+    "text": "柜子里塞满录像带，每一盘都贴着他的名字。",
+    "voice_id": "narrator"
+  },
+  "budget": {
+    "tier": "cheap",
+    "max_regen": 1
+  },
+  "prompt": {
+    "positive": "柜子内部，塞满录像带，每盘标签写着林澈和年份，特写，怀旧色调",
+    "negative": "模糊，过曝，卡通"
+  },
+  "context_refs": [
+    "assets/renders/S017/keyframes/frame_01.jpg"
+  ]
+}

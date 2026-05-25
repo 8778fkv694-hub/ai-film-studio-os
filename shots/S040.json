@@ -1,0 +1,39 @@
+{
+  "shot_id": "S040",
+  "duration_s": 5,
+  "scene_ref": "scenes/kitchen_apartment_01.json",
+  "cam_setup_ref": "comic_panel_03",
+  "characters": [
+    {
+      "ref": "characters/charA_v1.json"
+    }
+  ],
+  "props": [],
+  "action": {
+    "beats": [
+      "母亲抬眼看向主角身后",
+      "仿佛看见真正的儿子"
+    ]
+  },
+  "dialogue": {
+    "speaker": "Mother (implied)",
+    "text": "别听他说，小澈。",
+    "voice_id": "mother_default"
+  },
+  "voiceover": {
+    "speaker": "Narrator",
+    "text": "母亲抬眼，却先看向他身后，像看见真正的儿子。",
+    "voice_id": "narrator_default"
+  },
+  "budget": {
+    "tier": "cheap",
+    "max_regen": 1
+  },
+  "prompt": {
+    "positive": "Close-up of mother's face looking past protagonist A, concerned expression, soft lighting, emotional tension",
+    "negative": "angry, happy, out of focus"
+  },
+  "context_refs": [
+    "assets/renders/S039/keyframes/frame_01.jpg"
+  ]
+}

@@ -1,0 +1,63 @@
+import fs from 'fs';
+import path from 'path';
+import { NextResponse } from 'next/server';
+
+const PROJECTS_DIR = path.resolve(process.cwd(), '../projects');
+const PROJECTS_FILE = path.resolve(process.cwd(), '../projects.json');
+
+interface ProjectsData {
+  projects: any[];
+  activeProjectId: string | null;
+}
+
+// 删除项目
+export async function POST(request: Request) {
+  try {
+    const body = await request.json();
+    const { projectId } = body;
+
+    if (!projectId) {
+      return new NextResponse('Project ID is required', { status: 400 });
+    }
+
+    // 读取项目列表
+    if (!fs.existsSync(PROJECTS_FILE)) {
+      return new NextResponse('Projects file not found', { status: 404 });
+    }
+
+    const data = fs.readFileSync(PROJECTS_FILE, 'utf-8');
+    const projectsData: ProjectsData = JSON.parse(data);
+
+    // 检查项目是否存在
+    const projectIndex = projectsData.projects.findIndex(p => p.id === projectId);
+    if (projectIndex === -1) {
+      return new NextResponse('Project not found', { status: 404 });
+    }
+
+    // 删除项目目录
+    const projectDir = path.join(PROJECTS_DIR, projectId);
+    if (fs.existsSync(projectDir)) {
+      fs.rmSync(projectDir, { recursive: true, force: true });
+    }
+
+    // 从列表中移除
+    projectsData.projects.splice(projectIndex, 1);
+
+    // 如果删除的是活动项目，切换到第一个项目或清空
+    if (projectsData.activeProjectId === projectId) {
+      projectsData.activeProjectId = projectsData.projects.length > 0 
+        ? projectsData.projects[0].id 
+        : null;
+    }
+
+    fs.writeFileSync(PROJECTS_FILE, JSON.stringify(projectsData, null, 2));
+
+    return NextResponse.json({ 
+      success: true, 
+      message: 'Project deleted successfully' 
+    });
+  } catch (e) {
+    console.error('Error deleting project:', e);
+    return new NextResponse('Failed to delete project', { status: 500 });
+  }
+}

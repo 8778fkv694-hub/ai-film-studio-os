@@ -1,0 +1,44 @@
+{
+  "shot_id": "S042",
+  "duration_s": 5,
+  "scene_ref": "scenes/kitchen_apartment_01.json",
+  "cam_setup_ref": "comic_panel_03",
+  "characters": [
+    {
+      "ref": "characters/charA_v1.json"
+    }
+  ],
+  "props": [
+    {
+      "ref": "props/mug_red_v1.json",
+      "state": "shaking"
+    }
+  ],
+  "action": {
+    "beats": [
+      "Both Lin Ches reach for the red mug simultaneously.",
+      "The mug wobbles between them, its surface reflecting fragmented memories."
+    ]
+  },
+  "dialogue": {
+    "speaker": "Protagonist A",
+    "text": "到底谁是真的？",
+    "voice_id": "charA_v1"
+  },
+  "voiceover": {
+    "speaker": "Narrator",
+    "text": "两个人同时伸手，红杯在中间摇晃，杯中映出两段记忆。",
+    "voice_id": "narrator_default"
+  },
+  "budget": {
+    "tier": "cheap",
+    "max_regen": 1
+  },
+  "prompt": {
+    "positive": "Close-up of two hands reaching for a red mug, mug shaking, reflections in the liquid, dramatic tension, shallow depth of field, warm amber light.",
+    "negative": "blurry, out of focus, extra objects, flat lighting"
+  },
+  "context_refs": [
+    "assets/renders/S041/keyframes/frame_01.jpg"
+  ]
+}

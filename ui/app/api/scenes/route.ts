@@ -1,17 +1,17 @@
 import { NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
-
-const SCENES_DIR = path.resolve(process.cwd(), '../scenes');
+import { getResourcePath } from '@/lib/projects';
 
 export async function GET() {
   try {
-    if (!fs.existsSync(SCENES_DIR)) {
+    const scenesDir = getResourcePath('scenes');
+    if (!fs.existsSync(scenesDir)) {
       return NextResponse.json([]);
     }
-    const files = fs.readdirSync(SCENES_DIR).filter(f => f.endsWith('.json'));
+    const files = fs.readdirSync(scenesDir).filter(f => f.endsWith('.json'));
     const scenes = files.map(f => {
-      const content = fs.readFileSync(path.join(SCENES_DIR, f), 'utf-8');
+      const content = fs.readFileSync(path.join(scenesDir, f), 'utf-8');
       return { ...JSON.parse(content), _filename: f };
     });
     return NextResponse.json(scenes);
@@ -26,7 +26,7 @@ export async function POST(request: Request) {
     const filename = scene._filename || `${scene.id}.json`;
     delete scene._filename;
     fs.writeFileSync(
-      path.join(SCENES_DIR, filename),
+      path.join(getResourcePath('scenes'), filename),
       JSON.stringify(scene, null, 2),
       'utf-8'
     );

@@ -1,14 +1,27 @@
 "use client";
 
 import { Film, RefreshCw, CheckCircle } from 'lucide-react';
+import ProjectSelector from './ProjectSelector';
 
 interface ToolbarProps {
   projectName: string;
+  activeProjectId: string | null;
   onReload: () => void;
   onRunChecks: () => void;
+  onProjectChange: (projectId: string) => void;
+  onCreateNewProject: () => void;
+  onManageProjects: () => void;
 }
 
-export default function Toolbar({ projectName, onReload, onRunChecks }: ToolbarProps) {
+export default function Toolbar({ 
+  projectName, 
+  activeProjectId, 
+  onReload, 
+  onRunChecks, 
+  onProjectChange, 
+  onCreateNewProject,
+  onManageProjects
+}: ToolbarProps) {
   return (
     <header className="bg-slate-900 border-b border-slate-800 px-3 py-3 sm:px-6 sticky top-0 z-50">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -20,9 +33,12 @@ export default function Toolbar({ projectName, onReload, onRunChecks }: ToolbarP
           </span>
         </div>
         <div className="hidden h-6 w-px bg-slate-700 sm:block"></div>
-        <span className="min-w-0 truncate text-xs text-slate-400 sm:text-sm font-mono">
-          {projectName}
-        </span>
+        <ProjectSelector
+          activeProjectId={activeProjectId}
+          onProjectChange={onProjectChange}
+          onCreateNew={onCreateNewProject}
+          onManage={onManageProjects}
+        />
       </div>
 
       <div className="flex items-center gap-2 overflow-x-auto">

@@ -1,0 +1,37 @@
+{
+  "shot_id": "S016",
+  "duration_s": 5,
+  "scene_ref": "scenes/kitchen_apartment_01.json",
+  "cam_setup_ref": "comic_panel_02",
+  "characters": [
+    {
+      "ref": "characters/charA_v1.json"
+    }
+  ],
+  "props": [],
+  "action": {
+    "beats": [
+      "窗外闪电照亮房间",
+      "玻璃上倒映出另一个林澈站在身后"
+    ]
+  },
+  "dialogue": {
+    "speaker": "林澈",
+    "text": "别回头。",
+    "voice_id": "charA_v1"
+  },
+  "voiceover": {
+    "speaker": "旁白",
+    "text": "窗外闪电照亮房间，玻璃上倒映出另一个林澈站在身后。",
+    "voice_id": "narrator"
+  },
+  "budget": {
+    "tier": "cheap",
+    "max_regen": 1
+  },
+  "prompt": {
+    "positive": "林澈站在窗前，窗外闪电照亮房间，玻璃上倒映出另一个林澈站在身后，阴森氛围，冷色调，电影感",
+    "negative": "模糊，过曝，卡通"
+  },
+  "context_refs": []
+}

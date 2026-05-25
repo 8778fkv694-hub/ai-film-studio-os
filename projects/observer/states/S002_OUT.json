@@ -1,0 +1,15 @@
+{
+  "shot_id": "S002",
+  "characters": {},
+  "props": {
+    "mug_red_v1": {
+      "location": "near Lin Che",
+      "state": "运行中"
+    }
+  },
+  "scene": {
+    "lighting": "night rain",
+    "weather": "rain",
+    "time": "midnight"
+  }
+}

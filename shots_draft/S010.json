@@ -1,0 +1,46 @@
+{
+  "shot_id": "S010",
+  "duration_s": 5,
+  "scene_ref": "scenes/kitchen_apartment_01.json",
+  "cam_setup_ref": "comic_panel_08",
+  "characters": [
+    {
+      "ref": "characters/charA_v1.json"
+    }
+  ],
+  "props": [
+    {
+      "ref": "props/mug_red_v1.json",
+      "state": "on table, key floating inside"
+    }
+  ],
+  "action": {
+    "beats": [
+      "Extreme close-up of the red mug",
+      "A key slowly rises from the liquid inside",
+      "Key handle has engraved number '503'",
+      "Protagonist's hand reaches for the key"
+    ]
+  },
+  "dialogue": {
+    "speaker": "Protagonist A",
+    "text": "五零三？隔壁？",
+    "voice_id": "charA_v1"
+  },
+  "voiceover": {
+    "speaker": "Narrator",
+    "text": "红杯里浮起一枚钥匙，钥匙柄刻着五楼的门牌号。",
+    "voice_id": "narrator_default"
+  },
+  "budget": {
+    "tier": "cheap",
+    "max_regen": 1
+  },
+  "prompt": {
+    "positive": "Extreme close-up of a red mug, a brass key emerging from dark liquid inside, key handle engraved with '503', water droplets on key, dramatic side lighting, shallow depth of field, mysterious, cinematic",
+    "negative": "blurry, overexposed, no key, bright"
+  },
+  "context_refs": [
+    "assets/renders/S009/keyframes/frame_01.jpg"
+  ]
+}

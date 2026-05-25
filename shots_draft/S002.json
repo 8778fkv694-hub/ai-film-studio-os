@@ -1,33 +1,33 @@
 {
   "shot_id": "S002",
-  "duration_s": 4,
+  "duration_s": 6,
   "scene_ref": "scenes/kitchen_apartment_01.json",
-  "cam_setup_ref": "TODO",
-  "characters": [
-    {
-      "ref": "characters/charA_v1.json"
-    }
-  ],
+  "cam_setup_ref": "comic_panel_02",
+  "characters": [],
   "props": [],
   "action": {
     "beats": [
-      "PROTAGONIST A sits at the wood table in the center. He wears a white hoodie and black jeans. He spins a silver ring on his left hand."
+      "运行设备展示",
+      "管道特写",
+      "警示标识显示",
+      "地面通道展示"
     ]
   },
-  "continuity": {
-    "must_match_prev": [],
-    "handoff_to_next": []
+  "dialogue": null,
+  "voiceover": {
+    "speaker": "旁白",
+    "text": "车间内存在运行设备、管道、气路、水路和电气装置。请不要靠近旋转部件、加热部件和压力管路。不要倚靠设备，不要触碰阀门、按钮、线缆和管道。行走时注意地面，防止滑倒、绊倒和碰撞。",
+    "voice_id": "default"
   },
   "budget": {
     "tier": "cheap",
     "max_regen": 1
   },
   "prompt": {
-    "positive": "INT. KITCHEN - NIGHT, PROTAGONIST A sits at the wood table in the center. He wears a white hoodie and black jeans. He spins a silver ring on his left hand.",
-    "negative": "default negative"
+    "positive": "工业车间，运行设备，管道，警示标识，地面通道，安全氛围，清晰细节，冷色调灯光",
+    "negative": "模糊，杂乱，无关人物"
   },
-  "_draft_meta": {
-    "original_text": "PROTAGONIST A sits at the wood table in the center. He wears a white hoodie and black jeans. He spins a silver ring on his left hand.",
-    "warnings": []
-  }
+  "context_refs": [
+    "assets/renders/S001/keyframes/frame_01.jpg"
+  ]
 }

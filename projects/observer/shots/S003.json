@@ -1,0 +1,36 @@
+{
+  "shot_id": "S003",
+  "duration_s": 17,
+  "scene_ref": "scenes/scene_exit.json",
+  "cam_setup_ref": "comic_panel_02",
+  "characters": [],
+  "props": [
+    {
+      "ref": "TODO: match prop manually",
+      "state": "放置中"
+    }
+  ],
+  "action": {
+    "beats": [
+      "人员沿地面路线行走离开",
+      "将洁净服、鞋套、口罩放回指定回收箱"
+    ]
+  },
+  "dialogue": null,
+  "voiceover": {
+    "speaker": "旁白",
+    "text": "参观结束后，请按指定路线离开洁净车间。洁净服、鞋套、口罩等按现场要求回收或放置，不得随意丢弃。离开后如有意见或问题，可统一反馈给陪同人员。",
+    "voice_id": "default"
+  },
+  "budget": {
+    "tier": "cheap",
+    "max_regen": 1
+  },
+  "prompt": {
+    "positive": "人员穿着洁净服从车间走出，沿地面箭头路线，将白色洁净服折叠放入回收箱，背景为更衣室出口，整洁有序",
+    "negative": "杂乱丢弃，人员拥挤"
+  },
+  "context_refs": [
+    "assets/renders/S002/keyframes/frame_01.jpg"
+  ]
+}

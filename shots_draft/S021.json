@@ -1,0 +1,38 @@
+{
+  "shot_id": "S021",
+  "duration_s": 5,
+  "scene_ref": "scenes/kitchen_apartment_01.json",
+  "cam_setup_ref": "comic_panel_03",
+  "characters": [],
+  "props": [
+    {
+      "ref": "props/mug_red_v1.json",
+      "state": "intact"
+    }
+  ],
+  "action": {
+    "beats": [
+      "电视雪花闪烁",
+      "噪声里慢慢挤出两个字：别信"
+    ]
+  },
+  "dialogue": {
+    "speaker": "电视",
+    "text": "别信",
+    "voice_id": "tv_voice"
+  },
+  "voiceover": {
+    "speaker": "旁白",
+    "text": "电视雪花闪烁，噪声里慢慢挤出两个字：别信。",
+    "voice_id": "narrator"
+  },
+  "budget": {
+    "tier": "cheap",
+    "max_regen": 1
+  },
+  "prompt": {
+    "positive": "Close-up of a flickering TV screen with static snow, the word '别信' emerging from the noise, dim kitchen lighting, eerie atmosphere",
+    "negative": "blurry, overexposed, cartoonish"
+  },
+  "context_refs": []
+}

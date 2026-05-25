@@ -1,0 +1,40 @@
+{
+  "shot_id": "S050",
+  "duration_s": 7,
+  "scene_ref": "scenes/kitchen_apartment_01.json",
+  "cam_setup_ref": "comic_panel_02",
+  "characters": [],
+  "props": [
+    {
+      "ref": "props/mug_red_v1.json",
+      "state": "on table, waiting"
+    }
+  ],
+  "action": {
+    "beats": [
+      "Rain stops, city appears washed clean.",
+      "The red mug remains on the table, as if waiting for the next person who needs truth."
+    ]
+  },
+  "dialogue": {
+    "speaker": "Protagonist A",
+    "text": "故事，从这里结束。",
+    "voice_id": "charA_v1"
+  },
+  "voiceover": {
+    "speaker": "Narrator",
+    "text": "雨停了。城市像刚被洗过，而红杯留在桌上，等下一个需要真相的人。",
+    "voice_id": "narrator_default"
+  },
+  "budget": {
+    "tier": "cheap",
+    "max_regen": 1
+  },
+  "prompt": {
+    "positive": "Medium shot, kitchen table after rain, red mug prominently on table, soft post-rain light, clean city visible through window, hopeful atmosphere, cinematic, 35mm lens",
+    "negative": "dark, gloomy, cluttered"
+  },
+  "context_refs": [
+    "assets/renders/S049/keyframes/frame_01.jpg"
+  ]
+}

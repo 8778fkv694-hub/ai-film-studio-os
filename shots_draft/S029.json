@@ -1,0 +1,38 @@
+{
+  "shot_id": "S029",
+  "duration_s": 6,
+  "scene_ref": "scenes/kitchen_apartment_01.json",
+  "cam_setup_ref": "comic_panel_02",
+  "characters": [
+    {
+      "ref": "characters/charA_v1.json"
+    }
+  ],
+  "props": [],
+  "action": {
+    "beats": [
+      "The staircase is narrow. The wall is covered with children's height marks, each dated the same day."
+    ]
+  },
+  "dialogue": {
+    "speaker": "Protagonist A",
+    "text": "为什么都是同一天？",
+    "voice_id": "charA_v1"
+  },
+  "voiceover": {
+    "speaker": "Narrator",
+    "text": "楼梯很窄，墙面贴着儿童身高线，每一道都写着同一天日期。",
+    "voice_id": "narrator_default"
+  },
+  "budget": {
+    "tier": "cheap",
+    "max_regen": 1
+  },
+  "prompt": {
+    "positive": "Medium shot of a narrow staircase descending into darkness, wall covered with children's height marks all dated the same day, eerie repetition, dim light from above, claustrophobic, unsettling atmosphere.",
+    "negative": "blurry, overexposed, cartoonish, low resolution"
+  },
+  "context_refs": [
+    "assets/renders/S028/keyframes/frame_01.jpg"
+  ]
+}

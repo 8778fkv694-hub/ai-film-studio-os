@@ -1,0 +1,40 @@
+{
+  "shot_id": "S015",
+  "duration_s": 6,
+  "scene_ref": "scenes/kitchen_apartment_01.json",
+  "cam_setup_ref": "comic_panel_08",
+  "characters": [
+    {
+      "ref": "characters/charA_v1.json"
+    }
+  ],
+  "props": [],
+  "action": {
+    "beats": [
+      "Protagonist A peels back a corner of the newspaper.",
+      "He reveals a pencil-written message underneath.",
+      "The message reads: 'If he comes back, don't let him remember the basement.'"
+    ]
+  },
+  "dialogue": {
+    "speaker": "Protagonist A",
+    "text": "他是谁？是我吗？",
+    "voice_id": "charA_v1"
+  },
+  "voiceover": {
+    "speaker": "Narrator",
+    "text": "报纸下面露出一段铅笔字：如果他回来，别让他记起地下室。",
+    "voice_id": "narrator_v1"
+  },
+  "budget": {
+    "tier": "cheap",
+    "max_regen": 1
+  },
+  "prompt": {
+    "positive": "Extreme close-up of a handwritten pencil message on a wall, partially hidden by newspaper, man's hand peeling paper, dramatic lighting, suspense, cinematic",
+    "negative": "bright, blurry, illegible"
+  },
+  "context_refs": [
+    "assets/renders/S014/keyframes/frame_01.jpg"
+  ]
+}

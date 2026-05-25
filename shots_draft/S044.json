@@ -1,0 +1,39 @@
+{
+  "shot_id": "S044",
+  "duration_s": 6,
+  "scene_ref": "scenes/kitchen_apartment_01.json",
+  "cam_setup_ref": "comic_panel_01",
+  "characters": [
+    {
+      "ref": "characters/charA_v1.json"
+    }
+  ],
+  "props": [],
+  "action": {
+    "beats": [
+      "The mother points toward the window.",
+      "Through the rain, a flashback shows a young boy locking his mother in the basement ten years ago."
+    ]
+  },
+  "dialogue": {
+    "speaker": "Protagonist A",
+    "text": "是我做的？",
+    "voice_id": "charA_v1"
+  },
+  "voiceover": {
+    "speaker": "Narrator",
+    "text": "她指向窗外。雨幕里，十年前的小男孩正把母亲锁进地下室。",
+    "voice_id": "narrator_default"
+  },
+  "budget": {
+    "tier": "cheap",
+    "max_regen": 1
+  },
+  "prompt": {
+    "positive": "Wide shot of a kitchen window with rain outside, a woman pointing, ghostly flashback of a boy locking a door, blue and grey tones, cinematic.",
+    "negative": "blurry, overexposed, extra characters, modern elements"
+  },
+  "context_refs": [
+    "assets/renders/S043/keyframes/frame_01.jpg"
+  ]
+}

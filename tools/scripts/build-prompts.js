@@ -1,10 +1,10 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { execSync } from 'node:child_process';
-import { fileURLToPath } from 'node:url';
 import { loadTemplate, renderTemplate, loadRules, applyRules, joinList, joinSentences } from './shared/template-engine.js';
+import { parseArgs } from './shared/dirs.js';
 
-const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../');
+const { workDir, projectRoot, remainingArgs } = parseArgs();
 const IMAGE_EXTS = new Set(['.jpg', '.jpeg', '.png', '.webp', '.svg']);
 
 const CAMERA_MOTION = {
@@ -19,15 +19,21 @@ const CAMERA_MOTION = {
 };
 
 function readJson(rel) {
+  // 先查项目目录，再查全局根目录（styles/ 等共享资源）
+  const projectPath = path.join(workDir, rel);
+  if (fs.existsSync(projectPath)) {
+    try { return JSON.parse(fs.readFileSync(projectPath, 'utf-8')); } catch { return null; }
+  }
+  const globalPath = path.join(projectRoot, rel);
   try {
-    return JSON.parse(fs.readFileSync(path.join(ROOT, rel), 'utf-8'));
+    return JSON.parse(fs.readFileSync(globalPath, 'utf-8'));
   } catch {
     return null;
   }
 }
 
 function ensureDir(rel) {
-  fs.mkdirSync(path.join(ROOT, rel), { recursive: true });
+  fs.mkdirSync(path.join(workDir, rel), { recursive: true });
 }
 
 function clean(value) {
@@ -47,7 +53,7 @@ function normalizeNegative(item) {
 
 function getGitHash() {
   try {
-    return execSync('git rev-parse --short HEAD', { cwd: ROOT, encoding: 'utf8' }).trim();
+    return execSync('git rev-parse --short HEAD', { cwd: workDir, encoding: 'utf8' }).trim();
   } catch {
     return 'unknown';
   }
@@ -108,7 +114,7 @@ function collectReferences(scene, characters, props) {
       path: anchor.img,
       note: anchor.note || '',
       use_for: anchor.use_for || [],
-      exists: fs.existsSync(path.join(ROOT, anchor.img))
+      exists: fs.existsSync(path.join(workDir, anchor.img))
     });
   }
   for (const character of characters) {
@@ -119,7 +125,7 @@ function collectReferences(scene, characters, props) {
         path: img,
         note: character.name || character.id,
         use_for: ['identity', 'wardrobe'],
-        exists: fs.existsSync(path.join(ROOT, img))
+        exists: fs.existsSync(path.join(workDir, img))
       });
     }
   }
@@ -131,7 +137,7 @@ function collectReferences(scene, characters, props) {
         path: img,
         note: prop.name || prop.id,
         use_for: ['prop lock'],
-        exists: fs.existsSync(path.join(ROOT, img))
+        exists: fs.existsSync(path.join(workDir, img))
       });
     }
   }
@@ -139,7 +145,7 @@ function collectReferences(scene, characters, props) {
 }
 
 function listExistingKeyframes(shotId) {
-  const dir = path.join(ROOT, 'assets/renders', shotId, 'keyframes');
+  const dir = path.join(workDir, 'assets/renders', shotId, 'keyframes');
   if (!fs.existsSync(dir)) return [];
   return fs.readdirSync(dir)
     .filter(file => IMAGE_EXTS.has(path.extname(file).toLowerCase()))
@@ -212,21 +218,22 @@ function buildVideoPromptLegacy(shot, scene, style, characters, props, contextCo
     formatStateNotes(shot.continuity?.state_changes),
     shot.prompt?.positive || '',
     contextContinuity,
-    'Stable visual consistency across entire clip. No character drift, no prop mutation, no scene layout shift.'
+    '16:9 aspect ratio, cinematic quality, 4K, high fidelity, stable visual consistency',
+    'No face morphing, no prop mutation, no scene layout shift, no flickering.'
   ].filter(Boolean);
 
   return joinSentences(sentences);
 }
 
-function compileVideoPrompt(shotFile, gitHash, projectDefaults, shotIndex = 0) {
+function compileVideoPrompt(shotFile, gitHash, projectDefaults, shotIndex = 0, timeline = []) {
   const shot = readJson(`shots/${shotFile}`);
   if (!shot) {
-    return { shot_id: shotFile.replace('.json', ''), error: 'shot file not found' };
+    return { promptSpec: { shot_id: shotFile.replace('.json', ''), error: 'shot file not found' }, finalPrompt: null, missingAssets: [] };
   }
 
   const scene = readJson(shot.scene_ref);
   if (!scene) {
-    return { shot_id: shot.shot_id, error: `scene not found: ${shot.scene_ref}` };
+    return { promptSpec: { shot_id: shot.shot_id, error: `scene not found: ${shot.scene_ref}` }, finalPrompt: null, missingAssets: [] };
   }
 
   const resolveStyle = () => {
@@ -246,9 +253,39 @@ function compileVideoPrompt(shotFile, gitHash, projectDefaults, shotIndex = 0) {
   const contextRefs = (shot.context_refs || [])
     .filter(ref => typeof ref === 'string' && ref.trim());
   const availableContextRefs = contextRefs
-    .filter(ref => fs.existsSync(path.join(ROOT, ref)));
+    .filter(ref => fs.existsSync(path.join(workDir, ref)));
   const missingContextRefs = contextRefs
-    .filter(ref => !fs.existsSync(path.join(ROOT, ref)));
+    .filter(ref => !fs.existsSync(path.join(workDir, ref)));
+
+  // Automatically check predecessor shot's frame_last.jpg
+  let predecessorShotId = null;
+  const currentShotId = shot.shot_id;
+  if (timeline && timeline.length > 0) {
+    const currentIndex = timeline.findIndex(entry => entry.shot_id === currentShotId);
+    if (currentIndex > 0) {
+      predecessorShotId = timeline[currentIndex - 1].shot_id;
+    }
+  } else {
+    // Fallback: alphabetical predecessor
+    const allShots = fs.readdirSync(path.join(workDir, 'shots'))
+      .filter(f => f.endsWith('.json'))
+      .map(f => f.replace('.json', ''))
+      .sort();
+    const currentIndex = allShots.indexOf(currentShotId);
+    if (currentIndex > 0) {
+      predecessorShotId = allShots[currentIndex - 1];
+    }
+  }
+
+  if (predecessorShotId) {
+    const predFrameLastPath = `assets/renders/${predecessorShotId}/keyframes/frame_last.jpg`;
+    if (fs.existsSync(path.join(workDir, predFrameLastPath))) {
+      if (!availableContextRefs.includes(predFrameLastPath)) {
+        availableContextRefs.unshift(predFrameLastPath);
+        console.log(`[VideoPrompts] Stitched predecessor shot ${predecessorShotId}'s frame_last.jpg as context ref for ${currentShotId}`);
+      }
+    }
+  }
 
   const contextContinuity = availableContextRefs.length > 0
     ? `Shot-to-shot continuity: maintain identical character identity, scene layout, lighting and prop positions as established in previous shot. Visual style must match preceding frame. Do not introduce new visual elements not present in the reference images.`
@@ -509,8 +546,8 @@ function writeStoryboardExports(packages, suffix) {
     );
   }
 
-  fs.writeFileSync(path.join(ROOT, `${filenameBase}.csv`), csvRows.join('\n'));
-  fs.writeFileSync(path.join(ROOT, `${filenameBase}.md`), md.join('\n'));
+  fs.writeFileSync(path.join(workDir, `${filenameBase}.csv`), csvRows.join('\n'));
+  fs.writeFileSync(path.join(workDir, `${filenameBase}.md`), md.join('\n'));
 }
 
 function main() {
@@ -533,16 +570,16 @@ function main() {
   let shotFiles;
   if (onlyShotId) {
     const fileName = `S${String(onlyShotId).padStart(3, '0')}.json`;
-    if (fs.existsSync(path.join(ROOT, 'shots', fileName))) {
+    if (fs.existsSync(path.join(workDir, 'shots', fileName))) {
       shotFiles = [fileName];
-    } else if (fs.existsSync(path.join(ROOT, 'shots', `${onlyShotId}.json`))) {
+    } else if (fs.existsSync(path.join(workDir, 'shots', `${onlyShotId}.json`))) {
       shotFiles = [`${onlyShotId}.json`];
     } else {
       console.error(`[VideoPrompts] Shot not found: ${onlyShotId}`);
       process.exit(1);
     }
   } else {
-    shotFiles = fs.readdirSync(path.join(ROOT, 'shots'))
+    shotFiles = fs.readdirSync(path.join(workDir, 'shots'))
       .filter(f => f.endsWith('.json'));
   }
 
@@ -561,7 +598,7 @@ function main() {
   const exportSuffix = onlyShotId ? `shot-${onlyShotId}` : '';
 
   for (const [idx, f] of shotFiles.entries()) {
-    const { promptSpec, finalPrompt, missingAssets } = compileVideoPrompt(f, gitHash, projectDefaults, idx);
+    const { promptSpec, finalPrompt, missingAssets } = compileVideoPrompt(f, gitHash, projectDefaults, idx, timeline);
 
     if (promptSpec.error) {
       console.error(`[ERROR] ${promptSpec.shot_id}: ${promptSpec.error}`);
@@ -570,11 +607,11 @@ function main() {
     }
 
     fs.writeFileSync(
-      path.join(ROOT, 'prompts', `${promptSpec.shot_id}.prompt.json`),
+      path.join(workDir, 'prompts', `${promptSpec.shot_id}.prompt.json`),
       JSON.stringify(promptSpec, null, 2)
     );
     fs.writeFileSync(
-      path.join(ROOT, 'prompts', `${promptSpec.shot_id}.final.json`),
+      path.join(workDir, 'prompts', `${promptSpec.shot_id}.final.json`),
       JSON.stringify(finalPrompt, null, 2)
     );
 

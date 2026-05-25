@@ -1,0 +1,40 @@
+{
+  "shot_id": "S017",
+  "duration_s": 4,
+  "scene_ref": "scenes/kitchen_apartment_01.json",
+  "cam_setup_ref": "comic_panel_02",
+  "characters": [
+    {
+      "ref": "characters/charA_v1.json"
+    }
+  ],
+  "props": [],
+  "action": {
+    "beats": [
+      "他还是回头了",
+      "身后没有人",
+      "只有柜门轻轻敞开"
+    ]
+  },
+  "dialogue": {
+    "speaker": "林澈",
+    "text": "你到底要我看什么？",
+    "voice_id": "charA_v1"
+  },
+  "voiceover": {
+    "speaker": "旁白",
+    "text": "他还是回头了。身后没有人，只有柜门轻轻敞开。",
+    "voice_id": "narrator"
+  },
+  "budget": {
+    "tier": "cheap",
+    "max_regen": 1
+  },
+  "prompt": {
+    "positive": "林澈回头，身后空无一人，柜门敞开，昏暗灯光，紧张氛围",
+    "negative": "模糊，过曝，卡通"
+  },
+  "context_refs": [
+    "assets/renders/S016/keyframes/frame_01.jpg"
+  ]
+}

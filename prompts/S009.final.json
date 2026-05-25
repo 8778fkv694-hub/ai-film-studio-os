@@ -1,0 +1,30 @@
+{
+  "shot_id": "S009",
+  "duration_s": 5,
+  "prompt": "style: Cinematic Realism v1, mood: cinematic, moody, controlled lighting, color palette: warm highlights, cool shadows. cinematic live-action video shot. scene: Apartment Kitchen Night. red fridge, wooden table, rainy window. lighting: dim warm lamp + blue moonlight. character (charA_v1): short_black, white_hoodie + black_jeans, silver_ring_left_hand. prop (mug_red_v1): state: on table, near sink, visually consistent. Water starts dripping from the sink faucet, Each drip sounds like a ticking clock, The room feels narrower, protagonist covers ears. Narration: \"水槽开始滴水，滴声像秒针，把房间切得很窄。\". Protagonist A says: \"够了，别响了。\". Camera motion: tight close-up, shallow depth of field, subtle breathing camera drift. Close-up of a kitchen sink faucet dripping water, slow motion, each drop visible, protagonist's hand covering ears in background, claustrophobic framing, dim blue-gray lighting, tense atmosphere, cinematic. Character identity locked to reference images. No face morphing or outfit variation.. Scene layout locked to context reference frame. Do not reposition props or alter lighting source.. All props match reference images exactly. Prop must_keep: shape, color, size, material unchanged.. Camera transition smooth from previous shot continuity frame. No abrupt jump cut between shots. Stable visual consistency across entire clip. No character drift, no prop mutation, no scene layout shift.",
+  "negative": "cartoon, neon cyberpunk (unless explicitly requested), sunlight, daylight, modern led lights, crowd, bright, cheerful, wide shot, no water, multiple characters, duplicate person, clone, inconsistent lighting, wrong angle, lens distortion, chromatic aberration, mouth mismatch, silent face, frozen expression, unnatural dubbing, face morphing, character drift, outfit change, prop mutation, scene layout shift, extra fingers, distorted limbs, text artifacts, burnt-in subtitles, logo, watermark, motion blur excessive, flickering, framing jump cut",
+  "motion": "tight close-up, shallow depth of field, subtle breathing camera drift",
+  "condition_images": [
+    "assets/scenes/kitchen_apartment_01/anchor_A.svg",
+    "assets/scenes/kitchen_apartment_01/anchor_B.svg",
+    "assets/scenes/kitchen_apartment_01/anchor_C.svg"
+  ],
+  "context_ref_images": [],
+  "tool_hint": "Copy \"prompt\" and \"negative\" into video generation tool. Upload \"condition_images\" for img2vid start/end frame conditioning if supported. \"context_ref_images\" are previous shot keyframes for visual continuity. Duration is a guideline.",
+  "meta": {
+    "compiler_version": "video-prompts-2.0.0",
+    "git_commit": "8020ce7",
+    "compiled_at": "2026-05-25T10:32:28.041Z",
+    "compiled_from": {
+      "shot": "shots/S009.json",
+      "scene": "scenes/kitchen_apartment_01.json",
+      "style": "styles/cinematic_v1.json",
+      "characters": [
+        "characters/charA_v1.json"
+      ],
+      "props": [
+        "props/mug_red_v1.json"
+      ]
+    }
+  }
+}

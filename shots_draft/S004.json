@@ -1,33 +1,31 @@
 {
   "shot_id": "S004",
-  "duration_s": 4,
+  "duration_s": 6,
   "scene_ref": "scenes/kitchen_apartment_01.json",
-  "cam_setup_ref": "TODO",
-  "characters": [
-    {
-      "ref": "characters/charA_v1.json"
-    }
-  ],
+  "cam_setup_ref": "comic_panel_01",
+  "characters": [],
   "props": [],
   "action": {
     "beats": [
-      "PROTAGONIST A\n(whispering)\nIt's quiet. Too quiet."
+      "洁净车间整体画面展示",
+      "重点提示叠加显示"
     ]
   },
-  "continuity": {
-    "must_match_prev": [],
-    "handoff_to_next": []
+  "dialogue": null,
+  "voiceover": {
+    "speaker": "旁白",
+    "text": "洁净车间管理的核心，是减少污染、保证质量、确保安全。请大家做到：规范更衣、完成风淋、只看不摸、不越线、不拍摄。感谢配合。",
+    "voice_id": "default"
   },
   "budget": {
     "tier": "cheap",
     "max_regen": 1
   },
   "prompt": {
-    "positive": "INT. KITCHEN - NIGHT, PROTAGONIST A\n(whispering)\nIt's quiet. Too quiet.",
-    "negative": "default negative"
+    "positive": "洁净车间全景，明亮整洁，设备有序，重点提示文字叠加，专业氛围，广角镜头",
+    "negative": "杂乱，昏暗，模糊"
   },
-  "_draft_meta": {
-    "original_text": "PROTAGONIST A\n(whispering)\nIt's quiet. Too quiet.",
-    "warnings": []
-  }
+  "context_refs": [
+    "assets/renders/S003/keyframes/frame_01.jpg"
+  ]
 }

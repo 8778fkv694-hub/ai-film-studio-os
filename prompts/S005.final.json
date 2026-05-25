@@ -1,20 +1,16 @@
 {
   "shot_id": "S005",
-  "duration_s": 12,
-  "prompt": "style: Cinematic Realism v1, mood: cinematic, moody, controlled lighting, color palette: warm highlights, cool shadows. cinematic live-action video shot. scene: Apartment Kitchen Night. red fridge, wooden table, rainy window. lighting: dim warm lamp + blue moonlight. character (charA_v1): short_black, white_hoodie + black_jeans, silver_ring_left_hand. prop (mug_red_v1): state: story_clue, visually consistent. 他走到猫眼前，走廊空着，灯却一盏一盏熄灭。, 林澈低声说：有人在外面。. Narration: \"他走到猫眼前，走廊空着，灯却一盏一盏熄灭。\". 林澈 says: \"有人在外面。\". Camera motion: over-the-shoulder shot, slow rack focus between subjects. continuity locks: charA_v1 (location: apartment_kitchen_or_hallway, pose: searching); mug_red_v1 (location: near_main_character, state: warm_and_unexplained). over-the-shoulder shot, young Chinese man peering through apartment peephole, dark hallway outside with lights extinguishing one by one, oppressive suspense atmosphere, red mug on table as recurring clue, searching pose. Shot-to-shot continuity: maintain identical character identity, scene layout, lighting and prop positions as established in previous shot. Visual style must match preceding frame. Do not introduce new visual elements not present in the reference images. Character identity locked to reference images. No face morphing or outfit variation.. Scene layout locked to context reference frame. Do not reposition props or alter lighting source.. All props match reference images exactly. Prop must_keep: shape, color, size, material unchanged.. Camera transition smooth from previous shot continuity frame. No abrupt jump cut between shots. Stable visual consistency across entire clip. No character drift, no prop mutation, no scene layout shift.",
-  "negative": "cartoon, neon cyberpunk (unless explicitly requested), sunlight, daylight, modern led lights, crowd, no text artifacts, no logo, no watermark, no extra fingers, no face drift, multiple characters, duplicate person, clone, inconsistent lighting, wrong angle, lens distortion, chromatic aberration, mouth mismatch, silent face, frozen expression, unnatural dubbing, face morphing, character drift, outfit change, prop mutation, scene layout shift, extra fingers, distorted limbs, text artifacts, burnt-in subtitles, logo, watermark, motion blur excessive, flickering, framing jump cut",
-  "motion": "over-the-shoulder shot, slow rack focus between subjects",
+  "duration_s": 6,
+  "prompt": "style: Cinematic Realism v1, mood: cinematic, moody, controlled lighting, color palette: warm highlights, cool shadows. cinematic live-action video shot. scene: Apartment Kitchen Night. red fridge, wooden table, rainy window. lighting: dim warm lamp + blue moonlight. character (charA_v1): short_black, white_hoodie + black_jeans, silver_ring_left_hand. 林澈走到门前，凑近猫眼, 通过猫眼看到空荡荡的走廊, 走廊灯一盏接一盏熄灭，陷入黑暗, 林澈后退，呼吸急促. Narration: \"他走到猫眼前，走廊空着，灯却一盏一盏熄灭。\". 林澈 says: \"有人在外面。\". Camera motion: tight close-up, shallow depth of field, subtle breathing camera drift. Close-up of young man's eye pressed against peephole, distorted view of empty hallway, lights going out one by one, darkening corridor, claustrophobic, horror atmosphere, high contrast, film noir style. Shot-to-shot continuity: maintain identical character identity, scene layout, lighting and prop positions as established in previous shot. Visual style must match preceding frame. Do not introduce new visual elements not present in the reference images. Character identity locked to reference images. No face morphing or outfit variation.. Scene layout locked to context reference frame. Do not reposition props or alter lighting source.. Camera transition smooth from previous shot continuity frame. No abrupt jump cut between shots. Stable visual consistency across entire clip. No character drift, no prop mutation, no scene layout shift.",
+  "negative": "cartoon, neon cyberpunk (unless explicitly requested), sunlight, daylight, modern led lights, crowd, bright, daytime, cartoon, anime, oversaturated, multiple characters, duplicate person, clone, inconsistent lighting, wrong angle, lens distortion, chromatic aberration, mouth mismatch, silent face, frozen expression, unnatural dubbing, face morphing, character drift, outfit change, prop mutation, scene layout shift, extra fingers, distorted limbs, text artifacts, burnt-in subtitles, logo, watermark, motion blur excessive, flickering, framing jump cut",
+  "motion": "tight close-up, shallow depth of field, subtle breathing camera drift",
   "condition_images": [
     "assets/renders/S004/keyframes/frame_01.jpg",
     "assets/renders/S005/keyframes/frame_01.jpg",
     "assets/renders/S005/keyframes/frame_01.svg",
     "assets/scenes/kitchen_apartment_01/anchor_A.svg",
     "assets/scenes/kitchen_apartment_01/anchor_B.svg",
-    "assets/scenes/kitchen_apartment_01/anchor_C.svg",
-    "assets/characters/charA_v1/front.svg",
-    "assets/characters/charA_v1/side.svg",
-    "assets/characters/charA_v1/fullbody.svg",
-    "assets/props/mug_red_v1/ref.svg"
+    "assets/scenes/kitchen_apartment_01/anchor_C.svg"
   ],
   "context_ref_images": [
     "assets/renders/S004/keyframes/frame_01.jpg"
@@ -22,8 +18,8 @@
   "tool_hint": "Copy \"prompt\" and \"negative\" into video generation tool. Upload \"condition_images\" for img2vid start/end frame conditioning if supported. \"context_ref_images\" are previous shot keyframes for visual continuity. Duration is a guideline.",
   "meta": {
     "compiler_version": "video-prompts-2.0.0",
-    "git_commit": "8baf57e",
-    "compiled_at": "2026-05-25T05:39:44.793Z",
+    "git_commit": "8020ce7",
+    "compiled_at": "2026-05-25T10:32:28.037Z",
     "compiled_from": {
       "shot": "shots/S005.json",
       "scene": "scenes/kitchen_apartment_01.json",
@@ -31,9 +27,7 @@
       "characters": [
         "characters/charA_v1.json"
       ],
-      "props": [
-        "props/mug_red_v1.json"
-      ]
+      "props": []
     }
   }
 }

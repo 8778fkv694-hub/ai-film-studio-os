@@ -1,0 +1,30 @@
+{
+  "shot_id": "S027",
+  "duration_s": 4,
+  "prompt": "style: Cinematic Realism v1, mood: cinematic, moody, controlled lighting, color palette: warm highlights, cool shadows. cinematic live-action video shot. scene: Apartment Kitchen Night. red fridge, wooden table, rainy window. lighting: dim warm lamp + blue moonlight. character (charA_v1): short_black, white_hoodie + black_jeans, silver_ring_left_hand. prop (mug_red_v1): state: on table, visually consistent. The floor emits a hollow sound. Protagonist A crouches and knocks on the floor. A loose wooden board is found near a table leg. Narration: \"地板传来空响。他蹲下敲击，桌脚旁有一块木板松了。\". Protagonist A says: \"就在这里。\". Camera motion: medium shot, subtle hand-held camera feel, focus on subject action. Medium shot of a man crouching on a wooden floor, knocking on a loose board near a table leg, dim kitchen light, suspenseful mood, realistic textures, warm amber tones. Character identity locked to reference images. No face morphing or outfit variation.. Scene layout locked to context reference frame. Do not reposition props or alter lighting source.. All props match reference images exactly. Prop must_keep: shape, color, size, material unchanged.. Camera transition smooth from previous shot continuity frame. No abrupt jump cut between shots. Stable visual consistency across entire clip. No character drift, no prop mutation, no scene layout shift.",
+  "negative": "cartoon, neon cyberpunk (unless explicitly requested), sunlight, daylight, modern led lights, crowd, blurry, overexposed, cartoonish, low resolution, multiple characters, duplicate person, clone, inconsistent lighting, wrong angle, lens distortion, chromatic aberration, mouth mismatch, silent face, frozen expression, unnatural dubbing, face morphing, character drift, outfit change, prop mutation, scene layout shift, extra fingers, distorted limbs, text artifacts, burnt-in subtitles, logo, watermark, motion blur excessive, flickering, framing jump cut",
+  "motion": "medium shot, subtle hand-held camera feel, focus on subject action",
+  "condition_images": [
+    "assets/scenes/kitchen_apartment_01/anchor_A.svg",
+    "assets/scenes/kitchen_apartment_01/anchor_B.svg",
+    "assets/scenes/kitchen_apartment_01/anchor_C.svg"
+  ],
+  "context_ref_images": [],
+  "tool_hint": "Copy \"prompt\" and \"negative\" into video generation tool. Upload \"condition_images\" for img2vid start/end frame conditioning if supported. \"context_ref_images\" are previous shot keyframes for visual continuity. Duration is a guideline.",
+  "meta": {
+    "compiler_version": "video-prompts-2.0.0",
+    "git_commit": "8020ce7",
+    "compiled_at": "2026-05-25T10:32:28.052Z",
+    "compiled_from": {
+      "shot": "shots/S027.json",
+      "scene": "scenes/kitchen_apartment_01.json",
+      "style": "styles/cinematic_v1.json",
+      "characters": [
+        "characters/charA_v1.json"
+      ],
+      "props": [
+        "props/mug_red_v1.json"
+      ]
+    }
+  }
+}

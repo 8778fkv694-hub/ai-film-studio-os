@@ -1,0 +1,44 @@
+{
+  "shot_id": "S033",
+  "duration_s": 5,
+  "scene_ref": "scenes/kitchen_apartment_01.json",
+  "cam_setup_ref": "comic_panel_03",
+  "characters": [
+    {
+      "ref": "characters/charA_v1.json"
+    }
+  ],
+  "props": [
+    {
+      "ref": "props/mug_red_v1.json",
+      "state": "on table"
+    }
+  ],
+  "action": {
+    "beats": [
+      "The tape recorder continues playing.",
+      "Lin Che listens intently, then reacts with surprise to the next line."
+    ]
+  },
+  "dialogue": {
+    "speaker": "Protagonist A (younger, recorded)",
+    "text": "Don't look for mother. First, find the one who replaced you.",
+    "voice_id": "charA_v1_young"
+  },
+  "voiceover": {
+    "speaker": "Narrator",
+    "text": "The recording continues: Don't look for mother, first find the one who replaced you.",
+    "voice_id": "narrator_default"
+  },
+  "budget": {
+    "tier": "cheap",
+    "max_regen": 1
+  },
+  "prompt": {
+    "positive": "Medium shot of Lin Che leaning forward, surprised expression, tape recorder in frame, red mug, dim kitchen, suspenseful mood, chiaroscuro lighting.",
+    "negative": "blurry, overexposed, flat lighting."
+  },
+  "context_refs": [
+    "assets/renders/S032/keyframes/frame_01.jpg"
+  ]
+}

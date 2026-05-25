@@ -1,0 +1,34 @@
+{
+  "shot_id": "S005",
+  "duration_s": 7,
+  "scene_ref": "scenes/scene_interior.json",
+  "cam_setup_ref": "comic_panel_01",
+  "characters": [
+    {
+      "ref": "TODO: match character path"
+    }
+  ],
+  "props": [],
+  "action": {
+    "beats": [
+      "Visitors walking along designated path, not touching equipment"
+    ]
+  },
+  "dialogue": null,
+  "voiceover": {
+    "speaker": "Narrator",
+    "text": "进入车间后，请按指定路线参观。参观过程中，不得脱帽、摘口罩，不得随意触摸设备、物料、工装、产品和记录表单。未经允许，不得操作设备，不得进入黄线以内或设备防护区域。",
+    "voice_id": "narrator_male_01"
+  },
+  "budget": {
+    "tier": "cheap",
+    "max_regen": 1
+  },
+  "prompt": {
+    "positive": "Visitors in clean suits walking along marked path in clean workshop, machinery in background, yellow floor lines, sterile environment",
+    "negative": "touching equipment, removing mask, crossing yellow line"
+  },
+  "context_refs": [
+    "assets/renders/S004/keyframes/frame_01.jpg"
+  ]
+}

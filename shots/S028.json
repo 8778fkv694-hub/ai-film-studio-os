@@ -1,0 +1,38 @@
+{
+  "shot_id": "S028",
+  "duration_s": 5,
+  "scene_ref": "scenes/kitchen_apartment_01.json",
+  "cam_setup_ref": "comic_panel_03",
+  "characters": [
+    {
+      "ref": "characters/charA_v1.json"
+    }
+  ],
+  "props": [],
+  "action": {
+    "beats": [
+      "The wooden board is lifted. Cold wind rises from the dark hole, carrying a damp, rusty smell."
+    ]
+  },
+  "dialogue": {
+    "speaker": "Protagonist A",
+    "text": "我下去。",
+    "voice_id": "charA_v1"
+  },
+  "voiceover": {
+    "speaker": "Narrator",
+    "text": "木板掀开，冷风从黑洞里爬出来，带着潮湿的铁锈味。",
+    "voice_id": "narrator_default"
+  },
+  "budget": {
+    "tier": "cheap",
+    "max_regen": 1
+  },
+  "prompt": {
+    "positive": "Close-up of a dark hole in the floor, cold mist rising, wooden board partially lifted, damp rusty atmosphere, low-key lighting, cinematic depth, eerie blue-gray tones.",
+    "negative": "blurry, overexposed, cartoonish, low resolution"
+  },
+  "context_refs": [
+    "assets/renders/S027/keyframes/frame_01.jpg"
+  ]
+}

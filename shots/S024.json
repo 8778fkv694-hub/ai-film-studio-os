@@ -1,0 +1,40 @@
+{
+  "shot_id": "S024",
+  "duration_s": 5,
+  "scene_ref": "scenes/kitchen_apartment_01.json",
+  "cam_setup_ref": "comic_panel_08",
+  "characters": [],
+  "props": [
+    {
+      "ref": "props/mug_red_v1.json",
+      "state": "cracking"
+    }
+  ],
+  "action": {
+    "beats": [
+      "门把手缓慢转动",
+      "红杯突然裂开一道细缝"
+    ]
+  },
+  "dialogue": {
+    "speaker": "林澈",
+    "text": "别进来。",
+    "voice_id": "linche_voice"
+  },
+  "voiceover": {
+    "speaker": "旁白",
+    "text": "门把手缓慢转动，红杯突然裂开一道细缝。",
+    "voice_id": "narrator"
+  },
+  "budget": {
+    "tier": "cheap",
+    "max_regen": 1
+  },
+  "prompt": {
+    "positive": "Extreme close-up of a red mug developing a thin crack, tension, shallow depth of field, ominous lighting",
+    "negative": "blurry, overexposed, intact mug"
+  },
+  "context_refs": [
+    "assets/renders/S023/keyframes/frame_01.jpg"
+  ]
+}

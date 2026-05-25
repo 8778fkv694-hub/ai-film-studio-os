@@ -1,16 +1,16 @@
 {
   "shot_id": "S002",
-  "duration_s": 12,
+  "duration_s": 5,
   "language": "zh",
   "task_type": "video_generation",
-  "video_prompt": "style: Cinematic Realism v1, mood: cinematic, moody, controlled lighting, color palette: warm highlights, cool shadows. cinematic live-action video shot. scene: Apartment Kitchen Night. red fridge, wooden table, rainy window. lighting: dim warm lamp + blue moonlight. character (charA_v1): short_black, white_hoodie + black_jeans, silver_ring_left_hand. prop (mug_red_v1): state: story_clue, visually consistent. 桌上有一只红杯，杯沿还冒着热气。那不是他的杯子。, 林澈低声说：谁来过我家？. Narration: \"桌上有一只红杯，杯沿还冒着热气。那不是他的杯子。\". 林澈 says: \"谁来过我家？\". Camera motion: medium shot, subtle hand-held camera feel, focus on subject action. continuity locks: charA_v1 (location: apartment_kitchen_or_hallway, pose: searching); mug_red_v1 (location: near_main_character, state: warm_and_unexplained). close-up on wooden table, red mug with steam rising, young Chinese man searching pose, rainy night outside window, red mug as mystery clue, dim warm lamp lighting. Shot-to-shot continuity: maintain identical character identity, scene layout, lighting and prop positions as established in previous shot. Visual style must match preceding frame. Do not introduce new visual elements not present in the reference images. Character identity locked to reference images. No face morphing or outfit variation.. Scene layout locked to context reference frame. Do not reposition props or alter lighting source.. All props match reference images exactly. Prop must_keep: shape, color, size, material unchanged.. Camera transition smooth from previous shot continuity frame. No abrupt jump cut between shots. Stable visual consistency across entire clip. No character drift, no prop mutation, no scene layout shift.",
-  "video_prompt_keywords": "cinematic, moody, controlled lighting, red fridge, wooden table, rainy window, dim warm lamp + blue moonlight, charA_v1, short_black, white_hoodie + black_jeans, silver_ring_left_hand, mug_red_v1, 桌上有一只红杯，杯沿还冒着热气。那不是他的杯子。, 林澈低声说：谁来过我家？, 林澈 says: \"谁来过我家？\", close-up on wooden table, red mug with steam rising, young Chinese man searching pose, rainy night outside window, red mug as mystery clue, dim warm lamp lighting",
-  "video_prompt_short": "style: Cinematic Realism v1, mood: cinematic, moody, controlled lighting, color palette: warm highlights, cool shadows. cinematic live-action video shot. scene: Apartment Kitchen Night. red fridge, wooden table, rainy window. lighting: dim warm lamp + blue moonlight. character (charA_v1): short_black, white_hoodie + black_jeans, silver_ring_left_hand. prop (mug_red_v1): state: story_clue, visually consistent. 桌上有一只红杯，杯沿还冒着热气。那不是他的杯子。, 林澈低声说：谁来过我家？. Narration: \"桌上有一只红杯，杯沿还冒着热气。那不是他的杯子。\". 林澈 sa...",
-  "negative_prompt": "cartoon, neon cyberpunk (unless explicitly requested), sunlight, daylight, modern led lights, crowd, no text artifacts, no logo, no watermark, no extra fingers, no face drift, multiple characters, duplicate person, clone, inconsistent lighting, wrong angle, lens distortion, chromatic aberration, mouth mismatch, silent face, frozen expression, unnatural dubbing, face morphing, character drift, outfit change, prop mutation, scene layout shift, extra fingers, distorted limbs, text artifacts, burnt-in subtitles, logo, watermark, motion blur excessive, flickering, framing jump cut",
-  "camera_intent": "comic_panel_02",
-  "camera_motion": "medium shot, subtle hand-held camera feel, focus on subject action",
-  "continuity_notes": "continuity locks: charA_v1 (location: apartment_kitchen_or_hallway, pose: searching); mug_red_v1 (location: near_main_character, state: warm_and_unexplained)",
-  "continuity_locks": "continuity locks: charA_v1 (location: apartment_kitchen_or_hallway, pose: searching); mug_red_v1 (location: near_main_character, state: warm_and_unexplained)",
+  "video_prompt": "style: Cinematic Realism v1, mood: cinematic, moody, controlled lighting, color palette: warm highlights, cool shadows. cinematic live-action video shot. scene: Apartment Kitchen Night. red fridge, wooden table, rainy window. lighting: dim warm lamp + blue moonlight. character (charA_v1): short_black, white_hoodie + black_jeans, silver_ring_left_hand. prop (mug_red_v1): state: steaming, visually consistent. 林澈走近餐桌，视线锁定红杯, 他伸手试探杯壁温度，蒸汽袅袅, 林澈皱眉，后退一步. Narration: \"桌上有一只红杯，杯沿还冒着热气。那不是他的杯子。\". 林澈 says: \"谁来过我家？\". Camera motion: tight close-up, shallow depth of field, subtle breathing camera drift. Close-up of red ceramic mug on wooden table, steam rising, dim kitchen background, young man's hand reaching toward mug, shallow depth of field, warm light on mug, cool shadows, suspense. Shot-to-shot continuity: maintain identical character identity, scene layout, lighting and prop positions as established in previous shot. Visual style must match preceding frame. Do not introduce new visual elements not present in the reference images. Character identity locked to reference images. No face morphing or outfit variation.. Scene layout locked to context reference frame. Do not reposition props or alter lighting source.. All props match reference images exactly. Prop must_keep: shape, color, size, material unchanged.. Camera transition smooth from previous shot continuity frame. No abrupt jump cut between shots. Stable visual consistency across entire clip. No character drift, no prop mutation, no scene layout shift.",
+  "video_prompt_keywords": "cinematic, moody, controlled lighting, red fridge, wooden table, rainy window, dim warm lamp + blue moonlight, charA_v1, short_black, white_hoodie + black_jeans, silver_ring_left_hand, mug_red_v1, 林澈走近餐桌，视线锁定红杯, 他伸手试探杯壁温度，蒸汽袅袅, 林澈皱眉，后退一步, 林澈 says: \"谁来过我家？\", Close-up of red ceramic mug on wooden table, steam rising, dim kitchen background, young man's hand reaching toward mug, shallow depth of field, warm light on mug, cool shadows, suspense",
+  "video_prompt_short": "style: Cinematic Realism v1, mood: cinematic, moody, controlled lighting, color palette: warm highlights, cool shadows. cinematic live-action video shot. scene: Apartment Kitchen Night. red fridge, wooden table, rainy window. lighting: dim warm lamp + blue moonlight. character (charA_v1): short_black, white_hoodie + black_jeans, silver_ring_left_hand. prop (mug_red_v1): state: steaming, visually consistent. 林澈走近餐桌，视线锁定红杯, 他伸手试探杯壁温度，蒸汽袅袅, 林澈皱眉，后退一步. Narration: \"桌上有一只红杯，杯沿还冒着热气。那不是他的杯子。\". 林澈 sa...",
+  "negative_prompt": "cartoon, neon cyberpunk (unless explicitly requested), sunlight, daylight, modern led lights, crowd, bright, daytime, cartoon, anime, oversaturated, multiple characters, duplicate person, clone, inconsistent lighting, wrong angle, lens distortion, chromatic aberration, mouth mismatch, silent face, frozen expression, unnatural dubbing, face morphing, character drift, outfit change, prop mutation, scene layout shift, extra fingers, distorted limbs, text artifacts, burnt-in subtitles, logo, watermark, motion blur excessive, flickering, framing jump cut",
+  "camera_intent": "comic_panel_03",
+  "camera_motion": "tight close-up, shallow depth of field, subtle breathing camera drift",
+  "continuity_notes": null,
+  "continuity_locks": null,
   "structured_context": {
     "scene_name": "Apartment Kitchen Night",
     "scene_elements": [
@@ -44,22 +44,23 @@
       {
         "id": "mug_red_v1",
         "name": "Red Mug",
-        "state": "story_clue"
+        "state": "steaming"
       }
     ],
     "action_beats": [
-      "桌上有一只红杯，杯沿还冒着热气。那不是他的杯子。",
-      "林澈低声说：谁来过我家？"
+      "林澈走近餐桌，视线锁定红杯",
+      "他伸手试探杯壁温度，蒸汽袅袅",
+      "林澈皱眉，后退一步"
     ],
     "dialogue": {
       "speaker": "林澈",
       "text": "谁来过我家？",
-      "voice_id": "zh-CN-YunxiNeural"
+      "voice_id": "charA_v1"
     },
     "voiceover": {
       "speaker": "旁白",
       "text": "桌上有一只红杯，杯沿还冒着热气。那不是他的杯子。",
-      "voice_id": "zh-CN-XiaoxiaoNeural"
+      "voice_id": "narrator"
     }
   },
   "reference_images": [
@@ -93,49 +94,6 @@
         "detail"
       ],
       "exists": true
-    },
-    {
-      "kind": "character_reference",
-      "id": "charA_v1",
-      "path": "assets/characters/charA_v1/front.svg",
-      "note": "Protagonist A",
-      "use_for": [
-        "identity",
-        "wardrobe"
-      ],
-      "exists": true
-    },
-    {
-      "kind": "character_reference",
-      "id": "charA_v1",
-      "path": "assets/characters/charA_v1/side.svg",
-      "note": "Protagonist A",
-      "use_for": [
-        "identity",
-        "wardrobe"
-      ],
-      "exists": true
-    },
-    {
-      "kind": "character_reference",
-      "id": "charA_v1",
-      "path": "assets/characters/charA_v1/fullbody.svg",
-      "note": "Protagonist A",
-      "use_for": [
-        "identity",
-        "wardrobe"
-      ],
-      "exists": true
-    },
-    {
-      "kind": "prop_reference",
-      "id": "mug_red_v1",
-      "path": "assets/props/mug_red_v1/ref.svg",
-      "note": "Red Mug",
-      "use_for": [
-        "prop lock"
-      ],
-      "exists": true
     }
   ],
   "conditioning_keyframes": [
@@ -147,6 +105,7 @@
       "assets/renders/S001/keyframes/frame_01.jpg"
     ],
     "available": [
+      "assets/renders/S001/keyframes/frame_last.jpg",
       "assets/renders/S001/keyframes/frame_01.jpg"
     ],
     "missing": [],
@@ -170,14 +129,10 @@
   "ref_image_paths": [
     "assets/scenes/kitchen_apartment_01/anchor_A.svg",
     "assets/scenes/kitchen_apartment_01/anchor_B.svg",
-    "assets/scenes/kitchen_apartment_01/anchor_C.svg",
-    "assets/characters/charA_v1/front.svg",
-    "assets/characters/charA_v1/side.svg",
-    "assets/characters/charA_v1/fullbody.svg",
-    "assets/props/mug_red_v1/ref.svg"
+    "assets/scenes/kitchen_apartment_01/anchor_C.svg"
   ],
   "params": {
-    "duration_s": 12,
+    "duration_s": 5,
     "tier": "cheap",
     "max_regen": 1
   },
@@ -200,8 +155,8 @@
   },
   "meta": {
     "compiler_version": "video-prompts-2.0.0",
-    "git_commit": "8baf57e",
-    "compiled_at": "2026-05-25T05:39:44.789Z",
+    "git_commit": "8020ce7",
+    "compiled_at": "2026-05-25T10:32:28.034Z",
     "compiled_from": {
       "shot": "shots/S002.json",
       "scene": "scenes/kitchen_apartment_01.json",

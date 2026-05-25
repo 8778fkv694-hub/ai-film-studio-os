@@ -1,0 +1,40 @@
+{
+  "shot_id": "S022",
+  "duration_s": 4,
+  "scene_ref": "scenes/kitchen_apartment_01.json",
+  "cam_setup_ref": "comic_panel_02",
+  "characters": [
+    {
+      "ref": "characters/charA_v1.json"
+    }
+  ],
+  "props": [],
+  "action": {
+    "beats": [
+      "门外传来母亲的声音",
+      "声音很近很轻",
+      "像隔着一层水"
+    ]
+  },
+  "dialogue": {
+    "speaker": "母亲",
+    "text": "小澈，开门。",
+    "voice_id": "mother_voice"
+  },
+  "voiceover": {
+    "speaker": "旁白",
+    "text": "门外传来母亲的声音，很近，很轻，像隔着一层水。",
+    "voice_id": "narrator"
+  },
+  "budget": {
+    "tier": "cheap",
+    "max_regen": 1
+  },
+  "prompt": {
+    "positive": "Medium shot of a closed apartment door, soft light filtering through, muffled voice from outside, tense mood",
+    "negative": "bright, cheerful, sharp focus on door"
+  },
+  "context_refs": [
+    "assets/renders/S021/keyframes/frame_01.jpg"
+  ]
+}

@@ -1,0 +1,45 @@
+{
+  "shot_id": "S019",
+  "duration_s": 5,
+  "scene_ref": "scenes/kitchen_apartment_01.json",
+  "cam_setup_ref": "comic_panel_02",
+  "characters": [
+    {
+      "ref": "characters/charA_v1.json"
+    }
+  ],
+  "props": [
+    {
+      "ref": "props/mug_red_v1.json",
+      "state": "on table"
+    }
+  ],
+  "action": {
+    "beats": [
+      "第一盘录像开始播放",
+      "画面里，小林澈坐在厨房桌边",
+      "母亲在哭"
+    ]
+  },
+  "dialogue": {
+    "speaker": "林澈",
+    "text": "这是真的？",
+    "voice_id": "charA_v1"
+  },
+  "voiceover": {
+    "speaker": "旁白",
+    "text": "第一盘录像开始播放。画面里，小林澈坐在厨房桌边，母亲在哭。",
+    "voice_id": "narrator"
+  },
+  "budget": {
+    "tier": "cheap",
+    "max_regen": 1
+  },
+  "prompt": {
+    "positive": "录像画面，小林澈坐在厨房桌边，母亲哭泣，红杯在桌上，怀旧噪点，悲伤氛围",
+    "negative": "模糊，过曝，卡通"
+  },
+  "context_refs": [
+    "assets/renders/S018/keyframes/frame_01.jpg"
+  ]
+}

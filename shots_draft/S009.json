@@ -1,0 +1,45 @@
+{
+  "shot_id": "S009",
+  "duration_s": 5,
+  "scene_ref": "scenes/kitchen_apartment_01.json",
+  "cam_setup_ref": "comic_panel_03",
+  "characters": [
+    {
+      "ref": "characters/charA_v1.json"
+    }
+  ],
+  "props": [
+    {
+      "ref": "props/mug_red_v1.json",
+      "state": "on table, near sink"
+    }
+  ],
+  "action": {
+    "beats": [
+      "Water starts dripping from the sink faucet",
+      "Each drip sounds like a ticking clock",
+      "The room feels narrower, protagonist covers ears"
+    ]
+  },
+  "dialogue": {
+    "speaker": "Protagonist A",
+    "text": "够了，别响了。",
+    "voice_id": "charA_v1"
+  },
+  "voiceover": {
+    "speaker": "Narrator",
+    "text": "水槽开始滴水，滴声像秒针，把房间切得很窄。",
+    "voice_id": "narrator_default"
+  },
+  "budget": {
+    "tier": "cheap",
+    "max_regen": 1
+  },
+  "prompt": {
+    "positive": "Close-up of a kitchen sink faucet dripping water, slow motion, each drop visible, protagonist's hand covering ears in background, claustrophobic framing, dim blue-gray lighting, tense atmosphere, cinematic",
+    "negative": "bright, cheerful, wide shot, no water"
+  },
+  "context_refs": [
+    "assets/renders/S008/keyframes/frame_01.jpg"
+  ]
+}

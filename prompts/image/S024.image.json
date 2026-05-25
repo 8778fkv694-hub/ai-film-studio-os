@@ -1,0 +1,106 @@
+{
+  "shot_id": "S024",
+  "task_type": "keyframe_image",
+  "language": "en",
+  "image_prompt_master": "photographic cinematic storyboard keyframe. single static frame for a voiced comic animatic. visual style: Cinematic Realism v1. mood: cinematic, moody, controlled lighting. palette: warm highlights, cool shadows. stable character identity across shots. consistent environment layout and prop continuity. clean frame, no captions, no watermark, no user interface.",
+  "image_prompt_scene": "scene: Apartment Kitchen Night. must keep set elements: red fridge, wooden table, rainy window. lighting: dim warm lamp + blue moonlight. match scene anchors: A wide shot from door, table center, red fridge left, rainy window right; B table closeup with red mug and warm practical lamp; C rainy window with cool blue moonlight and hallway edge.",
+  "image_prompt_characters": "",
+  "image_prompt_props": "prop lock: Red Mug (mug_red_v1), state: cracking, must remain visually consistent.",
+  "image_prompt_shot": "shot S024. camera intent: comic_panel_08. action beats: 门把手缓慢转动; 红杯突然裂开一道细缝. narration intent: 旁白 explains \"门把手缓慢转动，红杯突然裂开一道细缝。\". dialogue mood: 林澈 says \"别进来。\". shot positive notes: Extreme close-up of a red mug developing a thin crack, tension, shallow depth of field, ominous lighting.",
+  "image_prompt_final": "photographic cinematic storyboard keyframe. single static frame for a voiced comic animatic. visual style: Cinematic Realism v1. mood: cinematic, moody, controlled lighting. palette: warm highlights, cool shadows. stable character identity across shots. consistent environment layout and prop continuity. clean frame, no captions, no watermark, no user interface. scene: Apartment Kitchen Night. must keep set elements: red fridge, wooden table, rainy window. lighting: dim warm lamp + blue moonlight. match scene anchors: A wide shot from door, table center, red fridge left, rainy window right; B table closeup with red mug and warm practical lamp; C rainy window with cool blue moonlight and hallway edge. prop lock: Red Mug (mug_red_v1), state: cracking, must remain visually consistent. shot S024. camera intent: comic_panel_08. action beats: 门把手缓慢转动; 红杯突然裂开一道细缝. narration intent: 旁白 explains \"门把手缓慢转动，红杯突然裂开一道细缝。\". dialogue mood: 林澈 says \"别进来。\". shot positive notes: Extreme close-up of a red mug developing a thin crack, tension, shallow depth of field, ominous lighting.",
+  "negative_prompt": "cartoon, neon cyberpunk (unless explicitly requested), sunlight, daylight, modern led lights, crowd, blurry, overexposed, intact mug, face drift, outfit change, prop drift, wrong set layout, extra fingers, text artifacts, subtitles burned into image, logo, watermark",
+  "continuity_notes": "",
+  "reference_images": [
+    {
+      "kind": "scene_anchor",
+      "id": "A",
+      "path": "assets/scenes/kitchen_apartment_01/anchor_A.svg",
+      "note": "wide shot from door, table center, red fridge left, rainy window right",
+      "use_for": [
+        "establish",
+        "wide"
+      ],
+      "exists": true
+    },
+    {
+      "kind": "scene_anchor",
+      "id": "B",
+      "path": "assets/scenes/kitchen_apartment_01/anchor_B.svg",
+      "note": "table closeup with red mug and warm practical lamp",
+      "use_for": [
+        "closeup"
+      ],
+      "exists": true
+    },
+    {
+      "kind": "scene_anchor",
+      "id": "C",
+      "path": "assets/scenes/kitchen_apartment_01/anchor_C.svg",
+      "note": "rainy window with cool blue moonlight and hallway edge",
+      "use_for": [
+        "detail"
+      ],
+      "exists": true
+    }
+  ],
+  "context_refs": {
+    "declared": [
+      "assets/renders/S023/keyframes/frame_01.jpg"
+    ],
+    "available": [],
+    "missing": [
+      "assets/renders/S023/keyframes/frame_01.jpg"
+    ]
+  },
+  "duration_s": 5,
+  "voiceover": {
+    "speaker": "旁白",
+    "text": "门把手缓慢转动，红杯突然裂开一道细缝。",
+    "voice_id": "narrator"
+  },
+  "dialogue": {
+    "speaker": "林澈",
+    "text": "别进来。",
+    "voice_id": "linche_voice"
+  },
+  "camera_intent": "comic_panel_08",
+  "continuity": {
+    "state_in_ref": null,
+    "state_changes": null,
+    "must_match_prev": [],
+    "handoff_to_next": []
+  },
+  "manual_workflow": {
+    "external_generation": "paste image_prompt_final and negative_prompt into any web image/video tool; upload reference_images when supported",
+    "keyframe_dir": "assets/renders/S024/keyframes",
+    "expected_files": [
+      "frame_01.jpg",
+      "frame_02.jpg",
+      "frame_03.jpg"
+    ],
+    "existing_keyframes": [],
+    "context_keyframes": [],
+    "context_hint": null
+  },
+  "validation": {
+    "missing_assets": [],
+    "missing_context_refs": [
+      "assets/renders/S023/keyframes/frame_01.jpg"
+    ],
+    "status": "WARN"
+  },
+  "meta": {
+    "compiler_version": "image-prompts-1.0.0",
+    "git_commit": "8020ce7",
+    "compiled_at": "2026-05-25T10:32:26.524Z",
+    "compiled_from": {
+      "shot": "shots/S024.json",
+      "scene": "scenes/kitchen_apartment_01.json",
+      "style": "styles/cinematic_v1.json",
+      "characters": [],
+      "props": [
+        "props/mug_red_v1.json"
+      ]
+    }
+  }
+}

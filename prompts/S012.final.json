@@ -1,0 +1,28 @@
+{
+  "shot_id": "S012",
+  "duration_s": 4,
+  "prompt": "style: Cinematic Realism v1, mood: cinematic, moody, controlled lighting, color palette: warm highlights, cool shadows. cinematic live-action video shot. scene: Apartment Kitchen Night. red fridge, wooden table, rainy window. lighting: dim warm lamp + blue moonlight. character (charA_v1): short_black, white_hoodie + black_jeans, silver_ring_left_hand. Protagonist A walks down the hallway., He sees door 503 at the end of the corridor., Warm light seeps through the crack under the door, matching the kitchen light. Narration: \"走廊尽头的五零三，门缝里透出和厨房一样的暖光。\". Protagonist A says: \"有人吗？\". Camera motion: static wide establishing shot, slow dolly in from medium to close-up. A dim hallway with a door at the end, warm light glowing from under the door, man standing in corridor, suspenseful, cinematic, medium shot. Character identity locked to reference images. No face morphing or outfit variation.. Scene layout locked to context reference frame. Do not reposition props or alter lighting source.. Camera transition smooth from previous shot continuity frame. No abrupt jump cut between shots. Stable visual consistency across entire clip. No character drift, no prop mutation, no scene layout shift.",
+  "negative": "cartoon, neon cyberpunk (unless explicitly requested), sunlight, daylight, modern led lights, crowd, bright, cheerful, out of focus, multiple characters, duplicate person, clone, inconsistent lighting, wrong angle, lens distortion, chromatic aberration, mouth mismatch, silent face, frozen expression, unnatural dubbing, face morphing, character drift, outfit change, prop mutation, scene layout shift, extra fingers, distorted limbs, text artifacts, burnt-in subtitles, logo, watermark, motion blur excessive, flickering, framing jump cut",
+  "motion": "static wide establishing shot, slow dolly in from medium to close-up",
+  "condition_images": [
+    "assets/scenes/kitchen_apartment_01/anchor_A.svg",
+    "assets/scenes/kitchen_apartment_01/anchor_B.svg",
+    "assets/scenes/kitchen_apartment_01/anchor_C.svg"
+  ],
+  "context_ref_images": [],
+  "tool_hint": "Copy \"prompt\" and \"negative\" into video generation tool. Upload \"condition_images\" for img2vid start/end frame conditioning if supported. \"context_ref_images\" are previous shot keyframes for visual continuity. Duration is a guideline.",
+  "meta": {
+    "compiler_version": "video-prompts-2.0.0",
+    "git_commit": "8020ce7",
+    "compiled_at": "2026-05-25T10:32:28.043Z",
+    "compiled_from": {
+      "shot": "shots/S012.json",
+      "scene": "scenes/kitchen_apartment_01.json",
+      "style": "styles/cinematic_v1.json",
+      "characters": [
+        "characters/charA_v1.json"
+      ],
+      "props": []
+    }
+  }
+}

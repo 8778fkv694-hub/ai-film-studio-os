@@ -1,0 +1,39 @@
+{
+  "shot_id": "S038",
+  "duration_s": 4,
+  "scene_ref": "scenes/kitchen_apartment_01.json",
+  "cam_setup_ref": "comic_panel_02",
+  "characters": [
+    {
+      "ref": "characters/charA_v1.json"
+    }
+  ],
+  "props": [],
+  "action": {
+    "beats": [
+      "厨房方向传来脚步声",
+      "脚步声与主角心跳同步"
+    ]
+  },
+  "dialogue": {
+    "speaker": "Protagonist A",
+    "text": "别靠近她。",
+    "voice_id": "charA_v1"
+  },
+  "voiceover": {
+    "speaker": "Narrator",
+    "text": "厨房方向传来脚步声。每一步都和他的心跳重合。",
+    "voice_id": "narrator_default"
+  },
+  "budget": {
+    "tier": "cheap",
+    "max_regen": 1
+  },
+  "prompt": {
+    "positive": "Medium shot of protagonist A looking towards kitchen doorway, tense expression, dim lighting, sound of footsteps implied, suspense",
+    "negative": "bright, cheerful, no tension"
+  },
+  "context_refs": [
+    "assets/renders/S037/keyframes/frame_01.jpg"
+  ]
+}

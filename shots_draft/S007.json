@@ -1,0 +1,45 @@
+{
+  "shot_id": "S007",
+  "duration_s": 4,
+  "scene_ref": "scenes/kitchen_apartment_01.json",
+  "cam_setup_ref": "comic_panel_03",
+  "characters": [
+    {
+      "ref": "characters/charA_v1.json"
+    }
+  ],
+  "props": [
+    {
+      "ref": "props/mug_red_v1.json",
+      "state": "on table, photo visible"
+    }
+  ],
+  "action": {
+    "beats": [
+      "Camera slowly zooms into the photo",
+      "A woman stands in the corner of the photo",
+      "Her face is scratched out like rain streaks"
+    ]
+  },
+  "dialogue": {
+    "speaker": "Protagonist A",
+    "text": "妈妈？",
+    "voice_id": "charA_v1"
+  },
+  "voiceover": {
+    "speaker": "Narrator",
+    "text": "照片角落站着一个女人，脸被雨水一样的划痕抹掉。",
+    "voice_id": "narrator_default"
+  },
+  "budget": {
+    "tier": "cheap",
+    "max_regen": 1
+  },
+  "prompt": {
+    "positive": "Extreme close-up of an old photo on a wooden table, a woman's silhouette in the corner, her face obscured by vertical scratch marks resembling rain, dim warm light, melancholic mood, shallow depth of field, cinematic",
+    "negative": "sharp face details, bright, happy colors, modern"
+  },
+  "context_refs": [
+    "assets/renders/S006/keyframes/frame_01.jpg"
+  ]
+}

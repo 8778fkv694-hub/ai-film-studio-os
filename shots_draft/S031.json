@@ -1,0 +1,42 @@
+{
+  "shot_id": "S031",
+  "duration_s": 5,
+  "scene_ref": "scenes/kitchen_apartment_01.json",
+  "cam_setup_ref": "comic_panel_03",
+  "characters": [
+    {
+      "ref": "characters/charA_v1.json"
+    }
+  ],
+  "props": [
+    {
+      "ref": "props/mug_red_v1.json",
+      "state": "on table, recording"
+    }
+  ],
+  "action": {
+    "beats": [
+      "Close-up of a vintage tape recorder playing, with a red mug nearby.",
+      "The voice of a younger, more fearful Lin Che emanates from the recorder."
+    ]
+  },
+  "dialogue": {
+    "speaker": "Protagonist A (younger, recorded)",
+    "text": "If I forget, start from the red mug.",
+    "voice_id": "charA_v1_young"
+  },
+  "voiceover": {
+    "speaker": "Narrator",
+    "text": "The recorder plays Lin Che's own voice, younger and more afraid.",
+    "voice_id": "narrator_default"
+  },
+  "budget": {
+    "tier": "cheap",
+    "max_regen": 1
+  },
+  "prompt": {
+    "positive": "Close-up of a vintage tape recorder on a wooden table, red mug beside it, warm dim kitchen lighting, nostalgic atmosphere, shallow depth of field, film grain.",
+    "negative": "blurry, overexposed, modern elements, bright colors."
+  },
+  "context_refs": []
+}

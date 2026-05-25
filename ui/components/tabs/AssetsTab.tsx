@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { Plus, User, Box, Trash2, CheckCircle, AlertCircle } from 'lucide-react';
+import { Plus, User, Box, Trash2, CheckCircle, AlertCircle, Upload, Loader2 } from 'lucide-react';
 
 interface Character {
   id: string;
@@ -36,6 +36,7 @@ export default function AssetsTab() {
   const [loading, setLoading] = useState(true);
   const [selectedItem, setSelectedItem] = useState<Character | Prop | null>(null);
   const [status, setStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+  const [uploadingRef, setUploadingRef] = useState(false);
 
   useEffect(() => {
     loadAssets();
@@ -101,6 +102,82 @@ export default function AssetsTab() {
       }
     } catch (e) {
       showStatus('error', '保存失败');
+    }
+  };
+
+  const handleUploadReference = async (id: string, file: File | null) => {
+    if (!file) return;
+    setUploadingRef(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('type', activeType);
+      formData.append('id', id);
+
+      const res = await fetch('/api/assets/reference/upload', {
+        method: 'POST',
+        body: formData
+      });
+      const data = await res.json();
+      if (res.ok) {
+        showStatus('success', '参考图已上传');
+        if (selectedItem) {
+          const currentRefs = selectedItem.references?.images || [];
+          const updatedItem = {
+            ...selectedItem,
+            references: {
+              ...selectedItem.references,
+              images: [...currentRefs, data.path]
+            }
+          };
+          setSelectedItem(updatedItem);
+          if (activeType === 'characters') {
+            setCharacters(characters.map(c => c.id === id ? (updatedItem as Character) : c));
+          } else {
+            setProps(props.map(p => p.id === id ? (updatedItem as Prop) : p));
+          }
+        }
+      } else {
+        showStatus('error', data.error || '上传失败');
+      }
+    } catch {
+      showStatus('error', '上传参考图时发生网络错误');
+    } finally {
+      setUploadingRef(false);
+    }
+  };
+
+  const handleDeleteReference = async (id: string, imgPath: string) => {
+    if (!confirm('确认删除此参考图？')) return;
+    try {
+      const res = await fetch('/api/assets/reference/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: activeType, id, path: imgPath })
+      });
+      if (res.ok) {
+        showStatus('success', '参考图已删除');
+        if (selectedItem) {
+          const currentRefs = selectedItem.references?.images || [];
+          const updatedItem = {
+            ...selectedItem,
+            references: {
+              ...selectedItem.references,
+              images: currentRefs.filter(img => img !== imgPath)
+            }
+          };
+          setSelectedItem(updatedItem);
+          if (activeType === 'characters') {
+            setCharacters(characters.map(c => c.id === id ? (updatedItem as Character) : c));
+          } else {
+            setProps(props.map(p => p.id === id ? (updatedItem as Prop) : p));
+          }
+        }
+      } else {
+        showStatus('error', '删除失败');
+      }
+    } catch {
+      showStatus('error', '删除参考图时发生网络错误');
     }
   };
 
@@ -218,6 +295,9 @@ export default function AssetsTab() {
             character={selectedItem as Character}
             onChange={setSelectedItem}
             onSave={saveCharacter}
+            onUploadRef={(file) => handleUploadReference(selectedItem.id, file)}
+            onDeleteRef={(path) => handleDeleteReference(selectedItem.id, path)}
+            uploadingRef={uploadingRef}
           />
         )}
         {selectedItem && activeType === 'props' && (
@@ -225,6 +305,9 @@ export default function AssetsTab() {
             prop={selectedItem as Prop}
             onChange={setSelectedItem}
             onSave={saveProp}
+            onUploadRef={(file) => handleUploadReference(selectedItem.id, file)}
+            onDeleteRef={(path) => handleDeleteReference(selectedItem.id, path)}
+            uploadingRef={uploadingRef}
           />
         )}
         {!selectedItem && (
@@ -240,11 +323,17 @@ export default function AssetsTab() {
 function CharacterEditor({
   character,
   onChange,
-  onSave
+  onSave,
+  onUploadRef,
+  onDeleteRef,
+  uploadingRef
 }: {
   character: Character;
   onChange: (c: Character) => void;
   onSave: (c: Character) => void;
+  onUploadRef: (file: File | null) => void;
+  onDeleteRef: (path: string) => void;
+  uploadingRef: boolean;
 }) {
   const mustKeep = character.must_keep || {};
   const accessories = Array.isArray(mustKeep.accessories) ? mustKeep.accessories : [];
@@ -368,17 +457,59 @@ function CharacterEditor({
 
       {/* References */}
       <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
-        <h3 className="text-lg font-semibold mb-4 text-slate-200">参考图</h3>
-        <div className="space-y-2">
-          {refImages.map((img, idx) => (
-            <div key={idx} className="flex items-center gap-2 p-2 bg-slate-950 rounded border border-slate-800">
-              <span className="text-sm text-slate-400 font-mono flex-1 truncate">{img}</span>
-            </div>
-          ))}
-          {refImages.length === 0 && (
-            <div className="text-slate-500 text-sm">暂无参考图</div>
-          )}
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-semibold text-slate-200">参考图</h3>
+          <label className="flex cursor-pointer items-center gap-1.5 rounded bg-blue-600/20 px-3 py-1.5 text-xs font-medium text-blue-300 transition hover:bg-blue-600/30">
+            {uploadingRef ? (
+              <Loader2 size={13} className="animate-spin" />
+            ) : (
+              <Upload size={13} />
+            )}
+            上传参考图
+            <input
+              type="file"
+              accept="image/*"
+              className="hidden"
+              disabled={uploadingRef}
+              onChange={(e) => {
+                onUploadRef(e.target.files?.[0] || null);
+                e.currentTarget.value = '';
+              }}
+            />
+          </label>
         </div>
+        
+        {refImages.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            {refImages.map((img, idx) => (
+              <div key={idx} className="bg-slate-950 border border-slate-800 rounded-xl overflow-hidden flex flex-col group relative">
+                <div className="aspect-square bg-slate-900 flex items-center justify-center relative p-3">
+                  <img
+                    src={`/api/assets/reference/${img}`}
+                    alt="Character Reference"
+                    className="max-w-full max-h-full object-contain rounded"
+                  />
+                  <button
+                    onClick={() => onDeleteRef(img)}
+                    className="absolute top-2 right-2 p-1.5 bg-red-950/80 hover:bg-red-800/90 text-red-300 rounded-lg opacity-0 group-hover:opacity-100 transition shadow-lg"
+                    title="删除图片"
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                </div>
+                <div className="p-3 border-t border-slate-800/60 bg-slate-900/30">
+                  <p className="text-[11px] font-mono text-slate-500 truncate" title={img}>
+                    {img.split('/').pop()}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-slate-500 text-sm text-center py-6 border border-dashed border-slate-800 rounded-xl">
+            暂无参考图，请点击上方按钮进行上传
+          </div>
+        )}
       </div>
 
       <button
@@ -394,11 +525,17 @@ function CharacterEditor({
 function PropEditor({
   prop,
   onChange,
-  onSave
+  onSave,
+  onUploadRef,
+  onDeleteRef,
+  uploadingRef
 }: {
   prop: Prop;
   onChange: (p: Prop) => void;
   onSave: (p: Prop) => void;
+  onUploadRef: (file: File | null) => void;
+  onDeleteRef: (path: string) => void;
+  uploadingRef: boolean;
 }) {
   const refImages = prop.references?.images || [];
 
@@ -451,17 +588,59 @@ function PropEditor({
 
       {/* References */}
       <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
-        <h3 className="text-lg font-semibold mb-4 text-slate-200">参考图</h3>
-        <div className="space-y-2">
-          {refImages.map((img, idx) => (
-            <div key={idx} className="flex items-center gap-2 p-2 bg-slate-950 rounded border border-slate-800">
-              <span className="text-sm text-slate-400 font-mono flex-1 truncate">{img}</span>
-            </div>
-          ))}
-          {refImages.length === 0 && (
-            <div className="text-slate-500 text-sm">暂无参考图</div>
-          )}
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-semibold text-slate-200">参考图</h3>
+          <label className="flex cursor-pointer items-center gap-1.5 rounded bg-blue-600/20 px-3 py-1.5 text-xs font-medium text-blue-300 transition hover:bg-blue-600/30">
+            {uploadingRef ? (
+              <Loader2 size={13} className="animate-spin" />
+            ) : (
+              <Upload size={13} />
+            )}
+            上传参考图
+            <input
+              type="file"
+              accept="image/*"
+              className="hidden"
+              disabled={uploadingRef}
+              onChange={(e) => {
+                onUploadRef(e.target.files?.[0] || null);
+                e.currentTarget.value = '';
+              }}
+            />
+          </label>
         </div>
+
+        {refImages.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            {refImages.map((img, idx) => (
+              <div key={idx} className="bg-slate-950 border border-slate-800 rounded-xl overflow-hidden flex flex-col group relative">
+                <div className="aspect-square bg-slate-900 flex items-center justify-center relative p-3">
+                  <img
+                    src={`/api/assets/reference/${img}`}
+                    alt="Prop Reference"
+                    className="max-w-full max-h-full object-contain rounded"
+                  />
+                  <button
+                    onClick={() => onDeleteRef(img)}
+                    className="absolute top-2 right-2 p-1.5 bg-red-950/80 hover:bg-red-800/90 text-red-300 rounded-lg opacity-0 group-hover:opacity-100 transition shadow-lg"
+                    title="删除图片"
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                </div>
+                <div className="p-3 border-t border-slate-800/60 bg-slate-900/30">
+                  <p className="text-[11px] font-mono text-slate-500 truncate" title={img}>
+                    {img.split('/').pop()}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-slate-500 text-sm text-center py-6 border border-dashed border-slate-800 rounded-xl">
+            暂无参考图，请点击上方按钮进行上传
+          </div>
+        )}
       </div>
 
       <button

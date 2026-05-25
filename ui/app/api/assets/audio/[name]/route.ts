@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { NextResponse } from 'next/server';
+import { getResourcePath } from '@/lib/projects';
 
 export async function GET(
   request: Request,
@@ -13,7 +14,7 @@ export async function GET(
   }
 
   // Path to root/assets/audio
-  const filePath = path.resolve(process.cwd(), '../assets/audio', name);
+  const filePath = path.join(getResourcePath('assets'), 'audio', name);
 
   if (!fs.existsSync(filePath)) {
     return new NextResponse('Audio not found', { status: 404 });

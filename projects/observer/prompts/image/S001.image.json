@@ -1,0 +1,66 @@
+{
+  "shot_id": "S001",
+  "task_type": "keyframe_image",
+  "language": "en",
+  "image_prompt_master": "photographic cinematic storyboard keyframe. single static frame for a voiced comic animatic. visual style: Cinematic Realism v1. mood: cinematic, moody, controlled lighting. palette: warm highlights, cool shadows. stable character identity across shots. consistent environment layout and prop continuity. clean frame, no captions, no watermark, no user interface.",
+  "image_prompt_scene": "scene: 洁净车间内部. must keep set elements: 运行设备, 黄色警示线, 压力管路, 仪表盘, 洁净通道, 禁止拍摄标识, 禁止触摸标识. lighting: 明亮白光，工业照明，无影.",
+  "image_prompt_characters": "",
+  "image_prompt_props": "",
+  "image_prompt_shot": "shot S001. camera intent: comic_panel_02. action beats: 手机拍摄禁止图标显示在画面中央; 人员站在指定区域听讲解. narration intent: 旁白 explains \"车间内涉及工艺、设备和产品信息。未经许可，不得拍照、录像或直播。如需交流问题，请在指定区域进行，不要影响现场人员操作。\". shot positive notes: 手机拍摄禁止图标，红色圆圈斜杠，清晰醒目，人员站在黄色指定区域线内，背景为洁净车间，讲解员手势引导，柔和照明，工业风格.",
+  "image_prompt_final": "photographic cinematic storyboard keyframe. single static frame for a voiced comic animatic. visual style: Cinematic Realism v1. mood: cinematic, moody, controlled lighting. palette: warm highlights, cool shadows. stable character identity across shots. consistent environment layout and prop continuity. clean frame, no captions, no watermark, no user interface. scene: 洁净车间内部. must keep set elements: 运行设备, 黄色警示线, 压力管路, 仪表盘, 洁净通道, 禁止拍摄标识, 禁止触摸标识. lighting: 明亮白光，工业照明，无影. shot S001. camera intent: comic_panel_02. action beats: 手机拍摄禁止图标显示在画面中央; 人员站在指定区域听讲解. narration intent: 旁白 explains \"车间内涉及工艺、设备和产品信息。未经许可，不得拍照、录像或直播。如需交流问题，请在指定区域进行，不要影响现场人员操作。\". shot positive notes: 手机拍摄禁止图标，红色圆圈斜杠，清晰醒目，人员站在黄色指定区域线内，背景为洁净车间，讲解员手势引导，柔和照明，工业风格.",
+  "negative_prompt": "cartoon, neon cyberpunk (unless explicitly requested), 杂乱线缆, 溢出液体, 敞开门, 无标识区域, 模糊，杂乱，阴影过重, face drift, outfit change, prop drift, wrong set layout, extra fingers, text artifacts, subtitles burned into image, logo, watermark",
+  "continuity_notes": "",
+  "reference_images": [],
+  "context_refs": {
+    "declared": [],
+    "available": [],
+    "missing": []
+  },
+  "duration_s": 6,
+  "voiceover": {
+    "speaker": "旁白",
+    "text": "车间内涉及工艺、设备和产品信息。未经许可，不得拍照、录像或直播。如需交流问题，请在指定区域进行，不要影响现场人员操作。",
+    "voice_id": "default"
+  },
+  "dialogue": null,
+  "camera_intent": "comic_panel_02",
+  "continuity": {
+    "state_in_ref": null,
+    "state_changes": null,
+    "must_match_prev": [],
+    "handoff_to_next": []
+  },
+  "manual_workflow": {
+    "external_generation": "paste image_prompt_final and negative_prompt into any web image/video tool; upload reference_images when supported",
+    "keyframe_dir": "assets/renders/S001/keyframes",
+    "expected_files": [
+      "frame_01.jpg",
+      "frame_02.jpg",
+      "frame_03.jpg"
+    ],
+    "existing_keyframes": [
+      "assets/renders/S001/keyframes/frame_01.png"
+    ],
+    "context_keyframes": [],
+    "context_hint": null
+  },
+  "validation": {
+    "missing_assets": [],
+    "missing_context_refs": [],
+    "status": "OK"
+  },
+  "meta": {
+    "compiler_version": "image-prompts-1.0.0",
+    "git_commit": "8020ce7",
+    "compiled_at": "2026-05-25T10:47:42.030Z",
+    "compiled_from": {
+      "shot": "shots/S001.json",
+      "scene": "scenes/scene_interior.json",
+      "style": "styles/cinematic_v1.json",
+      "characters": [],
+      "props": [
+        "TODO: match prop manually"
+      ]
+    }
+  }
+}

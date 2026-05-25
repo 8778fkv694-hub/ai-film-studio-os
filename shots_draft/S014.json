@@ -1,0 +1,39 @@
+{
+  "shot_id": "S014",
+  "duration_s": 5,
+  "scene_ref": "scenes/kitchen_apartment_01.json",
+  "cam_setup_ref": "comic_panel_03",
+  "characters": [
+    {
+      "ref": "characters/charA_v1.json"
+    }
+  ],
+  "props": [],
+  "action": {
+    "beats": [
+      "Protagonist A notices old newspapers pasted on the wall.",
+      "The date on the newspaper is the day after his mother disappeared."
+    ]
+  },
+  "dialogue": {
+    "speaker": "Protagonist A",
+    "text": "原来有人一直在这里。",
+    "voice_id": "charA_v1"
+  },
+  "voiceover": {
+    "speaker": "Narrator",
+    "text": "墙上贴着旧报纸，日期停在母亲失踪后的第二天。",
+    "voice_id": "narrator_v1"
+  },
+  "budget": {
+    "tier": "cheap",
+    "max_regen": 1
+  },
+  "prompt": {
+    "positive": "Close-up of old newspapers on a wall, date visible, man looking at them, dim light, mysterious, cinematic, shallow depth of field",
+    "negative": "bright, clean, modern"
+  },
+  "context_refs": [
+    "assets/renders/S013/keyframes/frame_01.jpg"
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "shot_id": "S034",
+  "duration_s": 6,
+  "scene_ref": "scenes/kitchen_apartment_01.json",
+  "cam_setup_ref": "comic_panel_02",
+  "characters": [
+    {
+      "ref": "characters/charA_v1.json"
+    }
+  ],
+  "props": [],
+  "action": {
+    "beats": [
+      "Lin Che descends into a basement area.",
+      "He sees a mirror covered with a cloth.",
+      "From behind the cloth, the sound of fingernails tapping glass is heard."
+    ]
+  },
+  "dialogue": {
+    "speaker": "Protagonist A",
+    "text": "Who's in there?",
+    "voice_id": "charA_v1"
+  },
+  "voiceover": {
+    "speaker": "Narrator",
+    "text": "In the basement, a mirror is covered with cloth. From behind it comes the sound of fingernails tapping glass.",
+    "voice_id": "narrator_default"
+  },
+  "budget": {
+    "tier": "cheap",
+    "max_regen": 1
+  },
+  "prompt": {
+    "positive": "Wide shot of a dimly lit basement, Lin Che standing before a cloth-covered mirror, eerie atmosphere, single light source casting shadows, suspenseful composition.",
+    "negative": "bright, cluttered, modern elements."
+  },
+  "context_refs": [
+    "assets/renders/S033/keyframes/frame_01.jpg"
+  ]
+}

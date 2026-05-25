@@ -1,0 +1,72 @@
+{
+  "shot_id": "S003",
+  "task_type": "keyframe_image",
+  "language": "en",
+  "image_prompt_master": "photographic cinematic storyboard keyframe. single static frame for a voiced comic animatic. visual style: Cinematic Realism v1. mood: cinematic, moody, controlled lighting. palette: warm highlights, cool shadows. stable character identity across shots. consistent environment layout and prop continuity. clean frame, no captions, no watermark, no user interface.",
+  "image_prompt_scene": "scene: 洁净车间出口. must keep set elements: 回收箱, 鞋套收集桶, 口罩回收筐, 出口标识, 洁净通道出口. lighting: 明亮白光，指示照明.",
+  "image_prompt_characters": "",
+  "image_prompt_props": "",
+  "image_prompt_shot": "shot S003. camera intent: comic_panel_02. action beats: 人员沿地面路线行走离开; 将洁净服、鞋套、口罩放回指定回收箱. narration intent: 旁白 explains \"参观结束后，请按指定路线离开洁净车间。洁净服、鞋套、口罩等按现场要求回收或放置，不得随意丢弃。离开后如有意见或问题，可统一反馈给陪同人员。\". shot positive notes: 人员穿着洁净服从车间走出，沿地面箭头路线，将白色洁净服折叠放入回收箱，背景为更衣室出口，整洁有序.",
+  "image_prompt_final": "photographic cinematic storyboard keyframe. single static frame for a voiced comic animatic. visual style: Cinematic Realism v1. mood: cinematic, moody, controlled lighting. palette: warm highlights, cool shadows. stable character identity across shots. consistent environment layout and prop continuity. clean frame, no captions, no watermark, no user interface. scene: 洁净车间出口. must keep set elements: 回收箱, 鞋套收集桶, 口罩回收筐, 出口标识, 洁净通道出口. lighting: 明亮白光，指示照明. shot S003. camera intent: comic_panel_02. action beats: 人员沿地面路线行走离开; 将洁净服、鞋套、口罩放回指定回收箱. narration intent: 旁白 explains \"参观结束后，请按指定路线离开洁净车间。洁净服、鞋套、口罩等按现场要求回收或放置，不得随意丢弃。离开后如有意见或问题，可统一反馈给陪同人员。\". shot positive notes: 人员穿着洁净服从车间走出，沿地面箭头路线，将白色洁净服折叠放入回收箱，背景为更衣室出口，整洁有序.",
+  "negative_prompt": "cartoon, neon cyberpunk (unless explicitly requested), 随意丢弃洁净用品, 逆向进入, 杂乱丢弃，人员拥挤, face drift, outfit change, prop drift, wrong set layout, extra fingers, text artifacts, subtitles burned into image, logo, watermark",
+  "continuity_notes": "",
+  "reference_images": [],
+  "context_refs": {
+    "declared": [
+      "assets/renders/S002/keyframes/frame_01.jpg"
+    ],
+    "available": [],
+    "missing": [
+      "assets/renders/S002/keyframes/frame_01.jpg"
+    ]
+  },
+  "duration_s": 6,
+  "voiceover": {
+    "speaker": "旁白",
+    "text": "参观结束后，请按指定路线离开洁净车间。洁净服、鞋套、口罩等按现场要求回收或放置，不得随意丢弃。离开后如有意见或问题，可统一反馈给陪同人员。",
+    "voice_id": "default"
+  },
+  "dialogue": null,
+  "camera_intent": "comic_panel_02",
+  "continuity": {
+    "state_in_ref": null,
+    "state_changes": null,
+    "must_match_prev": [],
+    "handoff_to_next": []
+  },
+  "manual_workflow": {
+    "external_generation": "paste image_prompt_final and negative_prompt into any web image/video tool; upload reference_images when supported",
+    "keyframe_dir": "assets/renders/S003/keyframes",
+    "expected_files": [
+      "frame_01.jpg",
+      "frame_02.jpg",
+      "frame_03.jpg"
+    ],
+    "existing_keyframes": [
+      "assets/renders/S003/keyframes/frame_01.png"
+    ],
+    "context_keyframes": [],
+    "context_hint": null
+  },
+  "validation": {
+    "missing_assets": [],
+    "missing_context_refs": [
+      "assets/renders/S002/keyframes/frame_01.jpg"
+    ],
+    "status": "WARN"
+  },
+  "meta": {
+    "compiler_version": "image-prompts-1.0.0",
+    "git_commit": "8020ce7",
+    "compiled_at": "2026-05-25T10:47:42.032Z",
+    "compiled_from": {
+      "shot": "shots/S003.json",
+      "scene": "scenes/scene_exit.json",
+      "style": "styles/cinematic_v1.json",
+      "characters": [],
+      "props": [
+        "TODO: match prop manually"
+      ]
+    }
+  }
+}

@@ -1,17 +1,17 @@
 import { NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
-
-const CHARS_DIR = path.resolve(process.cwd(), '../characters');
+import { getResourcePath } from '@/lib/projects';
 
 export async function GET() {
   try {
-    if (!fs.existsSync(CHARS_DIR)) {
+    const charsDir = getResourcePath('characters');
+    if (!fs.existsSync(charsDir)) {
       return NextResponse.json([]);
     }
-    const files = fs.readdirSync(CHARS_DIR).filter(f => f.endsWith('.json'));
+    const files = fs.readdirSync(charsDir).filter(f => f.endsWith('.json'));
     const characters = files.map(f => {
-      const content = fs.readFileSync(path.join(CHARS_DIR, f), 'utf-8');
+      const content = fs.readFileSync(path.join(charsDir, f), 'utf-8');
       return { ...JSON.parse(content), _filename: f };
     });
     return NextResponse.json(characters);
@@ -26,7 +26,7 @@ export async function POST(request: Request) {
     const filename = character._filename || `${character.id}.json`;
     delete character._filename;
     fs.writeFileSync(
-      path.join(CHARS_DIR, filename),
+      path.join(getResourcePath('characters'), filename),
       JSON.stringify(character, null, 2),
       'utf-8'
     );

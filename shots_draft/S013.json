@@ -1,0 +1,45 @@
+{
+  "shot_id": "S013",
+  "duration_s": 6,
+  "scene_ref": "scenes/kitchen_apartment_01.json",
+  "cam_setup_ref": "comic_panel_02",
+  "characters": [
+    {
+      "ref": "characters/charA_v1.json"
+    }
+  ],
+  "props": [
+    {
+      "ref": "props/mug_red_v1.json",
+      "state": "on table"
+    }
+  ],
+  "action": {
+    "beats": [
+      "Protagonist A inserts the key into the lock.",
+      "The door swings open by itself.",
+      "Inside, he sees the same table and the same red mug as in his own kitchen."
+    ]
+  },
+  "dialogue": {
+    "speaker": "Protagonist A",
+    "text": "这不是隔壁，这是我家。",
+    "voice_id": "charA_v1"
+  },
+  "voiceover": {
+    "speaker": "Narrator",
+    "text": "钥匙刚插进去，门自己开了。屋里摆着同样的桌，同样的红杯。",
+    "voice_id": "narrator_v1"
+  },
+  "budget": {
+    "tier": "cheap",
+    "max_regen": 1
+  },
+  "prompt": {
+    "positive": "A door opening by itself, interior view of a kitchen with a table and a red mug, man standing at threshold, surprised expression, warm light, cinematic, medium shot",
+    "negative": "bright, cartoonish, messy"
+  },
+  "context_refs": [
+    "assets/renders/S012/keyframes/frame_01.jpg"
+  ]
+}

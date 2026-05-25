@@ -1,0 +1,53 @@
+{
+  "id": "observer",
+  "name": "滤芯洁净车间",
+  "description": "参观滤芯洁净车间注意事项视频脚本",
+  "default_style_ref": "styles/cinematic_v1.json",
+  "defaults": {
+    "language": "zh",
+    "fps": 24
+  },
+  "inventory": {
+    "scenes": [
+      "scenes/scene_entrance.json",
+      "scenes/scene_changing.json",
+      "scenes/scene_air_shower.json",
+      "scenes/scene_interior.json",
+      "scenes/scene_exit.json"
+    ],
+    "characters": [],
+    "props": []
+  },
+  "timeline": [
+    {
+      "shot_id": "S001",
+      "shot_file": "shots/S001.json",
+      "tier": "cheap",
+      "duration_s": 15
+    },
+    {
+      "shot_id": "S002",
+      "shot_file": "shots/S002.json",
+      "tier": "cheap",
+      "duration_s": 21
+    },
+    {
+      "shot_id": "S003",
+      "shot_file": "shots/S003.json",
+      "tier": "cheap",
+      "duration_s": 17
+    },
+    {
+      "shot_id": "S004",
+      "shot_file": "shots/S004.json",
+      "tier": "cheap",
+      "duration_s": 15
+    },
+    {
+      "shot_id": "S005",
+      "shot_file": "shots/S005.json",
+      "tier": "cheap",
+      "duration_s": 19
+    }
+  ]
+}

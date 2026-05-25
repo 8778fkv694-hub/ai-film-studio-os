@@ -1,0 +1,16 @@
+{
+  "shot_id": "S028",
+  "characters": {
+    "charA_v1": {
+      "location": "apartment",
+      "pose": "speaking",
+      "outfit": "white hoodie, dark pants"
+    }
+  },
+  "props": {},
+  "scene": {
+    "lighting": "night rain",
+    "weather": "rain",
+    "time": "midnight"
+  }
+}

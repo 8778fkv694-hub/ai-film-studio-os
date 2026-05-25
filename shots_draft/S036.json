@@ -1,0 +1,37 @@
+{
+  "shot_id": "S036",
+  "duration_s": 5,
+  "scene_ref": "scenes/kitchen_apartment_01.json",
+  "cam_setup_ref": "comic_panel_03",
+  "characters": [
+    {
+      "ref": "characters/charA_v1.json"
+    }
+  ],
+  "props": [],
+  "action": {
+    "beats": [
+      "镜中人无声说话，唇形清晰：把记忆还给我",
+      "主角林澈震惊地看着镜子"
+    ]
+  },
+  "dialogue": {
+    "speaker": "Protagonist A",
+    "text": "你不是我。",
+    "voice_id": "charA_v1"
+  },
+  "voiceover": {
+    "speaker": "Narrator",
+    "text": "镜中人说不出声音，但唇形清楚：把记忆还给我。",
+    "voice_id": "narrator_default"
+  },
+  "budget": {
+    "tier": "cheap",
+    "max_regen": 1
+  },
+  "prompt": {
+    "positive": "Close-up on a mirror in a dim kitchen, reflection of protagonist A with intense expression, lips forming words silently, dramatic lighting, cinematic, horror undertone",
+    "negative": "blurry, overexposed, cartoonish"
+  },
+  "context_refs": []
+}

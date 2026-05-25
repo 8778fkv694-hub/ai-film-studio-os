@@ -1,0 +1,40 @@
+{
+  "shot_id": "S008",
+  "duration_s": 4,
+  "scene_ref": "scenes/kitchen_apartment_01.json",
+  "cam_setup_ref": "comic_panel_02",
+  "characters": [
+    {
+      "ref": "characters/charA_v1.json"
+    }
+  ],
+  "props": [],
+  "action": {
+    "beats": [
+      "Protagonist A's hand trembles, dropping the photo",
+      "Memory flash: rain pouring outside a window at night",
+      "Cut back to present, protagonist looks shocked"
+    ]
+  },
+  "dialogue": {
+    "speaker": "Protagonist A",
+    "text": "我不是都忘了吗？",
+    "voice_id": "charA_v1"
+  },
+  "voiceover": {
+    "speaker": "Narrator",
+    "text": "林澈的记忆突然断开。母亲失踪那晚，也下着这样的雨。",
+    "voice_id": "narrator_default"
+  },
+  "budget": {
+    "tier": "cheap",
+    "max_regen": 1
+  },
+  "prompt": {
+    "positive": "Medium shot of a young man (Protagonist A) sitting at a kitchen table, hand trembling over a photo, expression of shock and confusion, dim kitchen lighting, rain visible through window, cinematic, moody",
+    "negative": "smiling, bright, static, no rain"
+  },
+  "context_refs": [
+    "assets/renders/S007/keyframes/frame_01.jpg"
+  ]
+}

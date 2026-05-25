@@ -1,0 +1,39 @@
+{
+  "shot_id": "S047",
+  "duration_s": 5,
+  "scene_ref": "scenes/kitchen_apartment_01.json",
+  "cam_setup_ref": "comic_panel_03",
+  "characters": [
+    {
+      "ref": "characters/charA_v1.json"
+    }
+  ],
+  "props": [],
+  "action": {
+    "beats": [
+      "Mother's figure begins to fade, becoming translucent.",
+      "She shows no anger, only gently wipes rain from Lin Che's face."
+    ]
+  },
+  "dialogue": {
+    "speaker": "Mother (implied, not in inventory, use generic)",
+    "text": "别再逃了。",
+    "voice_id": "mother_default"
+  },
+  "voiceover": {
+    "speaker": "Narrator",
+    "text": "母亲的身影开始变淡。她没有责怪，只替他擦掉脸上的雨。",
+    "voice_id": "narrator_default"
+  },
+  "budget": {
+    "tier": "cheap",
+    "max_regen": 1
+  },
+  "prompt": {
+    "positive": "Close-up, Lin Che's face, mother's hand wiping rain, fading translucent figure, soft blue light, melancholic, emotional, cinematic, 50mm lens",
+    "negative": "overexposed, harsh shadows, distorted face"
+  },
+  "context_refs": [
+    "assets/renders/S046/keyframes/frame_01.jpg"
+  ]
+}

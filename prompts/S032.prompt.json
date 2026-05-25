@@ -1,0 +1,169 @@
+{
+  "shot_id": "S032",
+  "duration_s": 4,
+  "language": "zh",
+  "task_type": "video_generation",
+  "video_prompt": "style: Cinematic Realism v1, mood: cinematic, moody, controlled lighting, color palette: warm highlights, cool shadows. cinematic live-action video shot. scene: Apartment Kitchen Night. red fridge, wooden table, rainy window. lighting: dim warm lamp + blue moonlight. character (charA_v1): short_black, white_hoodie + black_jeans, silver_ring_left_hand. prop (mug_red_v1): state: on table, visually consistent. Lin Che's face shows realization, eyes widening., He whispers to himself, understanding dawning. Narration: \"He finally understands: the clues were not left by someone else, but by his past self.\". Protagonist A says: \"I trapped myself.\". Camera motion: tight close-up, shallow depth of field, subtle breathing camera drift. Medium close-up of Lin Che's face, expression of epiphany, soft kitchen light, red mug in foreground, contemplative mood, cinematic lighting. Character identity locked to reference images. No face morphing or outfit variation.. Scene layout locked to context reference frame. Do not reposition props or alter lighting source.. All props match reference images exactly. Prop must_keep: shape, color, size, material unchanged.. Camera transition smooth from previous shot continuity frame. No abrupt jump cut between shots. Stable visual consistency across entire clip. No character drift, no prop mutation, no scene layout shift.",
+  "video_prompt_keywords": "cinematic, moody, controlled lighting, red fridge, wooden table, rainy window, dim warm lamp + blue moonlight, charA_v1, short_black, white_hoodie + black_jeans, silver_ring_left_hand, mug_red_v1, Lin Che's face shows realization, eyes widening., He whispers to himself, understanding dawning., Protagonist A says: \"I trapped myself.\", Medium close-up of Lin Che's face, expression of epiphany, soft kitchen light, red mug in foreground, contemplative mood, cinematic lighting.",
+  "video_prompt_short": "style: Cinematic Realism v1, mood: cinematic, moody, controlled lighting, color palette: warm highlights, cool shadows. cinematic live-action video shot. scene: Apartment Kitchen Night. red fridge, wooden table, rainy window. lighting: dim warm lamp + blue moonlight. character (charA_v1): short_black, white_hoodie + black_jeans, silver_ring_left_hand. prop (mug_red_v1): state: on table, visually consistent. Lin Che's face shows realization, eyes widening., He whispers to himself, understandin...",
+  "negative_prompt": "cartoon, neon cyberpunk (unless explicitly requested), sunlight, daylight, modern led lights, crowd, blurry, overexposed, distracting background., multiple characters, duplicate person, clone, inconsistent lighting, wrong angle, lens distortion, chromatic aberration, mouth mismatch, silent face, frozen expression, unnatural dubbing, face morphing, character drift, outfit change, prop mutation, scene layout shift, extra fingers, distorted limbs, text artifacts, burnt-in subtitles, logo, watermark, motion blur excessive, flickering, framing jump cut",
+  "camera_intent": "comic_panel_03",
+  "camera_motion": "tight close-up, shallow depth of field, subtle breathing camera drift",
+  "continuity_notes": null,
+  "continuity_locks": null,
+  "structured_context": {
+    "scene_name": "Apartment Kitchen Night",
+    "scene_elements": [
+      "red fridge",
+      "wooden table",
+      "rainy window"
+    ],
+    "scene_lighting": "dim warm lamp + blue moonlight",
+    "style_name": "Cinematic Realism v1",
+    "style_mood": [
+      "cinematic",
+      "moody",
+      "controlled lighting"
+    ],
+    "style_palette": [
+      "warm highlights",
+      "cool shadows"
+    ],
+    "characters": [
+      {
+        "id": "charA_v1",
+        "name": "Protagonist A",
+        "hair": "short_black",
+        "outfit": "white_hoodie + black_jeans",
+        "accessories": [
+          "silver_ring_left_hand"
+        ]
+      }
+    ],
+    "props": [
+      {
+        "id": "mug_red_v1",
+        "name": "Red Mug",
+        "state": "on table"
+      }
+    ],
+    "action_beats": [
+      "Lin Che's face shows realization, eyes widening.",
+      "He whispers to himself, understanding dawning."
+    ],
+    "dialogue": {
+      "speaker": "Protagonist A",
+      "text": "I trapped myself.",
+      "voice_id": "charA_v1"
+    },
+    "voiceover": {
+      "speaker": "Narrator",
+      "text": "He finally understands: the clues were not left by someone else, but by his past self.",
+      "voice_id": "narrator_default"
+    }
+  },
+  "reference_images": [
+    {
+      "kind": "scene_anchor",
+      "id": "A",
+      "path": "assets/scenes/kitchen_apartment_01/anchor_A.svg",
+      "note": "wide shot from door, table center, red fridge left, rainy window right",
+      "use_for": [
+        "establish",
+        "wide"
+      ],
+      "exists": true
+    },
+    {
+      "kind": "scene_anchor",
+      "id": "B",
+      "path": "assets/scenes/kitchen_apartment_01/anchor_B.svg",
+      "note": "table closeup with red mug and warm practical lamp",
+      "use_for": [
+        "closeup"
+      ],
+      "exists": true
+    },
+    {
+      "kind": "scene_anchor",
+      "id": "C",
+      "path": "assets/scenes/kitchen_apartment_01/anchor_C.svg",
+      "note": "rainy window with cool blue moonlight and hallway edge",
+      "use_for": [
+        "detail"
+      ],
+      "exists": true
+    }
+  ],
+  "conditioning_keyframes": [],
+  "context_refs": {
+    "declared": [
+      "assets/renders/S031/keyframes/frame_01.jpg"
+    ],
+    "available": [],
+    "missing": [
+      "assets/renders/S031/keyframes/frame_01.jpg"
+    ],
+    "has_context": false
+  },
+  "constraints": {
+    "must_keep": [
+      "scene:red fridge",
+      "scene:wooden table",
+      "scene:rainy window",
+      "character:charA_v1",
+      "prop:mug_red_v1"
+    ],
+    "forbidden": [
+      "sunlight",
+      "daylight",
+      "modern led lights",
+      "crowd"
+    ]
+  },
+  "ref_image_paths": [
+    "assets/scenes/kitchen_apartment_01/anchor_A.svg",
+    "assets/scenes/kitchen_apartment_01/anchor_B.svg",
+    "assets/scenes/kitchen_apartment_01/anchor_C.svg"
+  ],
+  "params": {
+    "duration_s": 4,
+    "tier": "cheap",
+    "max_regen": 1
+  },
+  "workflow": {
+    "prompt_ready": true,
+    "has_keyframes": false,
+    "has_context_refs": false,
+    "keyframe_dir": "assets/renders/S032/keyframes",
+    "expected_keyframes": [
+      "frame_01.jpg",
+      "frame_02.jpg",
+      "frame_03.jpg"
+    ],
+    "tool_instructions": "No keyframes found yet. Generate keyframe images first using build-image-prompts, save them to S032/keyframes, then re-run this compiler for img2vid conditioning. Text-to-video is still possible with just 'video_prompt'."
+  },
+  "validation": {
+    "missing_assets": [],
+    "missing_context_refs": [
+      "assets/renders/S031/keyframes/frame_01.jpg"
+    ],
+    "status": "WARN"
+  },
+  "meta": {
+    "compiler_version": "video-prompts-2.0.0",
+    "git_commit": "8020ce7",
+    "compiled_at": "2026-05-25T10:32:28.055Z",
+    "compiled_from": {
+      "shot": "shots/S032.json",
+      "scene": "scenes/kitchen_apartment_01.json",
+      "style": "styles/cinematic_v1.json",
+      "characters": [
+        "characters/charA_v1.json"
+      ],
+      "props": [
+        "props/mug_red_v1.json"
+      ]
+    }
+  }
+}

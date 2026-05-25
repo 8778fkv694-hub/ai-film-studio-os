@@ -1,0 +1,38 @@
+{
+  "shot_id": "S030",
+  "duration_s": 5,
+  "scene_ref": "scenes/kitchen_apartment_01.json",
+  "cam_setup_ref": "comic_panel_03",
+  "characters": [
+    {
+      "ref": "characters/charA_v1.json"
+    }
+  ],
+  "props": [],
+  "action": {
+    "beats": [
+      "At the end of the basement, an old tape recorder sits with a red indicator light blinking."
+    ]
+  },
+  "dialogue": {
+    "speaker": "Protagonist A",
+    "text": "它在录音？",
+    "voice_id": "charA_v1"
+  },
+  "voiceover": {
+    "speaker": "Narrator",
+    "text": "地下室尽头有一台旧录音机，红色指示灯正在闪。",
+    "voice_id": "narrator_default"
+  },
+  "budget": {
+    "tier": "cheap",
+    "max_regen": 1
+  },
+  "prompt": {
+    "positive": "Close-up of an old tape recorder in a dark basement, red blinking indicator light, dusty surface, shallow depth of field, mysterious and tense mood, cool shadows with warm red accent.",
+    "negative": "blurry, overexposed, cartoonish, low resolution"
+  },
+  "context_refs": [
+    "assets/renders/S029/keyframes/frame_01.jpg"
+  ]
+}

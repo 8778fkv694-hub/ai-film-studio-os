@@ -1,0 +1,11 @@
+{
+  "id": "clean_room_exit",
+  "name": "洁净车间出口",
+  "style_ref": "styles/cinematic_v1.json",
+  "anchors": [],
+  "must_keep": {
+    "set_elements": ["回收箱", "鞋套收集桶", "口罩回收筐", "出口标识", "洁净通道出口"],
+    "lighting": "明亮白光，指示照明"
+  },
+  "forbidden": ["随意丢弃洁净用品", "逆向进入"]
+}

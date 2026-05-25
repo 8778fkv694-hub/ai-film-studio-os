@@ -1,0 +1,73 @@
+{
+  "shot_id": "S002",
+  "task_type": "keyframe_image",
+  "language": "en",
+  "image_prompt_master": "photographic cinematic storyboard keyframe. single static frame for a voiced comic animatic. visual style: Cinematic Realism v1. mood: cinematic, moody, controlled lighting. palette: warm highlights, cool shadows. stable character identity across shots. consistent environment layout and prop continuity. clean frame, no captions, no watermark, no user interface.",
+  "image_prompt_scene": "scene: 洁净车间内部. must keep set elements: 运行设备, 黄色警示线, 压力管路, 仪表盘, 洁净通道, 禁止拍摄标识, 禁止触摸标识. lighting: 明亮白光，工业照明，无影.",
+  "image_prompt_characters": "",
+  "image_prompt_props": "",
+  "image_prompt_shot": "shot S002. camera intent: comic_panel_01. action beats: 展示运行设备、管道、警示标识; 镜头缓慢平移展示地面通道. narration intent: 旁白 explains \"车间内存在运行设备、管道、气路、水路和电气装置。请不要靠近旋转部件、加热部件和压力管路。不要倚靠设备，不要触碰阀门、按钮、线缆和管道。行走时注意地面，防止滑倒、绊倒和碰撞。\". shot positive notes: 洁净车间内部，运行中的机械设备，管道和阀门，黄色警示标识，地面有防滑通道标记，明亮冷光，工业安全氛围.",
+  "image_prompt_final": "photographic cinematic storyboard keyframe. single static frame for a voiced comic animatic. visual style: Cinematic Realism v1. mood: cinematic, moody, controlled lighting. palette: warm highlights, cool shadows. stable character identity across shots. consistent environment layout and prop continuity. clean frame, no captions, no watermark, no user interface. scene: 洁净车间内部. must keep set elements: 运行设备, 黄色警示线, 压力管路, 仪表盘, 洁净通道, 禁止拍摄标识, 禁止触摸标识. lighting: 明亮白光，工业照明，无影. shot S002. camera intent: comic_panel_01. action beats: 展示运行设备、管道、警示标识; 镜头缓慢平移展示地面通道. narration intent: 旁白 explains \"车间内存在运行设备、管道、气路、水路和电气装置。请不要靠近旋转部件、加热部件和压力管路。不要倚靠设备，不要触碰阀门、按钮、线缆和管道。行走时注意地面，防止滑倒、绊倒和碰撞。\". shot positive notes: 洁净车间内部，运行中的机械设备，管道和阀门，黄色警示标识，地面有防滑通道标记，明亮冷光，工业安全氛围.",
+  "negative_prompt": "cartoon, neon cyberpunk (unless explicitly requested), 杂乱线缆, 溢出液体, 敞开门, 无标识区域, 人员遮挡，设备静止，光线昏暗, face drift, outfit change, prop drift, wrong set layout, extra fingers, text artifacts, subtitles burned into image, logo, watermark",
+  "continuity_notes": "",
+  "reference_images": [],
+  "context_refs": {
+    "declared": [
+      "assets/renders/S001/keyframes/frame_01.jpg"
+    ],
+    "available": [],
+    "missing": [
+      "assets/renders/S001/keyframes/frame_01.jpg"
+    ]
+  },
+  "duration_s": 8,
+  "voiceover": {
+    "speaker": "旁白",
+    "text": "车间内存在运行设备、管道、气路、水路和电气装置。请不要靠近旋转部件、加热部件和压力管路。不要倚靠设备，不要触碰阀门、按钮、线缆和管道。行走时注意地面，防止滑倒、绊倒和碰撞。",
+    "voice_id": "default"
+  },
+  "dialogue": null,
+  "camera_intent": "comic_panel_01",
+  "continuity": {
+    "state_in_ref": null,
+    "state_changes": null,
+    "must_match_prev": [],
+    "handoff_to_next": []
+  },
+  "manual_workflow": {
+    "external_generation": "paste image_prompt_final and negative_prompt into any web image/video tool; upload reference_images when supported",
+    "keyframe_dir": "assets/renders/S002/keyframes",
+    "expected_files": [
+      "frame_01.jpg",
+      "frame_02.jpg",
+      "frame_03.jpg"
+    ],
+    "existing_keyframes": [
+      "assets/renders/S002/keyframes/frame_01.png"
+    ],
+    "context_keyframes": [],
+    "context_hint": null
+  },
+  "validation": {
+    "missing_assets": [],
+    "missing_context_refs": [
+      "assets/renders/S001/keyframes/frame_01.jpg"
+    ],
+    "status": "WARN"
+  },
+  "meta": {
+    "compiler_version": "image-prompts-1.0.0",
+    "git_commit": "8020ce7",
+    "compiled_at": "2026-05-25T10:47:42.031Z",
+    "compiled_from": {
+      "shot": "shots/S002.json",
+      "scene": "scenes/scene_interior.json",
+      "style": "styles/cinematic_v1.json",
+      "characters": [],
+      "props": [
+        "TODO: match prop manually",
+        "TODO: match prop manually"
+      ]
+    }
+  }
+}

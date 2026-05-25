@@ -5,11 +5,11 @@
   "image_prompt_master": "photographic cinematic storyboard keyframe. single static frame for a voiced comic animatic. visual style: Cinematic Realism v1. mood: cinematic, moody, controlled lighting. palette: warm highlights, cool shadows. stable character identity across shots. consistent environment layout and prop continuity. clean frame, no captions, no watermark, no user interface.",
   "image_prompt_scene": "scene: Apartment Kitchen Night. must keep set elements: red fridge, wooden table, rainy window. lighting: dim warm lamp + blue moonlight. match scene anchors: A wide shot from door, table center, red fridge left, rainy window right; B table closeup with red mug and warm practical lamp; C rainy window with cool blue moonlight and hallway edge.",
   "image_prompt_characters": "character lock: Protagonist A (charA_v1), hair: short_black, outfit: white_hoodie + black_jeans, accessories: silver_ring_left_hand.",
-  "image_prompt_props": "prop lock: Red Mug (mug_red_v1), state: story_clue, must remain visually consistent.",
-  "image_prompt_shot": "shot S002. camera intent: comic_panel_02. action beats: 桌上有一只红杯，杯沿还冒着热气。那不是他的杯子。; 林澈低声说：谁来过我家？. narration intent: 旁白 explains \"桌上有一只红杯，杯沿还冒着热气。那不是他的杯子。\". dialogue mood: 林澈 says \"谁来过我家？\". continuity locks: charA_v1 (location: apartment_kitchen_or_hallway, pose: searching); mug_red_v1 (location: near_main_character, state: warm_and_unexplained). Shot-to-shot continuity: maintain exact character identity, scene layout, lighting and prop positions from previous shot. Visual style must match preceding frame. shot positive notes: close-up on wooden table, red mug with steam rising, young Chinese man searching pose, rainy night outside window, red mug as mystery clue, dim warm lamp lighting.",
-  "image_prompt_final": "photographic cinematic storyboard keyframe. single static frame for a voiced comic animatic. visual style: Cinematic Realism v1. mood: cinematic, moody, controlled lighting. palette: warm highlights, cool shadows. stable character identity across shots. consistent environment layout and prop continuity. clean frame, no captions, no watermark, no user interface. scene: Apartment Kitchen Night. must keep set elements: red fridge, wooden table, rainy window. lighting: dim warm lamp + blue moonlight. match scene anchors: A wide shot from door, table center, red fridge left, rainy window right; B table closeup with red mug and warm practical lamp; C rainy window with cool blue moonlight and hallway edge. character lock: Protagonist A (charA_v1), hair: short_black, outfit: white_hoodie + black_jeans, accessories: silver_ring_left_hand. prop lock: Red Mug (mug_red_v1), state: story_clue, must remain visually consistent. shot S002. camera intent: comic_panel_02. action beats: 桌上有一只红杯，杯沿还冒着热气。那不是他的杯子。; 林澈低声说：谁来过我家？. narration intent: 旁白 explains \"桌上有一只红杯，杯沿还冒着热气。那不是他的杯子。\". dialogue mood: 林澈 says \"谁来过我家？\". continuity locks: charA_v1 (location: apartment_kitchen_or_hallway, pose: searching); mug_red_v1 (location: near_main_character, state: warm_and_unexplained). Shot-to-shot continuity: maintain exact character identity, scene layout, lighting and prop positions from previous shot. Visual style must match preceding frame. shot positive notes: close-up on wooden table, red mug with steam rising, young Chinese man searching pose, rainy night outside window, red mug as mystery clue, dim warm lamp lighting.",
-  "negative_prompt": "cartoon, neon cyberpunk (unless explicitly requested), sunlight, daylight, modern led lights, crowd, text artifacts, logo, watermark, extra fingers, face drift, outfit change, prop drift, wrong set layout, subtitles burned into image",
-  "continuity_notes": "continuity locks: charA_v1 (location: apartment_kitchen_or_hallway, pose: searching); mug_red_v1 (location: near_main_character, state: warm_and_unexplained)",
+  "image_prompt_props": "prop lock: Red Mug (mug_red_v1), state: steaming, must remain visually consistent.",
+  "image_prompt_shot": "shot S002. camera intent: comic_panel_03. action beats: 林澈走近餐桌，视线锁定红杯; 他伸手试探杯壁温度，蒸汽袅袅; 林澈皱眉，后退一步. narration intent: 旁白 explains \"桌上有一只红杯，杯沿还冒着热气。那不是他的杯子。\". dialogue mood: 林澈 says \"谁来过我家？\". Shot-to-shot continuity: maintain exact character identity, scene layout, lighting and prop positions from previous shot. Visual style must match preceding frame. shot positive notes: Close-up of red ceramic mug on wooden table, steam rising, dim kitchen background, young man's hand reaching toward mug, shallow depth of field, warm light on mug, cool shadows, suspense.",
+  "image_prompt_final": "photographic cinematic storyboard keyframe. single static frame for a voiced comic animatic. visual style: Cinematic Realism v1. mood: cinematic, moody, controlled lighting. palette: warm highlights, cool shadows. stable character identity across shots. consistent environment layout and prop continuity. clean frame, no captions, no watermark, no user interface. scene: Apartment Kitchen Night. must keep set elements: red fridge, wooden table, rainy window. lighting: dim warm lamp + blue moonlight. match scene anchors: A wide shot from door, table center, red fridge left, rainy window right; B table closeup with red mug and warm practical lamp; C rainy window with cool blue moonlight and hallway edge. character lock: Protagonist A (charA_v1), hair: short_black, outfit: white_hoodie + black_jeans, accessories: silver_ring_left_hand. prop lock: Red Mug (mug_red_v1), state: steaming, must remain visually consistent. shot S002. camera intent: comic_panel_03. action beats: 林澈走近餐桌，视线锁定红杯; 他伸手试探杯壁温度，蒸汽袅袅; 林澈皱眉，后退一步. narration intent: 旁白 explains \"桌上有一只红杯，杯沿还冒着热气。那不是他的杯子。\". dialogue mood: 林澈 says \"谁来过我家？\". Shot-to-shot continuity: maintain exact character identity, scene layout, lighting and prop positions from previous shot. Visual style must match preceding frame. shot positive notes: Close-up of red ceramic mug on wooden table, steam rising, dim kitchen background, young man's hand reaching toward mug, shallow depth of field, warm light on mug, cool shadows, suspense.",
+  "negative_prompt": "cartoon, neon cyberpunk (unless explicitly requested), sunlight, daylight, modern led lights, crowd, bright, daytime, anime, oversaturated, face drift, outfit change, prop drift, wrong set layout, extra fingers, text artifacts, subtitles burned into image, logo, watermark",
+  "continuity_notes": "",
   "reference_images": [
     {
       "kind": "scene_anchor",
@@ -41,49 +41,6 @@
         "detail"
       ],
       "exists": true
-    },
-    {
-      "kind": "character_reference",
-      "id": "charA_v1",
-      "path": "assets/characters/charA_v1/front.svg",
-      "note": "Protagonist A",
-      "use_for": [
-        "identity",
-        "wardrobe"
-      ],
-      "exists": true
-    },
-    {
-      "kind": "character_reference",
-      "id": "charA_v1",
-      "path": "assets/characters/charA_v1/side.svg",
-      "note": "Protagonist A",
-      "use_for": [
-        "identity",
-        "wardrobe"
-      ],
-      "exists": true
-    },
-    {
-      "kind": "character_reference",
-      "id": "charA_v1",
-      "path": "assets/characters/charA_v1/fullbody.svg",
-      "note": "Protagonist A",
-      "use_for": [
-        "identity",
-        "wardrobe"
-      ],
-      "exists": true
-    },
-    {
-      "kind": "prop_reference",
-      "id": "mug_red_v1",
-      "path": "assets/props/mug_red_v1/ref.svg",
-      "note": "Red Mug",
-      "use_for": [
-        "prop lock"
-      ],
-      "exists": true
     }
   ],
   "context_refs": {
@@ -95,42 +52,23 @@
     ],
     "missing": []
   },
-  "duration_s": 12,
+  "duration_s": 5,
   "voiceover": {
     "speaker": "旁白",
     "text": "桌上有一只红杯，杯沿还冒着热气。那不是他的杯子。",
-    "voice_id": "zh-CN-XiaoxiaoNeural"
+    "voice_id": "narrator"
   },
   "dialogue": {
     "speaker": "林澈",
     "text": "谁来过我家？",
-    "voice_id": "zh-CN-YunxiNeural"
+    "voice_id": "charA_v1"
   },
-  "camera_intent": "comic_panel_02",
+  "camera_intent": "comic_panel_03",
   "continuity": {
-    "state_in_ref": "states/S001_OUT.json",
-    "state_changes": {
-      "characters": {
-        "charA_v1": {
-          "location": "apartment_kitchen_or_hallway",
-          "pose": "searching"
-        }
-      },
-      "props": {
-        "mug_red_v1": {
-          "location": "near_main_character",
-          "state": "warm_and_unexplained"
-        }
-      },
-      "scene": {
-        "lighting": "rainy night, warm lamp, cold blue shadow"
-      }
-    },
+    "state_in_ref": null,
+    "state_changes": null,
     "must_match_prev": [],
-    "handoff_to_next": [
-      "红杯仍是关键线索",
-      "雨夜公寓的压迫感延续到 S003"
-    ]
+    "handoff_to_next": []
   },
   "manual_workflow": {
     "external_generation": "paste image_prompt_final and negative_prompt into any web image/video tool; upload reference_images when supported",
@@ -156,8 +94,8 @@
   },
   "meta": {
     "compiler_version": "image-prompts-1.0.0",
-    "git_commit": "8baf57e",
-    "compiled_at": "2026-05-25T05:39:44.879Z",
+    "git_commit": "8020ce7",
+    "compiled_at": "2026-05-25T10:32:26.516Z",
     "compiled_from": {
       "shot": "shots/S002.json",
       "scene": "scenes/kitchen_apartment_01.json",

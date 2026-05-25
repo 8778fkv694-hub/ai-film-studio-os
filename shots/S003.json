@@ -1,66 +1,40 @@
 {
   "shot_id": "S003",
-  "duration_s": 12,
+  "duration_s": 4,
   "scene_ref": "scenes/kitchen_apartment_01.json",
-  "cam_setup_ref": "comic_panel_03",
-  "context_refs": ["assets/renders/S002/keyframes/frame_01.jpg"],
+  "cam_setup_ref": "comic_panel_08",
   "characters": [
     {
       "ref": "characters/charA_v1.json"
     }
   ],
-  "props": [
-    {
-      "ref": "props/mug_red_v1.json",
-      "state": "story_clue"
-    }
-  ],
+  "props": [],
   "action": {
     "beats": [
-      "手机忽然亮起，屏幕上只有一行字：别喝。",
-      "林澈低声说：这是谁发的？"
+      "林澈的手机屏幕亮起",
+      "特写屏幕显示一行字：别喝",
+      "林澈惊恐地看向手机"
     ]
   },
   "dialogue": {
     "speaker": "林澈",
     "text": "这是谁发的？",
-    "voice_id": "zh-CN-YunxiNeural"
+    "voice_id": "charA_v1"
   },
   "voiceover": {
     "speaker": "旁白",
     "text": "手机忽然亮起，屏幕上只有一行字：别喝。",
-    "voice_id": "zh-CN-XiaoxiaoNeural"
-  },
-  "continuity": {
-    "state_in_ref": "states/S002_OUT.json",
-    "state_changes": {
-      "characters": {
-        "charA_v1": {
-          "location": "apartment_kitchen_or_hallway",
-          "pose": "frozen"
-        }
-      },
-      "props": {
-        "mug_red_v1": {
-          "location": "near_main_character",
-          "state": "warm_and_unexplained"
-        }
-      },
-      "scene": {
-        "lighting": "rainy night, warm lamp, cold blue shadow"
-      }
-    },
-    "handoff_to_next": [
-      "红杯仍是关键线索",
-      "雨夜公寓的压迫感延续到 S004"
-    ]
+    "voice_id": "narrator"
   },
   "budget": {
     "tier": "cheap",
     "max_regen": 1
   },
   "prompt": {
-    "positive": "tight close-up on smartphone screen glowing in dark kitchen, text message visible: '别喝', young Chinese man frozen pose with shocked expression, phone light illuminating face, suspense thriller mood",
-    "negative": "no text artifacts, no logo, no watermark, no extra fingers, no face drift"
-  }
+    "positive": "Extreme close-up of smartphone screen in dim kitchen, text '别喝' displayed, reflection of young man's face in screen, blue light on face, tense expression, shallow depth of field, high contrast",
+    "negative": "bright, daytime, cartoon, anime, oversaturated"
+  },
+  "context_refs": [
+    "assets/renders/S002/keyframes/frame_01.jpg"
+  ]
 }

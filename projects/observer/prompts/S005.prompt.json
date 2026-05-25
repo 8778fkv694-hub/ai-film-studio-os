@@ -1,0 +1,118 @@
+{
+  "shot_id": "S005",
+  "duration_s": 7,
+  "language": "zh",
+  "task_type": "video_generation",
+  "video_prompt": "style: Cinematic Realism v1, mood: cinematic, moody, controlled lighting, color palette: warm highlights, cool shadows. cinematic live-action video shot. scene: 洁净车间内部. 运行设备, 黄色警示线, 压力管路, 仪表盘, 洁净通道, 禁止拍摄标识, 禁止触摸标识. lighting: 明亮白光，工业照明，无影. Visitors walking along designated path, not touching equipment. Narration: \"进入车间后，请按指定路线参观。参观过程中，不得脱帽、摘口罩，不得随意触摸设备、物料、工装、产品和记录表单。未经允许，不得操作设备，不得进入黄线以内或设备防护区域。\". Camera motion: static wide establishing shot, slow dolly in from medium to close-up. Visitors in clean suits walking along marked path in clean workshop, machinery in background, yellow floor lines, sterile environment. Character identity locked to reference images. No face morphing or outfit variation.. Scene layout locked to context reference frame. Do not reposition props or alter lighting source.. Camera transition smooth from previous shot continuity frame. No abrupt jump cut between shots. Stable visual consistency across entire clip. No character drift, no prop mutation, no scene layout shift.",
+  "video_prompt_keywords": "cinematic, moody, controlled lighting, 运行设备, 黄色警示线, 压力管路, 仪表盘, 洁净通道, 禁止拍摄标识, 禁止触摸标识, 明亮白光，工业照明，无影, Visitors walking along designated path, not touching equipment, Visitors in clean suits walking along marked path in clean workshop, machinery in background, yellow floor lines, sterile environment",
+  "video_prompt_short": "style: Cinematic Realism v1, mood: cinematic, moody, controlled lighting, color palette: warm highlights, cool shadows. cinematic live-action video shot. scene: 洁净车间内部. 运行设备, 黄色警示线, 压力管路, 仪表盘, 洁净通道, 禁止拍摄标识, 禁止触摸标识. lighting: 明亮白光，工业照明，无影. Visitors walking along designated path, not touching equipment. Narration: \"进入车间后，请按指定路线参观。参观过程中，不得脱帽、摘口罩，不得随意触摸设备、物料、工装、产品和记录表单。未经允许，不得操作设备，不得进入黄线以内或设备防护区域。\". Camera motion: static wide establishing shot, slow dolly in from medium to close-up. Visitors in c...",
+  "negative_prompt": "cartoon, neon cyberpunk (unless explicitly requested), 杂乱线缆, 溢出液体, 敞开门, 无标识区域, touching equipment, removing mask, crossing yellow line, multiple characters, duplicate person, clone, inconsistent lighting, wrong angle, lens distortion, chromatic aberration, face morphing, character drift, outfit change, prop mutation, scene layout shift, extra fingers, distorted limbs, text artifacts, burnt-in subtitles, logo, watermark, motion blur excessive, flickering, framing jump cut",
+  "camera_intent": "comic_panel_01",
+  "camera_motion": "static wide establishing shot, slow dolly in from medium to close-up",
+  "continuity_notes": null,
+  "continuity_locks": null,
+  "structured_context": {
+    "scene_name": "洁净车间内部",
+    "scene_elements": [
+      "运行设备",
+      "黄色警示线",
+      "压力管路",
+      "仪表盘",
+      "洁净通道",
+      "禁止拍摄标识",
+      "禁止触摸标识"
+    ],
+    "scene_lighting": "明亮白光，工业照明，无影",
+    "style_name": "Cinematic Realism v1",
+    "style_mood": [
+      "cinematic",
+      "moody",
+      "controlled lighting"
+    ],
+    "style_palette": [
+      "warm highlights",
+      "cool shadows"
+    ],
+    "characters": [],
+    "props": [],
+    "action_beats": [
+      "Visitors walking along designated path, not touching equipment"
+    ],
+    "dialogue": null,
+    "voiceover": {
+      "speaker": "Narrator",
+      "text": "进入车间后，请按指定路线参观。参观过程中，不得脱帽、摘口罩，不得随意触摸设备、物料、工装、产品和记录表单。未经允许，不得操作设备，不得进入黄线以内或设备防护区域。",
+      "voice_id": "narrator_male_01"
+    }
+  },
+  "reference_images": [],
+  "conditioning_keyframes": [
+    "assets/renders/S005/keyframes/frame_01.png"
+  ],
+  "context_refs": {
+    "declared": [
+      "assets/renders/S004/keyframes/frame_01.jpg"
+    ],
+    "available": [],
+    "missing": [
+      "assets/renders/S004/keyframes/frame_01.jpg"
+    ],
+    "has_context": false
+  },
+  "constraints": {
+    "must_keep": [
+      "scene:运行设备",
+      "scene:黄色警示线",
+      "scene:压力管路",
+      "scene:仪表盘",
+      "scene:洁净通道",
+      "scene:禁止拍摄标识",
+      "scene:禁止触摸标识"
+    ],
+    "forbidden": [
+      "杂乱线缆",
+      "溢出液体",
+      "敞开门",
+      "无标识区域"
+    ]
+  },
+  "ref_image_paths": [],
+  "params": {
+    "duration_s": 7,
+    "tier": "cheap",
+    "max_regen": 1
+  },
+  "workflow": {
+    "prompt_ready": true,
+    "has_keyframes": true,
+    "has_context_refs": false,
+    "keyframe_dir": "assets/renders/S005/keyframes",
+    "expected_keyframes": [
+      "frame_01.jpg",
+      "frame_02.jpg",
+      "frame_03.jpg"
+    ],
+    "tool_instructions": "Use video prompt + conditioning keyframes for img2vid generation. Copy 'video_prompt' into your video tool, attach 'conditioning_keyframes' as start/end frame conditioning."
+  },
+  "validation": {
+    "missing_assets": [],
+    "missing_context_refs": [
+      "assets/renders/S004/keyframes/frame_01.jpg"
+    ],
+    "status": "WARN"
+  },
+  "meta": {
+    "compiler_version": "video-prompts-2.0.0",
+    "git_commit": "8020ce7",
+    "compiled_at": "2026-05-25T10:47:43.159Z",
+    "compiled_from": {
+      "shot": "shots/S005.json",
+      "scene": "scenes/scene_interior.json",
+      "style": "styles/cinematic_v1.json",
+      "characters": [
+        "TODO: match character path"
+      ],
+      "props": []
+    }
+  }
+}

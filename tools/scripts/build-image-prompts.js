@@ -1,18 +1,27 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { execSync } from 'node:child_process';
-import { fileURLToPath } from 'node:url';
 import { loadTemplate, renderTemplate, loadRules, applyRules, joinSentences, joinList, clean } from './shared/template-engine.js';
+import { parseArgs } from './shared/dirs.js';
 
-const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../');
+const { workDir, projectRoot, remainingArgs } = parseArgs();
 const IMAGE_EXTS = new Set(['.jpg', '.jpeg', '.png', '.webp', '.svg']);
 
 function readJson(rel) {
-  return JSON.parse(fs.readFileSync(path.join(ROOT, rel), 'utf-8'));
+  const projectPath = path.join(workDir, rel);
+  if (fs.existsSync(projectPath)) {
+    try { return JSON.parse(fs.readFileSync(projectPath, 'utf-8')); } catch { return null; }
+  }
+  const globalPath = path.join(projectRoot, rel);
+  try {
+    return JSON.parse(fs.readFileSync(globalPath, 'utf-8'));
+  } catch {
+    return null;
+  }
 }
 
 function ensureDir(rel) {
-  fs.mkdirSync(path.join(ROOT, rel), { recursive: true });
+  fs.mkdirSync(path.join(workDir, rel), { recursive: true });
 }
 
 function splitPromptItems(items) {
@@ -60,14 +69,14 @@ function csvCell(value) {
 
 function getGitHash() {
   try {
-    return execSync('git rev-parse --short HEAD', { cwd: ROOT, encoding: 'utf8' }).trim();
+    return execSync('git rev-parse --short HEAD', { cwd: workDir, encoding: 'utf8' }).trim();
   } catch {
     return 'unknown';
   }
 }
 
 function listExistingKeyframes(shotId) {
-  const dir = path.join(ROOT, 'assets/renders', shotId, 'keyframes');
+  const dir = path.join(workDir, 'assets/renders', shotId, 'keyframes');
   if (!fs.existsSync(dir)) return [];
 
   return fs.readdirSync(dir)
@@ -86,7 +95,7 @@ function collectReferences(scene, characters, props) {
       path: anchor.img,
       note: anchor.note || '',
       use_for: anchor.use_for || [],
-      exists: fs.existsSync(path.join(ROOT, anchor.img))
+      exists: fs.existsSync(path.join(workDir, anchor.img))
     });
   }
 
@@ -98,7 +107,7 @@ function collectReferences(scene, characters, props) {
         path: img,
         note: character.name || character.id,
         use_for: ['identity', 'wardrobe'],
-        exists: fs.existsSync(path.join(ROOT, img))
+        exists: fs.existsSync(path.join(workDir, img))
       });
     }
   }
@@ -111,7 +120,7 @@ function collectReferences(scene, characters, props) {
         path: img,
         note: prop.name || prop.id,
         use_for: ['prop lock'],
-        exists: fs.existsSync(path.join(ROOT, img))
+        exists: fs.existsSync(path.join(workDir, img))
       });
     }
   }
@@ -141,8 +150,8 @@ function compileImagePrompt(shotFile, gitHash) {
   const shot = readJson(`shots/${shotFile}`);
   const scene = readJson(shot.scene_ref);
   const style = shot.style_ref ? readJson(shot.style_ref) : (scene.style_ref ? readJson(scene.style_ref) : null);
-  const characters = (shot.characters || []).map(item => readJson(item.ref));
-  const props = (shot.props || []).map(item => readJson(item.ref));
+  const characters = (shot.characters || []).map(item => readJson(item.ref)).filter(Boolean);
+  const props = (shot.props || []).map(item => readJson(item.ref)).filter(Boolean);
   const references = collectReferences(scene, characters, props);
   const missingAssets = references.filter(ref => !ref.exists).map(ref => ref.path);
   const existingKeyframes = listExistingKeyframes(shot.shot_id);
@@ -151,23 +160,27 @@ function compileImagePrompt(shotFile, gitHash) {
   const contextRefs = (shot.context_refs || [])
     .filter(ref => typeof ref === 'string' && ref.trim());
   const availableContextRefs = contextRefs
-    .filter(ref => fs.existsSync(path.join(ROOT, ref)));
+    .filter(ref => fs.existsSync(path.join(workDir, ref)));
   const missingContextRefs = contextRefs
-    .filter(ref => !fs.existsSync(path.join(ROOT, ref)));
+    .filter(ref => !fs.existsSync(path.join(workDir, ref)));
 
   const contextContinuity = availableContextRefs.length > 0
     ? `Shot-to-shot continuity: maintain exact character identity, scene layout, lighting and prop positions from previous shot. Visual style must match preceding frame.`
     : '';
 
   const master = [
-    'photographic cinematic storyboard keyframe',
+    'photorealistic cinematic storyboard keyframe',
+    'aspect ratio 16:9, horizontal composition',
     'single static frame for a voiced comic animatic',
+    '8K resolution, highly detailed, sharp focus',
+    'professional industrial photography lighting',
     style?.name ? `visual style: ${style.name}` : '',
     style?.mood_keywords?.length ? `mood: ${style.mood_keywords.join(', ')}` : '',
-    style?.palette?.length ? `palette: ${style.palette.join(', ')}` : '',
-    'stable character identity across shots',
+    style?.palette?.length ? `color palette: ${style.palette.join(', ')}` : '',
+    'stable character identity across all shots',
     'consistent environment layout and prop continuity',
-    'clean frame, no captions, no watermark, no user interface'
+    'clean frame, no captions, no watermark, no user interface, no text overlay',
+    'natural camera angle, avoid extreme distortion'
   ];
 
   const scenePrompt = [
@@ -178,7 +191,10 @@ function compileImagePrompt(shotFile, gitHash) {
   ];
 
   const characterPrompt = characters.map(characterLock);
-  const propPrompt = props.map((prop, index) => propLock(prop, shot.props?.[index]));
+  const propPrompt = props.map((prop, index) => {
+    const shotProp = shot.props?.find(p => p.ref && p.ref.endsWith(`/${prop.id}.json`)) || shot.props?.[index];
+    return propLock(prop, shotProp);
+  });
   const continuityNotes = formatStateNotes(shot.continuity?.state_changes);
 
   const shotPrompt = [
@@ -333,13 +349,13 @@ function writeStoryboardExports(packages) {
     );
   }
 
-  fs.writeFileSync(path.join(ROOT, 'exports/storyboard.csv'), csvRows.join('\n'));
-  fs.writeFileSync(path.join(ROOT, 'exports/storyboard.md'), md.join('\n'));
+  fs.writeFileSync(path.join(workDir, 'exports/storyboard.csv'), csvRows.join('\n'));
+  fs.writeFileSync(path.join(workDir, 'exports/storyboard.md'), md.join('\n'));
 }
 
 function main() {
   ensureDir('prompts/image');
-  const shotsDir = path.join(ROOT, 'shots');
+  const shotsDir = path.join(workDir, 'shots');
   const shotFiles = fs.readdirSync(shotsDir).filter(file => file.endsWith('.json')).sort();
   const gitHash = getGitHash();
   const packages = [];
@@ -350,7 +366,7 @@ function main() {
   for (const shotFile of shotFiles) {
     const pkg = compileImagePrompt(shotFile, gitHash);
     fs.writeFileSync(
-      path.join(ROOT, 'prompts/image', `${pkg.shot_id}.image.json`),
+      path.join(workDir, 'prompts/image', `${pkg.shot_id}.image.json`),
       JSON.stringify(pkg, null, 2)
     );
 

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { exec } from 'child_process';
 import { promisify } from 'util';
 import path from 'path';
+import { getCurrentProjectPath } from '@/lib/projects';
 
 const execAsync = promisify(exec);
 
@@ -26,9 +27,12 @@ export async function POST(
 
   try {
     const projectRoot = path.resolve(process.cwd(), '..');
+    const projectPath = getCurrentProjectPath();
     const toolPath = path.join(projectRoot, 'tools/scripts', scriptName);
 
-    const { stdout, stderr } = await execAsync(`node "${toolPath}"`, {
+    const projectDirArg = projectPath ? ` --project-dir "${projectPath}"` : '';
+
+    const { stdout, stderr } = await execAsync(`node "${toolPath}"${projectDirArg}`, {
       cwd: projectRoot,
       timeout: 60000
     });
@@ -37,17 +41,27 @@ export async function POST(
     const errors: string[] = [];
     const lines = stdout.split('\n');
     for (const line of lines) {
-      if (line.toLowerCase().includes('error') || line.includes('❌') || line.includes('✗')) {
+      const lower = line.toLowerCase();
+      // Detect real errors but ignore "0 errors", "0 error(s)", "no error" summary stats
+      const hasRealError = (lower.includes('error') && 
+                            !lower.includes('0 error') && 
+                            !lower.includes('no error')) ||
+                           lower.includes('[error]') ||
+                           lower.includes('exception') ||
+                           line.includes('❌') ||
+                           line.includes('✗');
+      if (hasRealError) {
         errors.push(line.trim());
       }
     }
 
-    const success = !stderr && errors.length === 0;
+    const success = errors.length === 0;
 
     return NextResponse.json({
       success,
       output: stdout,
-      errors: errors.length > 0 ? errors : undefined
+      errors: errors.length > 0 ? errors : undefined,
+      stderr: stderr || undefined
     });
   } catch (e: any) {
     return NextResponse.json({

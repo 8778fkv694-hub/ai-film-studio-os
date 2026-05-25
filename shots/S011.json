@@ -1,0 +1,42 @@
+{
+  "shot_id": "S011",
+  "duration_s": 5,
+  "scene_ref": "scenes/kitchen_apartment_01.json",
+  "cam_setup_ref": "comic_panel_02",
+  "characters": [
+    {
+      "ref": "characters/charA_v1.json"
+    }
+  ],
+  "props": [
+    {
+      "ref": "props/mug_red_v1.json",
+      "state": "steaming then cold"
+    }
+  ],
+  "action": {
+    "beats": [
+      "Protagonist A holds a key in his hand.",
+      "The steam from the red mug suddenly dissipates, turning cold like a sigh."
+    ]
+  },
+  "dialogue": {
+    "speaker": "Protagonist A",
+    "text": "你想让我过去？",
+    "voice_id": "charA_v1"
+  },
+  "voiceover": {
+    "speaker": "Narrator",
+    "text": "他握住钥匙，杯子里的热气立刻变冷，像一口叹息。",
+    "voice_id": "narrator_v1"
+  },
+  "budget": {
+    "tier": "cheap",
+    "max_regen": 1
+  },
+  "prompt": {
+    "positive": "A man holding a key, a red mug on a table, steam rising then fading, cold atmosphere, dim kitchen lighting, cinematic, moody, close-up on hand and mug",
+    "negative": "bright, sunny, cartoonish, low detail"
+  },
+  "context_refs": []
+}

@@ -1,0 +1,108 @@
+{
+  "shot_id": "S007",
+  "task_type": "keyframe_image",
+  "language": "en",
+  "image_prompt_master": "photographic cinematic storyboard keyframe. single static frame for a voiced comic animatic. visual style: Cinematic Realism v1. mood: cinematic, moody, controlled lighting. palette: warm highlights, cool shadows. stable character identity across shots. consistent environment layout and prop continuity. clean frame, no captions, no watermark, no user interface.",
+  "image_prompt_scene": "scene: Apartment Kitchen Night. must keep set elements: red fridge, wooden table, rainy window. lighting: dim warm lamp + blue moonlight. match scene anchors: A wide shot from door, table center, red fridge left, rainy window right; B table closeup with red mug and warm practical lamp; C rainy window with cool blue moonlight and hallway edge.",
+  "image_prompt_characters": "character lock: Protagonist A (charA_v1), hair: short_black, outfit: white_hoodie + black_jeans, accessories: silver_ring_left_hand.",
+  "image_prompt_props": "prop lock: Red Mug (mug_red_v1), state: on table, photo visible, must remain visually consistent.",
+  "image_prompt_shot": "shot S007. camera intent: comic_panel_03. action beats: Camera slowly zooms into the photo; A woman stands in the corner of the photo; Her face is scratched out like rain streaks. narration intent: Narrator explains \"照片角落站着一个女人，脸被雨水一样的划痕抹掉。\". dialogue mood: Protagonist A says \"妈妈？\". shot positive notes: Extreme close-up of an old photo on a wooden table, a woman's silhouette in the corner, her face obscured by vertical scratch marks resembling rain, dim warm light, melancholic mood, shallow depth of field, cinematic.",
+  "image_prompt_final": "photographic cinematic storyboard keyframe. single static frame for a voiced comic animatic. visual style: Cinematic Realism v1. mood: cinematic, moody, controlled lighting. palette: warm highlights, cool shadows. stable character identity across shots. consistent environment layout and prop continuity. clean frame, no captions, no watermark, no user interface. scene: Apartment Kitchen Night. must keep set elements: red fridge, wooden table, rainy window. lighting: dim warm lamp + blue moonlight. match scene anchors: A wide shot from door, table center, red fridge left, rainy window right; B table closeup with red mug and warm practical lamp; C rainy window with cool blue moonlight and hallway edge. character lock: Protagonist A (charA_v1), hair: short_black, outfit: white_hoodie + black_jeans, accessories: silver_ring_left_hand. prop lock: Red Mug (mug_red_v1), state: on table, photo visible, must remain visually consistent. shot S007. camera intent: comic_panel_03. action beats: Camera slowly zooms into the photo; A woman stands in the corner of the photo; Her face is scratched out like rain streaks. narration intent: Narrator explains \"照片角落站着一个女人，脸被雨水一样的划痕抹掉。\". dialogue mood: Protagonist A says \"妈妈？\". shot positive notes: Extreme close-up of an old photo on a wooden table, a woman's silhouette in the corner, her face obscured by vertical scratch marks resembling rain, dim warm light, melancholic mood, shallow depth of field, cinematic.",
+  "negative_prompt": "cartoon, neon cyberpunk (unless explicitly requested), sunlight, daylight, modern led lights, crowd, sharp face details, bright, happy colors, modern, face drift, outfit change, prop drift, wrong set layout, extra fingers, text artifacts, subtitles burned into image, logo, watermark",
+  "continuity_notes": "",
+  "reference_images": [
+    {
+      "kind": "scene_anchor",
+      "id": "A",
+      "path": "assets/scenes/kitchen_apartment_01/anchor_A.svg",
+      "note": "wide shot from door, table center, red fridge left, rainy window right",
+      "use_for": [
+        "establish",
+        "wide"
+      ],
+      "exists": true
+    },
+    {
+      "kind": "scene_anchor",
+      "id": "B",
+      "path": "assets/scenes/kitchen_apartment_01/anchor_B.svg",
+      "note": "table closeup with red mug and warm practical lamp",
+      "use_for": [
+        "closeup"
+      ],
+      "exists": true
+    },
+    {
+      "kind": "scene_anchor",
+      "id": "C",
+      "path": "assets/scenes/kitchen_apartment_01/anchor_C.svg",
+      "note": "rainy window with cool blue moonlight and hallway edge",
+      "use_for": [
+        "detail"
+      ],
+      "exists": true
+    }
+  ],
+  "context_refs": {
+    "declared": [
+      "assets/renders/S006/keyframes/frame_01.jpg"
+    ],
+    "available": [],
+    "missing": [
+      "assets/renders/S006/keyframes/frame_01.jpg"
+    ]
+  },
+  "duration_s": 4,
+  "voiceover": {
+    "speaker": "Narrator",
+    "text": "照片角落站着一个女人，脸被雨水一样的划痕抹掉。",
+    "voice_id": "narrator_default"
+  },
+  "dialogue": {
+    "speaker": "Protagonist A",
+    "text": "妈妈？",
+    "voice_id": "charA_v1"
+  },
+  "camera_intent": "comic_panel_03",
+  "continuity": {
+    "state_in_ref": null,
+    "state_changes": null,
+    "must_match_prev": [],
+    "handoff_to_next": []
+  },
+  "manual_workflow": {
+    "external_generation": "paste image_prompt_final and negative_prompt into any web image/video tool; upload reference_images when supported",
+    "keyframe_dir": "assets/renders/S007/keyframes",
+    "expected_files": [
+      "frame_01.jpg",
+      "frame_02.jpg",
+      "frame_03.jpg"
+    ],
+    "existing_keyframes": [],
+    "context_keyframes": [],
+    "context_hint": null
+  },
+  "validation": {
+    "missing_assets": [],
+    "missing_context_refs": [
+      "assets/renders/S006/keyframes/frame_01.jpg"
+    ],
+    "status": "WARN"
+  },
+  "meta": {
+    "compiler_version": "image-prompts-1.0.0",
+    "git_commit": "8020ce7",
+    "compiled_at": "2026-05-25T10:32:26.519Z",
+    "compiled_from": {
+      "shot": "shots/S007.json",
+      "scene": "scenes/kitchen_apartment_01.json",
+      "style": "styles/cinematic_v1.json",
+      "characters": [
+        "characters/charA_v1.json"
+      ],
+      "props": [
+        "props/mug_red_v1.json"
+      ]
+    }
+  }
+}

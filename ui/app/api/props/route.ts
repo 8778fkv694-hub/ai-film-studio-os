@@ -1,17 +1,17 @@
 import { NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
-
-const PROPS_DIR = path.resolve(process.cwd(), '../props');
+import { getResourcePath } from '@/lib/projects';
 
 export async function GET() {
   try {
-    if (!fs.existsSync(PROPS_DIR)) {
+    const propsDir = getResourcePath('props');
+    if (!fs.existsSync(propsDir)) {
       return NextResponse.json([]);
     }
-    const files = fs.readdirSync(PROPS_DIR).filter(f => f.endsWith('.json'));
+    const files = fs.readdirSync(propsDir).filter(f => f.endsWith('.json'));
     const props = files.map(f => {
-      const content = fs.readFileSync(path.join(PROPS_DIR, f), 'utf-8');
+      const content = fs.readFileSync(path.join(propsDir, f), 'utf-8');
       return { ...JSON.parse(content), _filename: f };
     });
     return NextResponse.json(props);
@@ -26,7 +26,7 @@ export async function POST(request: Request) {
     const filename = prop._filename || `${prop.id}.json`;
     delete prop._filename;
     fs.writeFileSync(
-      path.join(PROPS_DIR, filename),
+      path.join(getResourcePath('props'), filename),
       JSON.stringify(prop, null, 2),
       'utf-8'
     );

@@ -1,0 +1,44 @@
+{
+  "shot_id": "S032",
+  "duration_s": 4,
+  "scene_ref": "scenes/kitchen_apartment_01.json",
+  "cam_setup_ref": "comic_panel_03",
+  "characters": [
+    {
+      "ref": "characters/charA_v1.json"
+    }
+  ],
+  "props": [
+    {
+      "ref": "props/mug_red_v1.json",
+      "state": "on table"
+    }
+  ],
+  "action": {
+    "beats": [
+      "Lin Che's face shows realization, eyes widening.",
+      "He whispers to himself, understanding dawning."
+    ]
+  },
+  "dialogue": {
+    "speaker": "Protagonist A",
+    "text": "I trapped myself.",
+    "voice_id": "charA_v1"
+  },
+  "voiceover": {
+    "speaker": "Narrator",
+    "text": "He finally understands: the clues were not left by someone else, but by his past self.",
+    "voice_id": "narrator_default"
+  },
+  "budget": {
+    "tier": "cheap",
+    "max_regen": 1
+  },
+  "prompt": {
+    "positive": "Medium close-up of Lin Che's face, expression of epiphany, soft kitchen light, red mug in foreground, contemplative mood, cinematic lighting.",
+    "negative": "blurry, overexposed, distracting background."
+  },
+  "context_refs": [
+    "assets/renders/S031/keyframes/frame_01.jpg"
+  ]
+}

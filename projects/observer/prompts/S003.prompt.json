@@ -1,0 +1,113 @@
+{
+  "shot_id": "S003",
+  "duration_s": 6,
+  "language": "zh",
+  "task_type": "video_generation",
+  "video_prompt": "style: Cinematic Realism v1, mood: cinematic, moody, controlled lighting, color palette: warm highlights, cool shadows. cinematic live-action video shot. scene: 洁净车间出口. 回收箱, 鞋套收集桶, 口罩回收筐, 出口标识, 洁净通道出口. lighting: 明亮白光，指示照明. 人员沿地面路线行走离开, 将洁净服、鞋套、口罩放回指定回收箱. Narration: \"参观结束后，请按指定路线离开洁净车间。洁净服、鞋套、口罩等按现场要求回收或放置，不得随意丢弃。离开后如有意见或问题，可统一反馈给陪同人员。\". Camera motion: medium shot, subtle hand-held camera feel, focus on subject action. 人员穿着洁净服从车间走出，沿地面箭头路线，将白色洁净服折叠放入回收箱，背景为更衣室出口，整洁有序. Character identity locked to reference images. No face morphing or outfit variation.. Scene layout locked to context reference frame. Do not reposition props or alter lighting source.. Camera transition smooth from previous shot continuity frame. No abrupt jump cut between shots. Stable visual consistency across entire clip. No character drift, no prop mutation, no scene layout shift.",
+  "video_prompt_keywords": "cinematic, moody, controlled lighting, 回收箱, 鞋套收集桶, 口罩回收筐, 出口标识, 洁净通道出口, 明亮白光，指示照明, 人员沿地面路线行走离开, 将洁净服、鞋套、口罩放回指定回收箱, 人员穿着洁净服从车间走出，沿地面箭头路线，将白色洁净服折叠放入回收箱，背景为更衣室出口，整洁有序",
+  "video_prompt_short": "style: Cinematic Realism v1, mood: cinematic, moody, controlled lighting, color palette: warm highlights, cool shadows. cinematic live-action video shot. scene: 洁净车间出口. 回收箱, 鞋套收集桶, 口罩回收筐, 出口标识, 洁净通道出口. lighting: 明亮白光，指示照明. 人员沿地面路线行走离开, 将洁净服、鞋套、口罩放回指定回收箱. Narration: \"参观结束后，请按指定路线离开洁净车间。洁净服、鞋套、口罩等按现场要求回收或放置，不得随意丢弃。离开后如有意见或问题，可统一反馈给陪同人员。\". Camera motion: medium shot, subtle hand-held camera feel, focus on subject action. 人员穿着洁净服从车间走出，沿地面箭头路线，将白色洁净服折叠放入回收箱，背景为更衣室出口，整洁有序. Character identity locked...",
+  "negative_prompt": "cartoon, neon cyberpunk (unless explicitly requested), 随意丢弃洁净用品, 逆向进入, 杂乱丢弃，人员拥挤, multiple characters, duplicate person, clone, inconsistent lighting, wrong angle, lens distortion, chromatic aberration, face morphing, character drift, outfit change, prop mutation, scene layout shift, extra fingers, distorted limbs, text artifacts, burnt-in subtitles, logo, watermark, motion blur excessive, flickering, framing jump cut",
+  "camera_intent": "comic_panel_02",
+  "camera_motion": "medium shot, subtle hand-held camera feel, focus on subject action",
+  "continuity_notes": null,
+  "continuity_locks": null,
+  "structured_context": {
+    "scene_name": "洁净车间出口",
+    "scene_elements": [
+      "回收箱",
+      "鞋套收集桶",
+      "口罩回收筐",
+      "出口标识",
+      "洁净通道出口"
+    ],
+    "scene_lighting": "明亮白光，指示照明",
+    "style_name": "Cinematic Realism v1",
+    "style_mood": [
+      "cinematic",
+      "moody",
+      "controlled lighting"
+    ],
+    "style_palette": [
+      "warm highlights",
+      "cool shadows"
+    ],
+    "characters": [],
+    "props": [],
+    "action_beats": [
+      "人员沿地面路线行走离开",
+      "将洁净服、鞋套、口罩放回指定回收箱"
+    ],
+    "dialogue": null,
+    "voiceover": {
+      "speaker": "旁白",
+      "text": "参观结束后，请按指定路线离开洁净车间。洁净服、鞋套、口罩等按现场要求回收或放置，不得随意丢弃。离开后如有意见或问题，可统一反馈给陪同人员。",
+      "voice_id": "default"
+    }
+  },
+  "reference_images": [],
+  "conditioning_keyframes": [
+    "assets/renders/S003/keyframes/frame_01.png"
+  ],
+  "context_refs": {
+    "declared": [
+      "assets/renders/S002/keyframes/frame_01.jpg"
+    ],
+    "available": [],
+    "missing": [
+      "assets/renders/S002/keyframes/frame_01.jpg"
+    ],
+    "has_context": false
+  },
+  "constraints": {
+    "must_keep": [
+      "scene:回收箱",
+      "scene:鞋套收集桶",
+      "scene:口罩回收筐",
+      "scene:出口标识",
+      "scene:洁净通道出口"
+    ],
+    "forbidden": [
+      "随意丢弃洁净用品",
+      "逆向进入"
+    ]
+  },
+  "ref_image_paths": [],
+  "params": {
+    "duration_s": 6,
+    "tier": "cheap",
+    "max_regen": 1
+  },
+  "workflow": {
+    "prompt_ready": true,
+    "has_keyframes": true,
+    "has_context_refs": false,
+    "keyframe_dir": "assets/renders/S003/keyframes",
+    "expected_keyframes": [
+      "frame_01.jpg",
+      "frame_02.jpg",
+      "frame_03.jpg"
+    ],
+    "tool_instructions": "Use video prompt + conditioning keyframes for img2vid generation. Copy 'video_prompt' into your video tool, attach 'conditioning_keyframes' as start/end frame conditioning."
+  },
+  "validation": {
+    "missing_assets": [],
+    "missing_context_refs": [
+      "assets/renders/S002/keyframes/frame_01.jpg"
+    ],
+    "status": "WARN"
+  },
+  "meta": {
+    "compiler_version": "video-prompts-2.0.0",
+    "git_commit": "8020ce7",
+    "compiled_at": "2026-05-25T10:47:43.157Z",
+    "compiled_from": {
+      "shot": "shots/S003.json",
+      "scene": "scenes/scene_exit.json",
+      "style": "styles/cinematic_v1.json",
+      "characters": [],
+      "props": [
+        "TODO: match prop manually"
+      ]
+    }
+  }
+}

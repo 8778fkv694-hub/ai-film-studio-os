@@ -1,0 +1,21 @@
+{
+  "shot_id": "S046",
+  "characters": {
+    "charA_v1": {
+      "location": "apartment",
+      "pose": "speaking",
+      "outfit": "white hoodie, dark pants"
+    }
+  },
+  "props": {
+    "mug_red_v1": {
+      "location": "near Lin Che",
+      "state": "placed on table, steam rising"
+    }
+  },
+  "scene": {
+    "lighting": "night rain",
+    "weather": "rain",
+    "time": "midnight"
+  }
+}

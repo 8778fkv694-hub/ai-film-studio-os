@@ -1,0 +1,21 @@
+{
+  "shot_id": "S033",
+  "characters": {
+    "charA_v1": {
+      "location": "apartment",
+      "pose": "speaking",
+      "outfit": "white hoodie, dark pants"
+    }
+  },
+  "props": {
+    "mug_red_v1": {
+      "location": "near Lin Che",
+      "state": "on table"
+    }
+  },
+  "scene": {
+    "lighting": "night rain",
+    "weather": "rain",
+    "time": "midnight"
+  }
+}

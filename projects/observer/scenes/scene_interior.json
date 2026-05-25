@@ -1,0 +1,11 @@
+{
+  "id": "clean_room_interior",
+  "name": "洁净车间内部",
+  "style_ref": "styles/cinematic_v1.json",
+  "anchors": [],
+  "must_keep": {
+    "set_elements": ["运行设备", "黄色警示线", "压力管路", "仪表盘", "洁净通道", "禁止拍摄标识", "禁止触摸标识"],
+    "lighting": "明亮白光，工业照明，无影"
+  },
+  "forbidden": ["杂乱线缆", "溢出液体", "敞开门", "无标识区域"]
+}

@@ -1,0 +1,164 @@
+{
+  "shot_id": "S046",
+  "duration_s": 6,
+  "language": "zh",
+  "task_type": "video_generation",
+  "video_prompt": "style: Cinematic Realism v1, mood: cinematic, moody, controlled lighting, color palette: warm highlights, cool shadows. cinematic live-action video shot. scene: Apartment Kitchen Night. red fridge, wooden table, rainy window. lighting: dim warm lamp + blue moonlight. character (charA_v1): short_black, white_hoodie + black_jeans, silver_ring_left_hand. prop (mug_red_v1): state: placed on table, steam rising, visually consistent. Another Lin Che approaches the table without getting too close., He places the red mug back on the table., Steam rises from the mug, forming a visible trail like a path home. Narration: \"另一个林澈没有靠近，只把红杯放回桌上。杯中热气像一条回家的路。\". Protagonist A says: \"现在轮到你记住。\". Camera motion: medium shot, subtle hand-held camera feel, focus on subject action. Medium shot, kitchen table, another Lin Che placing red mug, steam rising like a glowing path, warm amber light, cinematic, emotional, 35mm lens, shallow depth of field. Character identity locked to reference images. No face morphing or outfit variation.. All props match reference images exactly. Prop must_keep: shape, color, size, material unchanged. Stable visual consistency across entire clip. No character drift, no prop mutation, no scene layout shift.",
+  "video_prompt_keywords": "cinematic, moody, controlled lighting, red fridge, wooden table, rainy window, dim warm lamp + blue moonlight, charA_v1, short_black, white_hoodie + black_jeans, silver_ring_left_hand, mug_red_v1, Another Lin Che approaches the table without getting too close., He places the red mug back on the table., Steam rises from the mug, forming a visible trail like a path home., Protagonist A says: \"现在轮到你记住。\", Medium shot, kitchen table, another Lin Che placing red mug, steam rising like a glowing path, warm amber light, emotional, 35mm lens, shallow depth of field",
+  "video_prompt_short": "style: Cinematic Realism v1, mood: cinematic, moody, controlled lighting, color palette: warm highlights, cool shadows. cinematic live-action video shot. scene: Apartment Kitchen Night. red fridge, wooden table, rainy window. lighting: dim warm lamp + blue moonlight. character (charA_v1): short_black, white_hoodie + black_jeans, silver_ring_left_hand. prop (mug_red_v1): state: placed on table, steam rising, visually consistent. Another Lin Che approaches the table without getting too close., ...",
+  "negative_prompt": "cartoon, neon cyberpunk (unless explicitly requested), sunlight, daylight, modern led lights, crowd, blurry, overexposed, cartoonish, low contrast, multiple characters, duplicate person, clone, inconsistent lighting, wrong angle, lens distortion, chromatic aberration, mouth mismatch, silent face, frozen expression, unnatural dubbing, face morphing, character drift, outfit change, prop mutation, scene layout shift, extra fingers, distorted limbs, text artifacts, burnt-in subtitles, logo, watermark, motion blur excessive, flickering, framing jump cut",
+  "camera_intent": "comic_panel_02",
+  "camera_motion": "medium shot, subtle hand-held camera feel, focus on subject action",
+  "continuity_notes": null,
+  "continuity_locks": null,
+  "structured_context": {
+    "scene_name": "Apartment Kitchen Night",
+    "scene_elements": [
+      "red fridge",
+      "wooden table",
+      "rainy window"
+    ],
+    "scene_lighting": "dim warm lamp + blue moonlight",
+    "style_name": "Cinematic Realism v1",
+    "style_mood": [
+      "cinematic",
+      "moody",
+      "controlled lighting"
+    ],
+    "style_palette": [
+      "warm highlights",
+      "cool shadows"
+    ],
+    "characters": [
+      {
+        "id": "charA_v1",
+        "name": "Protagonist A",
+        "hair": "short_black",
+        "outfit": "white_hoodie + black_jeans",
+        "accessories": [
+          "silver_ring_left_hand"
+        ]
+      }
+    ],
+    "props": [
+      {
+        "id": "mug_red_v1",
+        "name": "Red Mug",
+        "state": "placed on table, steam rising"
+      }
+    ],
+    "action_beats": [
+      "Another Lin Che approaches the table without getting too close.",
+      "He places the red mug back on the table.",
+      "Steam rises from the mug, forming a visible trail like a path home."
+    ],
+    "dialogue": {
+      "speaker": "Protagonist A",
+      "text": "现在轮到你记住。",
+      "voice_id": "charA_v1"
+    },
+    "voiceover": {
+      "speaker": "Narrator",
+      "text": "另一个林澈没有靠近，只把红杯放回桌上。杯中热气像一条回家的路。",
+      "voice_id": "narrator_default"
+    }
+  },
+  "reference_images": [
+    {
+      "kind": "scene_anchor",
+      "id": "A",
+      "path": "assets/scenes/kitchen_apartment_01/anchor_A.svg",
+      "note": "wide shot from door, table center, red fridge left, rainy window right",
+      "use_for": [
+        "establish",
+        "wide"
+      ],
+      "exists": true
+    },
+    {
+      "kind": "scene_anchor",
+      "id": "B",
+      "path": "assets/scenes/kitchen_apartment_01/anchor_B.svg",
+      "note": "table closeup with red mug and warm practical lamp",
+      "use_for": [
+        "closeup"
+      ],
+      "exists": true
+    },
+    {
+      "kind": "scene_anchor",
+      "id": "C",
+      "path": "assets/scenes/kitchen_apartment_01/anchor_C.svg",
+      "note": "rainy window with cool blue moonlight and hallway edge",
+      "use_for": [
+        "detail"
+      ],
+      "exists": true
+    }
+  ],
+  "conditioning_keyframes": [],
+  "context_refs": {
+    "declared": [],
+    "available": [],
+    "missing": [],
+    "has_context": false
+  },
+  "constraints": {
+    "must_keep": [
+      "scene:red fridge",
+      "scene:wooden table",
+      "scene:rainy window",
+      "character:charA_v1",
+      "prop:mug_red_v1"
+    ],
+    "forbidden": [
+      "sunlight",
+      "daylight",
+      "modern led lights",
+      "crowd"
+    ]
+  },
+  "ref_image_paths": [
+    "assets/scenes/kitchen_apartment_01/anchor_A.svg",
+    "assets/scenes/kitchen_apartment_01/anchor_B.svg",
+    "assets/scenes/kitchen_apartment_01/anchor_C.svg"
+  ],
+  "params": {
+    "duration_s": 6,
+    "tier": "cheap",
+    "max_regen": 1
+  },
+  "workflow": {
+    "prompt_ready": true,
+    "has_keyframes": false,
+    "has_context_refs": false,
+    "keyframe_dir": "assets/renders/S046/keyframes",
+    "expected_keyframes": [
+      "frame_01.jpg",
+      "frame_02.jpg",
+      "frame_03.jpg"
+    ],
+    "tool_instructions": "No keyframes found yet. Generate keyframe images first using build-image-prompts, save them to S046/keyframes, then re-run this compiler for img2vid conditioning. Text-to-video is still possible with just 'video_prompt'."
+  },
+  "validation": {
+    "missing_assets": [],
+    "missing_context_refs": [],
+    "status": "OK"
+  },
+  "meta": {
+    "compiler_version": "video-prompts-2.0.0",
+    "git_commit": "8020ce7",
+    "compiled_at": "2026-05-25T10:32:28.065Z",
+    "compiled_from": {
+      "shot": "shots/S046.json",
+      "scene": "scenes/kitchen_apartment_01.json",
+      "style": "styles/cinematic_v1.json",
+      "characters": [
+        "characters/charA_v1.json"
+      ],
+      "props": [
+        "props/mug_red_v1.json"
+      ]
+    }
+  }
+}

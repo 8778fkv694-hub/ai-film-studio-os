@@ -1,0 +1,37 @@
+{
+  "shot_id": "S026",
+  "duration_s": 5,
+  "scene_ref": "scenes/kitchen_apartment_01.json",
+  "cam_setup_ref": "comic_panel_03",
+  "characters": [],
+  "props": [
+    {
+      "ref": "props/mug_red_v1.json",
+      "state": "on table"
+    }
+  ],
+  "action": {
+    "beats": [
+      "A film negative is held up to a light source, revealing a basement iron door with the Lin family name written on it."
+    ]
+  },
+  "dialogue": {
+    "speaker": "Protagonist A",
+    "text": "我们家没有地下室。",
+    "voice_id": "charA_v1"
+  },
+  "voiceover": {
+    "speaker": "Narrator",
+    "text": "底片对着灯，出现一扇地下室铁门，门上写着林家的姓。",
+    "voice_id": "narrator_default"
+  },
+  "budget": {
+    "tier": "cheap",
+    "max_regen": 1
+  },
+  "prompt": {
+    "positive": "Close-up of a film negative held against a warm light source, revealing a dark basement iron door with Chinese characters '林' on it, high contrast, cinematic grain, shallow depth of field, mysterious atmosphere.",
+    "negative": "blurry, overexposed, cartoonish, low resolution"
+  },
+  "context_refs": []
+}

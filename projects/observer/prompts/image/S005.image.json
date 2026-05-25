@@ -1,0 +1,72 @@
+{
+  "shot_id": "S005",
+  "task_type": "keyframe_image",
+  "language": "en",
+  "image_prompt_master": "photographic cinematic storyboard keyframe. single static frame for a voiced comic animatic. visual style: Cinematic Realism v1. mood: cinematic, moody, controlled lighting. palette: warm highlights, cool shadows. stable character identity across shots. consistent environment layout and prop continuity. clean frame, no captions, no watermark, no user interface.",
+  "image_prompt_scene": "scene: 洁净车间内部. must keep set elements: 运行设备, 黄色警示线, 压力管路, 仪表盘, 洁净通道, 禁止拍摄标识, 禁止触摸标识. lighting: 明亮白光，工业照明，无影.",
+  "image_prompt_characters": "",
+  "image_prompt_props": "",
+  "image_prompt_shot": "shot S005. camera intent: comic_panel_01. action beats: Visitors walking along designated path, not touching equipment. narration intent: Narrator explains \"进入车间后，请按指定路线参观。参观过程中，不得脱帽、摘口罩，不得随意触摸设备、物料、工装、产品和记录表单。未经允许，不得操作设备，不得进入黄线以内或设备防护区域。\". shot positive notes: Visitors in clean suits walking along marked path in clean workshop, machinery in background, yellow floor lines, sterile environment.",
+  "image_prompt_final": "photographic cinematic storyboard keyframe. single static frame for a voiced comic animatic. visual style: Cinematic Realism v1. mood: cinematic, moody, controlled lighting. palette: warm highlights, cool shadows. stable character identity across shots. consistent environment layout and prop continuity. clean frame, no captions, no watermark, no user interface. scene: 洁净车间内部. must keep set elements: 运行设备, 黄色警示线, 压力管路, 仪表盘, 洁净通道, 禁止拍摄标识, 禁止触摸标识. lighting: 明亮白光，工业照明，无影. shot S005. camera intent: comic_panel_01. action beats: Visitors walking along designated path, not touching equipment. narration intent: Narrator explains \"进入车间后，请按指定路线参观。参观过程中，不得脱帽、摘口罩，不得随意触摸设备、物料、工装、产品和记录表单。未经允许，不得操作设备，不得进入黄线以内或设备防护区域。\". shot positive notes: Visitors in clean suits walking along marked path in clean workshop, machinery in background, yellow floor lines, sterile environment.",
+  "negative_prompt": "cartoon, neon cyberpunk (unless explicitly requested), 杂乱线缆, 溢出液体, 敞开门, 无标识区域, touching equipment, removing mask, crossing yellow line, face drift, outfit change, prop drift, wrong set layout, extra fingers, text artifacts, subtitles burned into image, logo, watermark",
+  "continuity_notes": "",
+  "reference_images": [],
+  "context_refs": {
+    "declared": [
+      "assets/renders/S004/keyframes/frame_01.jpg"
+    ],
+    "available": [],
+    "missing": [
+      "assets/renders/S004/keyframes/frame_01.jpg"
+    ]
+  },
+  "duration_s": 7,
+  "voiceover": {
+    "speaker": "Narrator",
+    "text": "进入车间后，请按指定路线参观。参观过程中，不得脱帽、摘口罩，不得随意触摸设备、物料、工装、产品和记录表单。未经允许，不得操作设备，不得进入黄线以内或设备防护区域。",
+    "voice_id": "narrator_male_01"
+  },
+  "dialogue": null,
+  "camera_intent": "comic_panel_01",
+  "continuity": {
+    "state_in_ref": null,
+    "state_changes": null,
+    "must_match_prev": [],
+    "handoff_to_next": []
+  },
+  "manual_workflow": {
+    "external_generation": "paste image_prompt_final and negative_prompt into any web image/video tool; upload reference_images when supported",
+    "keyframe_dir": "assets/renders/S005/keyframes",
+    "expected_files": [
+      "frame_01.jpg",
+      "frame_02.jpg",
+      "frame_03.jpg"
+    ],
+    "existing_keyframes": [
+      "assets/renders/S005/keyframes/frame_01.png"
+    ],
+    "context_keyframes": [],
+    "context_hint": null
+  },
+  "validation": {
+    "missing_assets": [],
+    "missing_context_refs": [
+      "assets/renders/S004/keyframes/frame_01.jpg"
+    ],
+    "status": "WARN"
+  },
+  "meta": {
+    "compiler_version": "image-prompts-1.0.0",
+    "git_commit": "8020ce7",
+    "compiled_at": "2026-05-25T10:47:42.032Z",
+    "compiled_from": {
+      "shot": "shots/S005.json",
+      "scene": "scenes/scene_interior.json",
+      "style": "styles/cinematic_v1.json",
+      "characters": [
+        "TODO: match character path"
+      ],
+      "props": []
+    }
+  }
+}

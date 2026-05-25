@@ -1,11 +1,10 @@
 import { NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
+import { getCurrentProjectPath } from '@/lib/projects';
 
-const ROOT = path.resolve(process.cwd(), '..');
-
-function countFiles(dir: string, ext = '.json'): number {
-  const absDir = path.join(ROOT, dir);
+function countFiles(projectPath: string, dir: string, ext = '.json'): number {
+  const absDir = path.join(projectPath, dir);
   if (!fs.existsSync(absDir)) return 0;
   try {
     return fs.readdirSync(absDir).filter(f => f.endsWith(ext)).length;
@@ -14,8 +13,8 @@ function countFiles(dir: string, ext = '.json'): number {
   }
 }
 
-function countKeyframes(): number {
-  const rendersDir = path.join(ROOT, 'assets/renders');
+function countKeyframes(projectPath: string): number {
+  const rendersDir = path.join(projectPath, 'assets/renders');
   if (!fs.existsSync(rendersDir)) return 0;
 
   const imageExts = new Set(['.jpg', '.jpeg', '.png', '.webp', '.svg']);
@@ -41,20 +40,22 @@ function readJson(p: string) {
   }
 }
 
-function runValidate(): { passed: boolean; errors: string[] } {
+function runValidate(projectPath: string): { passed: boolean; errors: string[]; warnings: string[] } {
   const errors: string[] = [];
-  const shotsDir = path.join(ROOT, 'shots');
+  const warnings: string[] = [];
+  const shotsDir = path.join(projectPath, 'shots');
   if (!fs.existsSync(shotsDir)) {
     errors.push('shots/ 目录不存在');
-    return { passed: false, errors };
+    return { passed: false, errors, warnings };
   }
 
   const shotFiles = fs.readdirSync(shotsDir).filter(f => f.endsWith('.json'));
   if (shotFiles.length === 0) {
     errors.push('没有找到分镜文件');
-    return { passed: false, errors };
+    return { passed: false, errors, warnings };
   }
 
+  const isTodo = (val: string) => String(val || '').startsWith('TODO:');
   const shotIds = new Set<string>();
 
   for (const f of shotFiles) {
@@ -77,14 +78,18 @@ function runValidate(): { passed: boolean; errors: string[] } {
 
     if (!shot.scene_ref) {
       errors.push(`${shot.shot_id}: 缺少 scene_ref`);
-    } else if (!fs.existsSync(path.join(ROOT, shot.scene_ref))) {
+    } else if (isTodo(shot.scene_ref)) {
+      warnings.push(`${shot.shot_id}: scene_ref 为占位符，请创建场景后更新`);
+    } else if (!fs.existsSync(path.join(projectPath, shot.scene_ref))) {
       errors.push(`${shot.shot_id}: scene_ref 文件不存在 (${shot.scene_ref})`);
     }
 
     for (const ch of shot.characters || []) {
       if (!ch.ref) {
         errors.push(`${shot.shot_id}: 角色引用缺少 ref`);
-      } else if (!fs.existsSync(path.join(ROOT, ch.ref))) {
+      } else if (isTodo(ch.ref)) {
+        warnings.push(`${shot.shot_id}: 角色引用为占位符，请创建角色或移除`);
+      } else if (!fs.existsSync(path.join(projectPath, ch.ref))) {
         errors.push(`${shot.shot_id}: 角色文件不存在 (${ch.ref})`);
       }
     }
@@ -92,41 +97,48 @@ function runValidate(): { passed: boolean; errors: string[] } {
     for (const pr of shot.props || []) {
       if (!pr.ref) {
         errors.push(`${shot.shot_id}: 道具引用缺少 ref`);
-      } else if (!fs.existsSync(path.join(ROOT, pr.ref))) {
+      } else if (isTodo(pr.ref)) {
+        warnings.push(`${shot.shot_id}: 道具引用为占位符，请创建道具或移除`);
+      } else if (!fs.existsSync(path.join(projectPath, pr.ref))) {
         errors.push(`${shot.shot_id}: 道具文件不存在 (${pr.ref})`);
       }
     }
 
-    if (shot.continuity?.state_in_ref && !fs.existsSync(path.join(ROOT, shot.continuity.state_in_ref))) {
+    if (shot.continuity?.state_in_ref && !fs.existsSync(path.join(projectPath, shot.continuity.state_in_ref))) {
       errors.push(`${shot.shot_id}: state_in_ref 文件不存在 (${shot.continuity.state_in_ref})`);
     }
   }
 
-  return { passed: errors.length === 0, errors };
+  return { passed: errors.length === 0, errors, warnings };
 }
 
 export async function GET() {
   try {
+    const projectPath = getCurrentProjectPath();
+    if (!projectPath) {
+      return NextResponse.json({ error: '没有活动项目' }, { status: 404 });
+    }
+
     // Read project
-    const projectPath = path.join(ROOT, 'project.json');
-    const project = fs.existsSync(projectPath) ? readJson(projectPath) : null;
+    const projectJsonPath = path.join(projectPath, 'project.json');
+    const project = fs.existsSync(projectJsonPath) ? readJson(projectJsonPath) : null;
 
     // Count resources
     const counts = {
-      shots: countFiles('shots'),
-      drafts: countFiles('shots_draft'),
-      scenes: countFiles('scenes'),
-      characters: countFiles('characters'),
-      props: countFiles('props'),
-      audioFiles: countFiles('assets/audio', '.mp3'),
-      keyframes: countKeyframes(),
-      imagePromptPackages: countFiles('prompts/image'),
-      videoPromptPackages: countFiles('prompts', '.prompt.json'),
+      shots: countFiles(projectPath, 'shots'),
+      drafts: countFiles(projectPath, 'shots_draft'),
+      scenes: countFiles(projectPath, 'scenes'),
+      characters: countFiles(projectPath, 'characters'),
+      props: countFiles(projectPath, 'props'),
+      audioFiles: countFiles(projectPath, 'assets/audio', '.mp3'),
+      keyframes: countKeyframes(projectPath),
+      imagePromptPackages: countFiles(projectPath, 'prompts/image'),
+      videoPromptPackages: countFiles(projectPath, 'prompts', '.prompt.json'),
     };
 
     // Calculate total duration
     let totalDuration = 0;
-    const shotsDir = path.join(ROOT, 'shots');
+    const shotsDir = path.join(projectPath, 'shots');
     if (fs.existsSync(shotsDir)) {
       const shotFiles = fs.readdirSync(shotsDir).filter(f => f.endsWith('.json'));
       for (const f of shotFiles) {
@@ -138,18 +150,19 @@ export async function GET() {
     }
 
     // Real inline validation
-    const { passed: validatePassed, errors: validateErrors } = runValidate();
+    const { passed: validatePassed, errors: validateErrors, warnings: validateWarnings } = runValidate(projectPath);
 
     // Read lint report if exists
-    const lintReportPath = path.join(ROOT, 'reports/lint.report.json');
+    const lintReportPath = path.join(projectPath, 'reports/lint.report.json');
     const lintReport = fs.existsSync(lintReportPath) ? readJson(lintReportPath) : null;
     const lintIssues = lintReport?.issues || [];
     const lintPassed = lintReport ? lintIssues.filter((i: any) => i.level === 'ERROR').length === 0 : false;
 
-    // Merge validate errors into issues
+    // Merge validate errors/warnings into issues
     const allIssues = [
       ...lintIssues.map((i: any) => ({ level: i.level, where: i.where, msg: i.msg })),
-      ...validateErrors.map(e => ({ level: 'ERROR', where: 'validate', msg: e }))
+      ...(validateErrors || []).map(e => ({ level: 'ERROR', where: 'validate', msg: e })),
+      ...(validateWarnings || []).map(w => ({ level: 'WARN', where: 'validate', msg: w }))
     ];
 
     return NextResponse.json({

@@ -4,13 +4,11 @@
   "must_keep": {
     "hair": "short_black",
     "outfit": "white_hoodie + black_jeans",
-    "accessories": ["silver_ring_left_hand"]
+    "accessories": [
+      "silver_ring_left_hand"
+    ]
   },
   "references": {
-    "images": [
-      "assets/characters/charA_v1/front.svg",
-      "assets/characters/charA_v1/side.svg",
-      "assets/characters/charA_v1/fullbody.svg"
-    ]
+    "images": []
   }
 }

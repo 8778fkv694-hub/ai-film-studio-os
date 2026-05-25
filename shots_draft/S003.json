@@ -1,34 +1,35 @@
 {
   "shot_id": "S003",
-  "duration_s": 4,
+  "duration_s": 5,
   "scene_ref": "scenes/kitchen_apartment_01.json",
-  "cam_setup_ref": "TODO",
-  "characters": [],
-  "props": [
+  "cam_setup_ref": "comic_panel_02",
+  "characters": [
     {
-      "ref": "props/mug_red_v1.json",
-      "state": "TODO: infer state"
+      "ref": "characters/charA_v1.json"
     }
   ],
+  "props": [],
   "action": {
     "beats": [
-      "A RED MUG sits on the table in front of him. Steam rises from it."
+      "人员按路线离开",
+      "更衣服放回指定位置"
     ]
   },
-  "continuity": {
-    "must_match_prev": [],
-    "handoff_to_next": []
+  "dialogue": null,
+  "voiceover": {
+    "speaker": "旁白",
+    "text": "参观结束后，请按指定路线离开洁净车间。洁净服、鞋套、口罩等按现场要求回收或放置，不得随意丢弃。离开后如有意见或问题，可统一反馈给陪同人员。",
+    "voice_id": "default"
   },
   "budget": {
     "tier": "cheap",
     "max_regen": 1
   },
   "prompt": {
-    "positive": "INT. KITCHEN - NIGHT, A RED MUG sits on the table in front of him. Steam rises from it.",
-    "negative": "default negative"
+    "positive": "人员离开车间，按路线行走，更衣服整齐放回指定位置，工业环境，整洁有序，自然光",
+    "negative": "杂乱，随意丢弃，模糊"
   },
-  "_draft_meta": {
-    "original_text": "A RED MUG sits on the table in front of him. Steam rises from it.",
-    "warnings": []
-  }
+  "context_refs": [
+    "assets/renders/S002/keyframes/frame_01.jpg"
+  ]
 }

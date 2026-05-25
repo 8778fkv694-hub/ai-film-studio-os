@@ -1,0 +1,40 @@
+{
+  "shot_id": "S035",
+  "duration_s": 7,
+  "scene_ref": "scenes/kitchen_apartment_01.json",
+  "cam_setup_ref": "comic_panel_03",
+  "characters": [
+    {
+      "ref": "characters/charA_v1.json"
+    }
+  ],
+  "props": [],
+  "action": {
+    "beats": [
+      "Lin Che pulls the cloth off the mirror.",
+      "The reflection shows a version of himself that looks up half a second slower, but smiles first.",
+      "The reflection speaks."
+    ]
+  },
+  "dialogue": {
+    "speaker": "Protagonist A (mirror reflection)",
+    "text": "You finally came.",
+    "voice_id": "charA_v1_mirror"
+  },
+  "voiceover": {
+    "speaker": "Narrator",
+    "text": "He pulls off the cloth. The person in the mirror looks up half a second slower, but smiles first.",
+    "voice_id": "narrator_default"
+  },
+  "budget": {
+    "tier": "cheap",
+    "max_regen": 1
+  },
+  "prompt": {
+    "positive": "Medium close-up of Lin Che's reflection in a dusty mirror, slight time delay effect, eerie smile, dim basement light, psychological horror, shallow depth of field.",
+    "negative": "blurry, overexposed, normal reflection."
+  },
+  "context_refs": [
+    "assets/renders/S034/keyframes/frame_01.jpg"
+  ]
+}

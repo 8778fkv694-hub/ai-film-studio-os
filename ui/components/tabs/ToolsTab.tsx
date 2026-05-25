@@ -61,11 +61,14 @@ const tools: Tool[] = [
   }
 ];
 
-export default function ToolsTab() {
+export default function ToolsTab({ onDataRefresh }: { onDataRefresh?: () => void }) {
   const [running, setRunning] = useState<string | null>(null);
   const [results, setResults] = useState<Record<string, ToolResult>>({});
   const [showConsole, setShowConsole] = useState(false);
   const [consoleOutput, setConsoleOutput] = useState<string[]>([]);
+
+  // 会修改项目数据的工具列表
+  const dataMutatingTools = new Set(['gen-tts', 'build-prompts', 'build-image-prompts']);
 
   const runTool = async (tool: Tool) => {
     setRunning(tool.id);
@@ -89,6 +92,11 @@ export default function ToolsTab() {
         ...(data.output ? [data.output] : []),
         ...(data.errors || []).map((e: string) => `  错误: ${e}`)
       ]);
+
+      // 工具完成后刷新其他标签页数据
+      if (dataMutatingTools.has(tool.command) && onDataRefresh) {
+        onDataRefresh();
+      }
     } catch (e) {
       setResults(prev => ({
         ...prev,

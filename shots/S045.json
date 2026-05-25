@@ -1,0 +1,40 @@
+{
+  "shot_id": "S045",
+  "duration_s": 7,
+  "scene_ref": "scenes/kitchen_apartment_01.json",
+  "cam_setup_ref": "comic_panel_03",
+  "characters": [
+    {
+      "ref": "characters/charA_v1.json"
+    }
+  ],
+  "props": [],
+  "action": {
+    "beats": [
+      "Lin Che falls to his knees on the floor.",
+      "Memories flood into him like cold water, overwhelming him.",
+      "He realizes he once locked his mother in the basement to keep her from leaving."
+    ]
+  },
+  "dialogue": {
+    "speaker": "Protagonist A",
+    "text": "我不是故意的。",
+    "voice_id": "charA_v1"
+  },
+  "voiceover": {
+    "speaker": "Narrator",
+    "text": "林澈跪在地上，记忆像冷水灌进胸口。他曾经为了留住母亲，犯下不可逆的错。",
+    "voice_id": "narrator_default"
+  },
+  "budget": {
+    "tier": "cheap",
+    "max_regen": 1
+  },
+  "prompt": {
+    "positive": "Close-up of a man kneeling on a kitchen floor, anguish on his face, cold blue lighting, tears, dramatic shadows, emotional climax.",
+    "negative": "blurry, overexposed, extra characters, bright colors"
+  },
+  "context_refs": [
+    "assets/renders/S044/keyframes/frame_01.jpg"
+  ]
+}

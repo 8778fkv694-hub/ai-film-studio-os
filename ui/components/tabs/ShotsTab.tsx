@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { Clapperboard, Plus, Clock, MessageSquare, Camera, Sparkles, CheckCircle, AlertCircle } from 'lucide-react';
+import { Clapperboard, Plus, Clock, MessageSquare, Camera, Sparkles, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 
 interface Shot {
   shot_id: string;
@@ -249,6 +249,56 @@ function ShotEditor({
   onSave: (s: Shot) => void;
   onPromote: (s: Shot) => void;
 }) {
+  const [optimizing, setOptimizing] = useState(false);
+  const [optStatus, setOptStatus] = useState('');
+
+  const handleOptimizePrompt = async () => {
+    setOptimizing(true);
+    setOptStatus('');
+    try {
+      const res = await fetch('/api/ai/optimize-prompt', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          prompt: shot.prompt?.positive || '',
+          negative_prompt: shot.prompt?.negative || ''
+        })
+      });
+      const data = await res.json();
+      if (res.ok && data.result) {
+        let content = data.result.trim();
+        if (content.startsWith('```')) {
+          content = content.replace(/^```json\s*/i, '').replace(/```\s*$/, '').trim();
+        }
+        try {
+          const parsed = JSON.parse(content);
+          onChange({
+            ...shot,
+            prompt: {
+              positive: parsed.positive_prompt || shot.prompt?.positive || '',
+              negative: parsed.negative_prompt || shot.prompt?.negative || ''
+            }
+          });
+        } catch {
+          onChange({
+            ...shot,
+            prompt: {
+              ...shot.prompt,
+              positive: content
+            }
+          });
+        }
+        setOptStatus('优化成功！');
+      } else {
+        setOptStatus(`优化失败: ${data.error || '未知错误'}`);
+      }
+    } catch {
+      setOptStatus('网络错误，优化失败');
+    } finally {
+      setOptimizing(false);
+      setTimeout(() => setOptStatus(''), 3000);
+    }
+  };
   const addBeat = () => {
     const newBeats = [...(shot.action?.beats || []), '新动作描述'];
     onChange({ ...shot, action: { ...shot.action, beats: newBeats } });
@@ -438,10 +488,36 @@ function ShotEditor({
 
       {/* Prompt */}
       <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
-        <h3 className="text-lg font-semibold mb-4 text-slate-200 flex items-center gap-2">
-          <Sparkles size={18} className="text-purple-400" />
-          提示词 (Prompt)
-        </h3>
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-semibold text-slate-200 flex items-center gap-2">
+            <Sparkles size={18} className="text-purple-400" />
+            提示词 (Prompt)
+          </h3>
+          <div className="flex items-center gap-2">
+            {optStatus && (
+              <span className={`text-xs ${optStatus.includes('失败') ? 'text-red-400' : 'text-emerald-400'}`}>
+                {optStatus}
+              </span>
+            )}
+            <button
+              onClick={handleOptimizePrompt}
+              disabled={optimizing}
+              className="text-xs px-3 py-1.5 bg-purple-600 hover:bg-purple-500 disabled:opacity-50 text-white rounded-lg transition flex items-center gap-1 font-medium"
+            >
+              {optimizing ? (
+                <>
+                  <Loader2 size={12} className="animate-spin" />
+                  正在 AI 优化...
+                </>
+              ) : (
+                <>
+                  <Sparkles size={12} />
+                  ✨ AI 优化提示词
+                </>
+              )}
+            </button>
+          </div>
+        </div>
         <div className="space-y-4">
           <div>
             <label className="block text-sm text-slate-400 mb-1">正向提示词</label>

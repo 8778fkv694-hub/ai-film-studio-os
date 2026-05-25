@@ -1,0 +1,24 @@
+{
+  "shot_id": "S004",
+  "duration_s": 8,
+  "prompt": "style: Cinematic Realism v1, mood: cinematic, moody, controlled lighting, color palette: warm highlights, cool shadows. cinematic live-action video shot. scene: 洁净车间入口. 门禁系统, 车间标识牌, 告示栏, 洁净通道入口. lighting: 明亮白光，工业照明. 展示洁净车间全景, 画面叠加文字提示：规范更衣、完成风淋、只看不摸、不越线、不拍摄. Narration: \"洁净车间管理的核心，是减少污染、保证质量、确保安全。请大家做到：规范更衣、完成风淋、只看不摸、不越线、不拍摄。感谢配合。\". Camera motion: static wide establishing shot, slow dolly in from medium to close-up. 洁净车间全景，明亮无尘，设备整齐排列，地面洁净，画面中央叠加白色文字提示，简洁清晰，工业美学. Character identity locked to reference images. No face morphing or outfit variation.. Scene layout locked to context reference frame. Do not reposition props or alter lighting source.. Camera transition smooth from previous shot continuity frame. No abrupt jump cut between shots. Stable visual consistency across entire clip. No character drift, no prop mutation, no scene layout shift.",
+  "negative": "cartoon, neon cyberpunk (unless explicitly requested), 杂乱物品, 敞开大门, 普通衣物, 阴影，杂乱，文字遮挡设备, multiple characters, duplicate person, clone, inconsistent lighting, wrong angle, lens distortion, chromatic aberration, face morphing, character drift, outfit change, prop mutation, scene layout shift, extra fingers, distorted limbs, text artifacts, burnt-in subtitles, logo, watermark, motion blur excessive, flickering, framing jump cut",
+  "motion": "static wide establishing shot, slow dolly in from medium to close-up",
+  "condition_images": [
+    "assets/renders/S004/keyframes/frame_01.png"
+  ],
+  "context_ref_images": [],
+  "tool_hint": "Copy \"prompt\" and \"negative\" into video generation tool. Upload \"condition_images\" for img2vid start/end frame conditioning if supported. \"context_ref_images\" are previous shot keyframes for visual continuity. Duration is a guideline.",
+  "meta": {
+    "compiler_version": "video-prompts-2.0.0",
+    "git_commit": "8020ce7",
+    "compiled_at": "2026-05-25T10:47:43.158Z",
+    "compiled_from": {
+      "shot": "shots/S004.json",
+      "scene": "scenes/scene_entrance.json",
+      "style": "styles/cinematic_v1.json",
+      "characters": [],
+      "props": []
+    }
+  }
+}

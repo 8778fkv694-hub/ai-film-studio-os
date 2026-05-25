@@ -1,0 +1,39 @@
+{
+  "shot_id": "S039",
+  "duration_s": 5,
+  "scene_ref": "scenes/kitchen_apartment_01.json",
+  "cam_setup_ref": "comic_panel_02",
+  "characters": [
+    {
+      "ref": "characters/charA_v1.json"
+    }
+  ],
+  "props": [],
+  "action": {
+    "beats": [
+      "主角冲上楼",
+      "看见母亲坐在桌边，年轻如照片"
+    ]
+  },
+  "dialogue": {
+    "speaker": "Protagonist A",
+    "text": "妈？",
+    "voice_id": "charA_v1"
+  },
+  "voiceover": {
+    "speaker": "Narrator",
+    "text": "他冲上楼，看见母亲坐在桌边，和照片里一样年轻。",
+    "voice_id": "narrator_default"
+  },
+  "budget": {
+    "tier": "cheap",
+    "max_regen": 1
+  },
+  "prompt": {
+    "positive": "Wide shot of a young mother sitting at a kitchen table, protagonist A entering from stairs, nostalgic lighting, warm but eerie atmosphere",
+    "negative": "old, wrinkled, modern clutter"
+  },
+  "context_refs": [
+    "assets/renders/S038/keyframes/frame_01.jpg"
+  ]
+}

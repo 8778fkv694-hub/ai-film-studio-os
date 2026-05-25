@@ -1,34 +1,30 @@
 {
   "shot_id": "S005",
-  "duration_s": 4,
+  "duration_s": 8,
   "scene_ref": "scenes/kitchen_apartment_01.json",
-  "cam_setup_ref": "TODO",
+  "cam_setup_ref": "comic_panel_02",
   "characters": [],
-  "props": [
-    {
-      "ref": "props/mug_red_v1.json",
-      "state": "TODO: infer state"
-    }
-  ],
+  "props": [],
   "action": {
     "beats": [
-      "He reaches for the RED MUG but hesitates. The lights flicker."
+      "参观人员沿通道行走，不靠近设备"
     ]
   },
-  "continuity": {
-    "must_match_prev": [],
-    "handoff_to_next": []
+  "dialogue": null,
+  "voiceover": {
+    "speaker": "旁白",
+    "text": "进入车间后，请按指定路线参观。参观过程中，不得脱帽、摘口罩，不得随意触摸设备、物料、工装、产品和记录表单。未经允许，不得操作设备，不得进入黄线以内或设备防护区域。",
+    "voice_id": "narrator_male_01"
   },
   "budget": {
     "tier": "cheap",
     "max_regen": 1
   },
   "prompt": {
-    "positive": "INT. KITCHEN - NIGHT, He reaches for the RED MUG but hesitates. The lights flicker.",
-    "negative": "default negative"
+    "positive": "参观人员沿通道行走，不靠近设备，洁净车间内部，明亮灯光，工业风格，中景镜头",
+    "negative": "模糊，杂乱，阴影"
   },
-  "_draft_meta": {
-    "original_text": "He reaches for the RED MUG but hesitates. The lights flicker.",
-    "warnings": []
-  }
+  "context_refs": [
+    "assets/renders/S004/keyframes/frame_01.jpg"
+  ]
 }

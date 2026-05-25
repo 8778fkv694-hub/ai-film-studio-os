@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { NextResponse } from 'next/server';
+import { getResourcePath } from '@/lib/projects';
 
 const ALLOWED_EXTS = new Set(['.jpg', '.jpeg', '.png', '.webp', '.svg']);
 
@@ -30,7 +31,7 @@ export async function POST(
     return NextResponse.json({ error: '仅支持 jpg、png、webp' }, { status: 400 });
   }
 
-  const keyframeDir = path.resolve(process.cwd(), '../assets/renders', shot, 'keyframes');
+  const keyframeDir = path.join(getResourcePath('assets'), 'renders', shot, 'keyframes');
   fs.mkdirSync(keyframeDir, { recursive: true });
 
   const existing = fs.readdirSync(keyframeDir).filter(name => ALLOWED_EXTS.has(path.extname(name).toLowerCase()));

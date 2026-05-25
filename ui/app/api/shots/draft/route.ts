@@ -1,17 +1,17 @@
 import { NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
-
-const DRAFTS_DIR = path.resolve(process.cwd(), '../shots_draft');
+import { getResourcePath } from '@/lib/projects';
 
 export async function GET() {
   try {
-    if (!fs.existsSync(DRAFTS_DIR)) {
+    const draftsDir = getResourcePath('shots_draft');
+    if (!fs.existsSync(draftsDir)) {
       return NextResponse.json([]);
     }
-    const files = fs.readdirSync(DRAFTS_DIR).filter(f => f.endsWith('.json'));
+    const files = fs.readdirSync(draftsDir).filter(f => f.endsWith('.json'));
     const shots = files.map(f => {
-      const content = fs.readFileSync(path.join(DRAFTS_DIR, f), 'utf-8');
+      const content = fs.readFileSync(path.join(draftsDir, f), 'utf-8');
       return { ...JSON.parse(content), _filename: f };
     });
     // Sort by shot_id
@@ -24,14 +24,15 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    if (!fs.existsSync(DRAFTS_DIR)) {
-      fs.mkdirSync(DRAFTS_DIR, { recursive: true });
+    const draftsDir = getResourcePath('shots_draft');
+    if (!fs.existsSync(draftsDir)) {
+      fs.mkdirSync(draftsDir, { recursive: true });
     }
     const shot = await request.json();
     const filename = shot._filename || `${shot.shot_id}.json`;
     delete shot._filename;
     fs.writeFileSync(
-      path.join(DRAFTS_DIR, filename),
+      path.join(draftsDir, filename),
       JSON.stringify(shot, null, 2),
       'utf-8'
     );

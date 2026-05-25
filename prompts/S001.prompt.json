@@ -1,16 +1,16 @@
 {
   "shot_id": "S001",
-  "duration_s": 12,
+  "duration_s": 6,
   "language": "zh",
   "task_type": "video_generation",
-  "video_prompt": "style: Cinematic Realism v1, mood: cinematic, moody, controlled lighting, color palette: warm highlights, cool shadows. cinematic live-action video shot. scene: Apartment Kitchen Night. red fridge, wooden table, rainy window. lighting: dim warm lamp + blue moonlight. character (charA_v1): short_black, white_hoodie + black_jeans, silver_ring_left_hand. prop (mug_red_v1): state: story_clue, visually consistent. 午夜的雨把旧公寓包成一只黑盒。林澈回家时，厨房灯自己亮着。, 林澈低声说：我出门前，明明关了灯。. Narration: \"午夜的雨把旧公寓包成一只黑盒。林澈回家时，厨房灯自己亮着。\". 林澈 says: \"我出门前，明明关了灯。\". Camera motion: static wide establishing shot, slow dolly in from medium to close-up. continuity locks: charA_v1 (location: apartment_kitchen_or_hallway, pose: listening); mug_red_v1 (location: near_main_character, state: warm_and_unexplained). establishing shot, young Chinese man returning to rainy old apartment at midnight, kitchen light mysteriously on, listening pose, dim warm lamp near wooden table, red fridge left side, suspense atmosphere building. Character identity locked to reference images. No face morphing or outfit variation.. All props match reference images exactly. Prop must_keep: shape, color, size, material unchanged. Stable visual consistency across entire clip. No character drift, no prop mutation, no scene layout shift.",
-  "video_prompt_keywords": "cinematic, moody, controlled lighting, red fridge, wooden table, rainy window, dim warm lamp + blue moonlight, charA_v1, short_black, white_hoodie + black_jeans, silver_ring_left_hand, mug_red_v1, 午夜的雨把旧公寓包成一只黑盒。林澈回家时，厨房灯自己亮着。, 林澈低声说：我出门前，明明关了灯。, 林澈 says: \"我出门前，明明关了灯。\", establishing shot, young Chinese man returning to rainy old apartment at midnight, kitchen light mysteriously on, listening pose, dim warm lamp near wooden table, red fridge left side, suspense atmosphere building",
-  "video_prompt_short": "style: Cinematic Realism v1, mood: cinematic, moody, controlled lighting, color palette: warm highlights, cool shadows. cinematic live-action video shot. scene: Apartment Kitchen Night. red fridge, wooden table, rainy window. lighting: dim warm lamp + blue moonlight. character (charA_v1): short_black, white_hoodie + black_jeans, silver_ring_left_hand. prop (mug_red_v1): state: story_clue, visually consistent. 午夜的雨把旧公寓包成一只黑盒。林澈回家时，厨房灯自己亮着。, 林澈低声说：我出门前，明明关了灯。. Narration: \"午夜的雨把旧公寓包成一只黑盒。林澈回家时，厨...",
-  "negative_prompt": "cartoon, neon cyberpunk (unless explicitly requested), sunlight, daylight, modern led lights, crowd, no text artifacts, no logo, no watermark, no extra fingers, no face drift, multiple characters, duplicate person, clone, inconsistent lighting, wrong angle, lens distortion, chromatic aberration, mouth mismatch, silent face, frozen expression, unnatural dubbing, face morphing, character drift, outfit change, prop mutation, scene layout shift, extra fingers, distorted limbs, text artifacts, burnt-in subtitles, logo, watermark, motion blur excessive, flickering, framing jump cut",
+  "video_prompt": "style: Cinematic Realism v1, mood: cinematic, moody, controlled lighting, color palette: warm highlights, cool shadows. cinematic live-action video shot. scene: Apartment Kitchen Night. red fridge, wooden table, rainy window. lighting: dim warm lamp + blue moonlight. character (charA_v1): short_black, white_hoodie + black_jeans, silver_ring_left_hand. 林澈推开公寓门，雨水从外套滴落, 厨房灯突然亮起，林澈愣住, 林澈环顾空荡荡的厨房，表情困惑. Narration: \"午夜的雨把旧公寓包成一只黑盒。林澈回家时，厨房灯自己亮着。\". 林澈 says: \"我出门前，明明关了灯。\". Camera motion: static wide establishing shot, slow dolly in from medium to close-up. Night, rain outside window, dim kitchen interior, single overhead light on, young man in wet coat standing in doorway, surprised expression, cinematic lighting, moody atmosphere, film grain. Character identity locked to reference images. No face morphing or outfit variation. Stable visual consistency across entire clip. No character drift, no prop mutation, no scene layout shift.",
+  "video_prompt_keywords": "cinematic, moody, controlled lighting, red fridge, wooden table, rainy window, dim warm lamp + blue moonlight, charA_v1, short_black, white_hoodie + black_jeans, silver_ring_left_hand, 林澈推开公寓门，雨水从外套滴落, 厨房灯突然亮起，林澈愣住, 林澈环顾空荡荡的厨房，表情困惑, 林澈 says: \"我出门前，明明关了灯。\", Night, rain outside window, dim kitchen interior, single overhead light on, young man in wet coat standing in doorway, surprised expression, cinematic lighting, moody atmosphere, film grain",
+  "video_prompt_short": "style: Cinematic Realism v1, mood: cinematic, moody, controlled lighting, color palette: warm highlights, cool shadows. cinematic live-action video shot. scene: Apartment Kitchen Night. red fridge, wooden table, rainy window. lighting: dim warm lamp + blue moonlight. character (charA_v1): short_black, white_hoodie + black_jeans, silver_ring_left_hand. 林澈推开公寓门，雨水从外套滴落, 厨房灯突然亮起，林澈愣住, 林澈环顾空荡荡的厨房，表情困惑. Narration: \"午夜的雨把旧公寓包成一只黑盒。林澈回家时，厨房灯自己亮着。\". 林澈 says: \"我出门前，明明关了灯。\". Camera motion: static wide ...",
+  "negative_prompt": "cartoon, neon cyberpunk (unless explicitly requested), sunlight, daylight, modern led lights, crowd, bright, daytime, cartoon, anime, oversaturated, multiple characters, duplicate person, clone, inconsistent lighting, wrong angle, lens distortion, chromatic aberration, mouth mismatch, silent face, frozen expression, unnatural dubbing, face morphing, character drift, outfit change, prop mutation, scene layout shift, extra fingers, distorted limbs, text artifacts, burnt-in subtitles, logo, watermark, motion blur excessive, flickering, framing jump cut",
   "camera_intent": "comic_panel_01",
   "camera_motion": "static wide establishing shot, slow dolly in from medium to close-up",
-  "continuity_notes": "continuity locks: charA_v1 (location: apartment_kitchen_or_hallway, pose: listening); mug_red_v1 (location: near_main_character, state: warm_and_unexplained)",
-  "continuity_locks": "continuity locks: charA_v1 (location: apartment_kitchen_or_hallway, pose: listening); mug_red_v1 (location: near_main_character, state: warm_and_unexplained)",
+  "continuity_notes": null,
+  "continuity_locks": null,
   "structured_context": {
     "scene_name": "Apartment Kitchen Night",
     "scene_elements": [
@@ -40,26 +40,21 @@
         ]
       }
     ],
-    "props": [
-      {
-        "id": "mug_red_v1",
-        "name": "Red Mug",
-        "state": "story_clue"
-      }
-    ],
+    "props": [],
     "action_beats": [
-      "午夜的雨把旧公寓包成一只黑盒。林澈回家时，厨房灯自己亮着。",
-      "林澈低声说：我出门前，明明关了灯。"
+      "林澈推开公寓门，雨水从外套滴落",
+      "厨房灯突然亮起，林澈愣住",
+      "林澈环顾空荡荡的厨房，表情困惑"
     ],
     "dialogue": {
       "speaker": "林澈",
       "text": "我出门前，明明关了灯。",
-      "voice_id": "zh-CN-YunxiNeural"
+      "voice_id": "charA_v1"
     },
     "voiceover": {
       "speaker": "旁白",
       "text": "午夜的雨把旧公寓包成一只黑盒。林澈回家时，厨房灯自己亮着。",
-      "voice_id": "zh-CN-XiaoxiaoNeural"
+      "voice_id": "narrator"
     }
   },
   "reference_images": [
@@ -93,54 +88,12 @@
         "detail"
       ],
       "exists": true
-    },
-    {
-      "kind": "character_reference",
-      "id": "charA_v1",
-      "path": "assets/characters/charA_v1/front.svg",
-      "note": "Protagonist A",
-      "use_for": [
-        "identity",
-        "wardrobe"
-      ],
-      "exists": true
-    },
-    {
-      "kind": "character_reference",
-      "id": "charA_v1",
-      "path": "assets/characters/charA_v1/side.svg",
-      "note": "Protagonist A",
-      "use_for": [
-        "identity",
-        "wardrobe"
-      ],
-      "exists": true
-    },
-    {
-      "kind": "character_reference",
-      "id": "charA_v1",
-      "path": "assets/characters/charA_v1/fullbody.svg",
-      "note": "Protagonist A",
-      "use_for": [
-        "identity",
-        "wardrobe"
-      ],
-      "exists": true
-    },
-    {
-      "kind": "prop_reference",
-      "id": "mug_red_v1",
-      "path": "assets/props/mug_red_v1/ref.svg",
-      "note": "Red Mug",
-      "use_for": [
-        "prop lock"
-      ],
-      "exists": true
     }
   ],
   "conditioning_keyframes": [
     "assets/renders/S001/keyframes/frame_01.jpg",
-    "assets/renders/S001/keyframes/frame_01.svg"
+    "assets/renders/S001/keyframes/frame_01.svg",
+    "assets/renders/S001/keyframes/frame_last.jpg"
   ],
   "context_refs": {
     "declared": [],
@@ -153,8 +106,7 @@
       "scene:red fridge",
       "scene:wooden table",
       "scene:rainy window",
-      "character:charA_v1",
-      "prop:mug_red_v1"
+      "character:charA_v1"
     ],
     "forbidden": [
       "sunlight",
@@ -166,14 +118,10 @@
   "ref_image_paths": [
     "assets/scenes/kitchen_apartment_01/anchor_A.svg",
     "assets/scenes/kitchen_apartment_01/anchor_B.svg",
-    "assets/scenes/kitchen_apartment_01/anchor_C.svg",
-    "assets/characters/charA_v1/front.svg",
-    "assets/characters/charA_v1/side.svg",
-    "assets/characters/charA_v1/fullbody.svg",
-    "assets/props/mug_red_v1/ref.svg"
+    "assets/scenes/kitchen_apartment_01/anchor_C.svg"
   ],
   "params": {
-    "duration_s": 12,
+    "duration_s": 6,
     "tier": "cheap",
     "max_regen": 1
   },
@@ -196,8 +144,8 @@
   },
   "meta": {
     "compiler_version": "video-prompts-2.0.0",
-    "git_commit": "8baf57e",
-    "compiled_at": "2026-05-25T05:39:44.787Z",
+    "git_commit": "8020ce7",
+    "compiled_at": "2026-05-25T10:32:28.032Z",
     "compiled_from": {
       "shot": "shots/S001.json",
       "scene": "scenes/kitchen_apartment_01.json",
@@ -205,9 +153,7 @@
       "characters": [
         "characters/charA_v1.json"
       ],
-      "props": [
-        "props/mug_red_v1.json"
-      ]
+      "props": []
     }
   }
 }

@@ -1,0 +1,40 @@
+{
+  "shot_id": "S023",
+  "duration_s": 4,
+  "scene_ref": "scenes/kitchen_apartment_01.json",
+  "cam_setup_ref": "comic_panel_03",
+  "characters": [
+    {
+      "ref": "characters/charA_v1.json"
+    }
+  ],
+  "props": [],
+  "action": {
+    "beats": [
+      "林澈后退一步",
+      "钥匙在掌心发烫",
+      "像在替他做决定"
+    ]
+  },
+  "dialogue": {
+    "speaker": "林澈",
+    "text": "你不是我妈。",
+    "voice_id": "linche_voice"
+  },
+  "voiceover": {
+    "speaker": "旁白",
+    "text": "林澈后退一步，钥匙在掌心发烫，像在替他做决定。",
+    "voice_id": "narrator"
+  },
+  "budget": {
+    "tier": "cheap",
+    "max_regen": 1
+  },
+  "prompt": {
+    "positive": "Close-up of Lin Che's hand holding a key, sweat and tension, dim light, sense of decision",
+    "negative": "blurry, overexposed, happy expression"
+  },
+  "context_refs": [
+    "assets/renders/S022/keyframes/frame_01.jpg"
+  ]
+}

@@ -233,8 +233,25 @@ export default function ProjectTab() {
       };
       reader.readAsText(file);
     } else if (file.name.endsWith('.zip')) {
-      // TODO: 实现 ZIP 导入
-      setStatus({ type: 'error', message: 'ZIP 导入功能开发中' });
+      setStatus({ type: 'success', message: '正在上传并导入项目 ZIP...' });
+      const formData = new FormData();
+      formData.append('file', file);
+      fetch('/api/project/import', {
+        method: 'POST',
+        body: formData
+      })
+      .then(async (res) => {
+        const data = await res.json();
+        if (res.ok) {
+          setStatus({ type: 'success', message: 'ZIP 项目导入成功！' });
+          loadData();
+        } else {
+          setStatus({ type: 'error', message: data.error || 'ZIP 导入失败' });
+        }
+      })
+      .catch(() => {
+        setStatus({ type: 'error', message: 'ZIP 导入请求失败' });
+      });
     }
     setTimeout(() => setStatus(null), 3000);
   };

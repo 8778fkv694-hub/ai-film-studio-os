@@ -1,29 +1,29 @@
 {
   "shot_id": "S001",
-  "duration_s": 4,
+  "duration_s": 5,
   "scene_ref": "scenes/kitchen_apartment_01.json",
-  "cam_setup_ref": "TODO",
+  "cam_setup_ref": "comic_panel_01",
   "characters": [],
   "props": [],
   "action": {
     "beats": [
-      "The room is dimly lit by a warm practical lamp on the right. Rain streaks the window on the left."
+      "手机拍摄禁止图标显示",
+      "人员在指定区域听讲解"
     ]
   },
-  "continuity": {
-    "must_match_prev": [],
-    "handoff_to_next": []
+  "dialogue": null,
+  "voiceover": {
+    "speaker": "旁白",
+    "text": "车间内涉及工艺、设备和产品信息。未经许可，不得拍照、录像或直播。如需交流问题，请在指定区域进行，不要影响现场人员操作。",
+    "voice_id": "default"
   },
   "budget": {
     "tier": "cheap",
     "max_regen": 1
   },
   "prompt": {
-    "positive": "INT. KITCHEN - NIGHT, The room is dimly lit by a warm practical lamp on the right. Rain streaks the window on the left.",
-    "negative": "default negative"
+    "positive": "手机拍摄禁止图标，红色圆圈斜杠，清晰可见，人员在指定区域听讲解，工业车间背景，灯光柔和，构图居中",
+    "negative": "模糊，杂乱，无关人物"
   },
-  "_draft_meta": {
-    "original_text": "The room is dimly lit by a warm practical lamp on the right. Rain streaks the window on the left.",
-    "warnings": []
-  }
+  "context_refs": []
 }

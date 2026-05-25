@@ -1,0 +1,43 @@
+{
+  "shot_id": "S046",
+  "duration_s": 6,
+  "scene_ref": "scenes/kitchen_apartment_01.json",
+  "cam_setup_ref": "comic_panel_02",
+  "characters": [
+    {
+      "ref": "characters/charA_v1.json"
+    }
+  ],
+  "props": [
+    {
+      "ref": "props/mug_red_v1.json",
+      "state": "placed on table, steam rising"
+    }
+  ],
+  "action": {
+    "beats": [
+      "Another Lin Che approaches the table without getting too close.",
+      "He places the red mug back on the table.",
+      "Steam rises from the mug, forming a visible trail like a path home."
+    ]
+  },
+  "dialogue": {
+    "speaker": "Protagonist A",
+    "text": "现在轮到你记住。",
+    "voice_id": "charA_v1"
+  },
+  "voiceover": {
+    "speaker": "Narrator",
+    "text": "另一个林澈没有靠近，只把红杯放回桌上。杯中热气像一条回家的路。",
+    "voice_id": "narrator_default"
+  },
+  "budget": {
+    "tier": "cheap",
+    "max_regen": 1
+  },
+  "prompt": {
+    "positive": "Medium shot, kitchen table, another Lin Che placing red mug, steam rising like a glowing path, warm amber light, cinematic, emotional, 35mm lens, shallow depth of field",
+    "negative": "blurry, overexposed, cartoonish, low contrast"
+  },
+  "context_refs": []
+}

@@ -1,0 +1,39 @@
+{
+  "shot_id": "S043",
+  "duration_s": 5,
+  "scene_ref": "scenes/kitchen_apartment_01.json",
+  "cam_setup_ref": "comic_panel_02",
+  "characters": [
+    {
+      "ref": "characters/charA_v1.json"
+    }
+  ],
+  "props": [],
+  "action": {
+    "beats": [
+      "The mother finally speaks, her voice steady.",
+      "She looks at the protagonist with knowing eyes."
+    ]
+  },
+  "dialogue": {
+    "speaker": "Mother",
+    "text": "真的不是人，是愿意承担真相的那个。",
+    "voice_id": "mother_default"
+  },
+  "voiceover": {
+    "speaker": "Narrator",
+    "text": "母亲终于开口：真的不是人，是愿意承担真相的那个。",
+    "voice_id": "narrator_default"
+  },
+  "budget": {
+    "tier": "cheap",
+    "max_regen": 1
+  },
+  "prompt": {
+    "positive": "Medium shot of a mother figure speaking to a man, kitchen background, soft lighting, emotional intensity, focus on her face.",
+    "negative": "blurry, low contrast, extra characters, messy background"
+  },
+  "context_refs": [
+    "assets/renders/S042/keyframes/frame_01.jpg"
+  ]
+}
