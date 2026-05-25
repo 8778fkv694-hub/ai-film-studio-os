@@ -188,6 +188,18 @@ function compileVideoPrompt(shotFile, gitHash, projectDefaults) {
   const missingAssets = references.filter(ref => !ref.exists).map(ref => ref.path);
   const existingKeyframes = listExistingKeyframes(shot.shot_id);
 
+  // --- Context refs from previous shots (StoryGen approach) ---
+  const contextRefs = (shot.context_refs || [])
+    .filter(ref => typeof ref === 'string' && ref.trim());
+  const availableContextRefs = contextRefs
+    .filter(ref => fs.existsSync(path.join(ROOT, ref)));
+  const missingContextRefs = contextRefs
+    .filter(ref => !fs.existsSync(path.join(ROOT, ref)));
+
+  const contextContinuity = availableContextRefs.length > 0
+    ? `Shot-to-shot continuity: maintain identical character identity, scene layout, lighting and prop positions as established in previous shot. Visual style must match preceding frame. Do not introduce new visual elements not present in the reference images.`
+    : '';
+
   // --- Build video prompt sections ---
 
   const styleLine = [
@@ -237,6 +249,7 @@ function compileVideoPrompt(shotFile, gitHash, projectDefaults) {
     `Camera motion: ${motion}`,
     continuityNotes,
     shotOverridePositive,
+    contextContinuity,
     'Stable visual consistency across entire clip. No character drift, no prop mutation, no scene layout shift.'
   ].filter(Boolean);
 
@@ -351,6 +364,12 @@ function compileVideoPrompt(shotFile, gitHash, projectDefaults) {
 
     reference_images: references,
     conditioning_keyframes: existingKeyframes,
+    context_refs: {
+      declared: contextRefs,
+      available: availableContextRefs,
+      missing: missingContextRefs,
+      has_context: availableContextRefs.length > 0
+    },
 
     constraints,
     ref_image_paths: refImagePaths,
@@ -364,16 +383,20 @@ function compileVideoPrompt(shotFile, gitHash, projectDefaults) {
     workflow: {
       prompt_ready: true,
       has_keyframes: existingKeyframes.length > 0,
+      has_context_refs: availableContextRefs.length > 0,
       keyframe_dir: `assets/renders/${shot.shot_id}/keyframes`,
       expected_keyframes: ['frame_01.jpg', 'frame_02.jpg', 'frame_03.jpg'],
-      tool_instructions: existingKeyframes.length > 0
+      tool_instructions: availableContextRefs.length > 0
+        ? `Use video prompt + context keyframes for img2vid conditioning. Copy 'video_prompt' into your video tool. Use 'available' context_refs images as start-frame conditioning for shot-to-shot visual continuity.`
+        : existingKeyframes.length > 0
         ? `Use video prompt + conditioning keyframes for img2vid generation. Copy 'video_prompt' into your video tool, attach 'conditioning_keyframes' as start/end frame conditioning.`
         : `No keyframes found yet. Generate keyframe images first using build-image-prompts, save them to ${shot.shot_id}/keyframes, then re-run this compiler for img2vid conditioning. Text-to-video is still possible with just 'video_prompt'.`
     },
 
     validation: {
       missing_assets: missingAssets,
-      status: missingAssets.length ? 'WARN' : 'OK'
+      missing_context_refs: missingContextRefs,
+      status: missingAssets.length || missingContextRefs.length ? 'WARN' : 'OK'
     },
 
     meta: {
@@ -398,10 +421,12 @@ function compileVideoPrompt(shotFile, gitHash, projectDefaults) {
     negative: negativePrompt,
     motion: motion,
     condition_images: [
+      ...availableContextRefs,
       ...existingKeyframes,
       ...refImagePaths
     ],
-    tool_hint: 'Copy "prompt" and "negative" into video generation tool. Upload "condition_images" for img2vid start/end frame conditioning if supported. Duration is a guideline.',
+    context_ref_images: availableContextRefs,
+    tool_hint: 'Copy "prompt" and "negative" into video generation tool. Upload "condition_images" for img2vid start/end frame conditioning if supported. "context_ref_images" are previous shot keyframes for visual continuity. Duration is a guideline.',
     meta: promptSpec.meta
   };
 

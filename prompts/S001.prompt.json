@@ -142,6 +142,12 @@
     "assets/renders/S001/keyframes/frame_01.jpg",
     "assets/renders/S001/keyframes/frame_01.svg"
   ],
+  "context_refs": {
+    "declared": [],
+    "available": [],
+    "missing": [],
+    "has_context": false
+  },
   "constraints": {
     "must_keep": [
       "scene:red fridge",
@@ -174,6 +180,7 @@
   "workflow": {
     "prompt_ready": true,
     "has_keyframes": true,
+    "has_context_refs": false,
     "keyframe_dir": "assets/renders/S001/keyframes",
     "expected_keyframes": [
       "frame_01.jpg",
@@ -184,12 +191,13 @@
   },
   "validation": {
     "missing_assets": [],
+    "missing_context_refs": [],
     "status": "OK"
   },
   "meta": {
     "compiler_version": "video-prompts-2.0.0",
-    "git_commit": "1951482",
-    "compiled_at": "2026-05-25T04:09:55.688Z",
+    "git_commit": "9103b07",
+    "compiled_at": "2026-05-25T04:16:13.829Z",
     "compiled_from": {
       "shot": "shots/S001.json",
       "scene": "scenes/kitchen_apartment_01.json",

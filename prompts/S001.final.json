@@ -15,11 +15,12 @@
     "assets/characters/charA_v1/fullbody.svg",
     "assets/props/mug_red_v1/ref.svg"
   ],
-  "tool_hint": "Copy \"prompt\" and \"negative\" into video generation tool. Upload \"condition_images\" for img2vid start/end frame conditioning if supported. Duration is a guideline.",
+  "context_ref_images": [],
+  "tool_hint": "Copy \"prompt\" and \"negative\" into video generation tool. Upload \"condition_images\" for img2vid start/end frame conditioning if supported. \"context_ref_images\" are previous shot keyframes for visual continuity. Duration is a guideline.",
   "meta": {
     "compiler_version": "video-prompts-2.0.0",
-    "git_commit": "1951482",
-    "compiled_at": "2026-05-25T04:09:55.688Z",
+    "git_commit": "9103b07",
+    "compiled_at": "2026-05-25T04:16:13.829Z",
     "compiled_from": {
       "shot": "shots/S001.json",
       "scene": "scenes/kitchen_apartment_01.json",

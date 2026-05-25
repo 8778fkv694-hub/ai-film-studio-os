@@ -163,6 +163,18 @@ function compileImagePrompt(shotFile, gitHash) {
   const missingAssets = references.filter(ref => !ref.exists).map(ref => ref.path);
   const existingKeyframes = listExistingKeyframes(shot.shot_id);
 
+  // Shot-to-shot visual continuity (StoryGen approach)
+  const contextRefs = (shot.context_refs || [])
+    .filter(ref => typeof ref === 'string' && ref.trim());
+  const availableContextRefs = contextRefs
+    .filter(ref => fs.existsSync(path.join(ROOT, ref)));
+  const missingContextRefs = contextRefs
+    .filter(ref => !fs.existsSync(path.join(ROOT, ref)));
+
+  const contextContinuity = availableContextRefs.length > 0
+    ? `Shot-to-shot continuity: maintain exact character identity, scene layout, lighting and prop positions from previous shot. Visual style must match preceding frame.`
+    : '';
+
   const master = [
     'photographic cinematic storyboard keyframe',
     'single static frame for a voiced comic animatic',
@@ -192,6 +204,7 @@ function compileImagePrompt(shotFile, gitHash) {
     shot.voiceover?.text ? `narration intent: ${shot.voiceover.speaker || 'Narrator'} explains "${shot.voiceover.text}"` : '',
     shot.dialogue?.text ? `dialogue mood: ${shot.dialogue.speaker || 'speaker'} says "${shot.dialogue.text}"` : '',
     continuityNotes,
+    contextContinuity,
     shot.prompt?.positive ? `shot positive notes: ${shot.prompt.positive}` : ''
   ];
 
@@ -240,6 +253,11 @@ function compileImagePrompt(shotFile, gitHash) {
     negative_prompt: negativePrompt,
     continuity_notes: continuityNotes,
     reference_images: references,
+    context_refs: {
+      declared: contextRefs,
+      available: availableContextRefs,
+      missing: missingContextRefs
+    },
     duration_s: shot.duration_s,
     voiceover: shot.voiceover || null,
     dialogue: shot.dialogue || null,
@@ -254,11 +272,16 @@ function compileImagePrompt(shotFile, gitHash) {
       external_generation: 'paste image_prompt_final and negative_prompt into any web image/video tool; upload reference_images when supported',
       keyframe_dir: `assets/renders/${shot.shot_id}/keyframes`,
       expected_files: ['frame_01.jpg', 'frame_02.jpg', 'frame_03.jpg'],
-      existing_keyframes: existingKeyframes
+      existing_keyframes: existingKeyframes,
+      context_keyframes: availableContextRefs,
+      context_hint: availableContextRefs.length > 0
+        ? 'Use context_keyframes as visual reference to maintain shot-to-shot continuity with previous shot.'
+        : null
     },
     validation: {
       missing_assets: missingAssets,
-      status: missingAssets.length ? 'WARN' : 'OK'
+      missing_context_refs: missingContextRefs,
+      status: missingAssets.length || missingContextRefs.length ? 'WARN' : 'OK'
     },
     meta: {
       compiler_version: 'image-prompts-1.0.0',

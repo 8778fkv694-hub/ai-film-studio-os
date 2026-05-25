@@ -1,10 +1,11 @@
 {
   "shot_id": "S005",
   "duration_s": 12,
-  "prompt": "style: Cinematic Realism v1, mood: cinematic, moody, controlled lighting, color palette: warm highlights, cool shadows. scene: Apartment Kitchen Night. red fridge, wooden table, rainy window. lighting: dim warm lamp + blue moonlight. character (charA_v1): short_black, white_hoodie + black_jeans, silver_ring_left_hand. prop (mug_red_v1): state: story_clue, visually consistent. 他走到猫眼前，走廊空着，灯却一盏一盏熄灭。, 林澈低声说：有人在外面。. Narration: \"他走到猫眼前，走廊空着，灯却一盏一盏熄灭。\". 林澈 says: \"有人在外面。\". Camera motion: over-the-shoulder shot, slow rack focus between subjects. continuity locks: charA_v1 (location: apartment_kitchen_or_hallway, pose: searching); mug_red_v1 (location: near_main_character, state: warm_and_unexplained). cinematic realistic suspense comic panel, stable young Chinese man identity, rainy old apartment, red mug as recurring clue, coherent low-cost storyboard frame. Stable visual consistency across entire clip. No character drift, no prop mutation, no scene layout shift.",
+  "prompt": "style: Cinematic Realism v1, mood: cinematic, moody, controlled lighting, color palette: warm highlights, cool shadows. scene: Apartment Kitchen Night. red fridge, wooden table, rainy window. lighting: dim warm lamp + blue moonlight. character (charA_v1): short_black, white_hoodie + black_jeans, silver_ring_left_hand. prop (mug_red_v1): state: story_clue, visually consistent. 他走到猫眼前，走廊空着，灯却一盏一盏熄灭。, 林澈低声说：有人在外面。. Narration: \"他走到猫眼前，走廊空着，灯却一盏一盏熄灭。\". 林澈 says: \"有人在外面。\". Camera motion: over-the-shoulder shot, slow rack focus between subjects. continuity locks: charA_v1 (location: apartment_kitchen_or_hallway, pose: searching); mug_red_v1 (location: near_main_character, state: warm_and_unexplained). cinematic realistic suspense comic panel, stable young Chinese man identity, rainy old apartment, red mug as recurring clue, coherent low-cost storyboard frame. Shot-to-shot continuity: maintain identical character identity, scene layout, lighting and prop positions as established in previous shot. Visual style must match preceding frame. Do not introduce new visual elements not present in the reference images. Stable visual consistency across entire clip. No character drift, no prop mutation, no scene layout shift.",
   "negative": "cartoon, neon cyberpunk (unless explicitly requested), sunlight, daylight, modern led lights, crowd, text artifacts, logo, watermark, extra fingers, face drift, face morphing, character drift, outfit change, prop mutation, scene layout shift, distorted limbs, burnt-in subtitles, motion blur excessive, flickering, framing jump cut",
   "motion": "over-the-shoulder shot, slow rack focus between subjects",
   "condition_images": [
+    "assets/renders/S004/keyframes/frame_01.jpg",
     "assets/renders/S005/keyframes/frame_01.jpg",
     "assets/renders/S005/keyframes/frame_01.svg",
     "assets/scenes/kitchen_apartment_01/anchor_A.svg",
@@ -15,11 +16,14 @@
     "assets/characters/charA_v1/fullbody.svg",
     "assets/props/mug_red_v1/ref.svg"
   ],
-  "tool_hint": "Copy \"prompt\" and \"negative\" into video generation tool. Upload \"condition_images\" for img2vid start/end frame conditioning if supported. Duration is a guideline.",
+  "context_ref_images": [
+    "assets/renders/S004/keyframes/frame_01.jpg"
+  ],
+  "tool_hint": "Copy \"prompt\" and \"negative\" into video generation tool. Upload \"condition_images\" for img2vid start/end frame conditioning if supported. \"context_ref_images\" are previous shot keyframes for visual continuity. Duration is a guideline.",
   "meta": {
     "compiler_version": "video-prompts-2.0.0",
-    "git_commit": "1951482",
-    "compiled_at": "2026-05-25T04:09:55.692Z",
+    "git_commit": "9103b07",
+    "compiled_at": "2026-05-25T04:16:13.832Z",
     "compiled_from": {
       "shot": "shots/S005.json",
       "scene": "scenes/kitchen_apartment_01.json",

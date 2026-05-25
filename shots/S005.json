@@ -3,6 +3,7 @@
   "duration_s": 12,
   "scene_ref": "scenes/kitchen_apartment_01.json",
   "cam_setup_ref": "comic_panel_05",
+  "context_refs": ["assets/renders/S004/keyframes/frame_01.jpg"],
   "characters": [
     {
       "ref": "characters/charA_v1.json"

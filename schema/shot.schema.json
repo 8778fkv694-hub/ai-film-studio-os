@@ -89,6 +89,11 @@
       },
       "additionalProperties": true
     },
+    "context_refs": {
+      "type": "array",
+      "description": "Paths to previous shot keyframes used as visual conditioning context. Empty or absent for the first shot in a sequence.",
+      "items": { "type": "string" }
+    },
     "prompt": {
       "type": "object",
       "properties": {
