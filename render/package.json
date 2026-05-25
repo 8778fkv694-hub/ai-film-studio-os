@@ -1,0 +1,22 @@
+{
+  "name": "ai-film-studio-render",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "prepare": "npx tsx scripts/prepare-data.ts",
+    "preview": "npm run prepare && remotion preview src/index.ts",
+    "render": "npm run prepare && remotion render src/index.ts ComicVideo output/comic-video.mp4",
+    "render-still": "npm run prepare && remotion still src/index.ts ComicVideo output/comic-frame.png --frame=0"
+  },
+  "dependencies": {
+    "react": "^18",
+    "react-dom": "^18",
+    "remotion": "^4.0"
+  },
+  "devDependencies": {
+    "@remotion/cli": "^4.0",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "typescript": "^5"
+  }
+}
