@@ -50,6 +50,16 @@
       "required": ["speaker", "text"],
       "additionalProperties": true
     },
+    "voiceover": {
+      "type": "object",
+      "properties": {
+        "speaker": {"type": "string", "description": "Narrator or commentator name"},
+        "text": {"type": "string", "description": "Narration/explanation for this shot"},
+        "voice_id": {"type": "string", "description": "Optional specific voice ID"}
+      },
+      "required": ["text"],
+      "additionalProperties": true
+    },
     "continuity": {
       "type": "object",
       "properties": {
