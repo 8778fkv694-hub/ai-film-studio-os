@@ -8,9 +8,9 @@
   },
   "references": {
     "images": [
-      "assets/characters/charA_v1/front.jpg",
-      "assets/characters/charA_v1/side.jpg",
-      "assets/characters/charA_v1/fullbody.jpg"
+      "assets/characters/charA_v1/front.svg",
+      "assets/characters/charA_v1/side.svg",
+      "assets/characters/charA_v1/fullbody.svg"
     ]
   }
 }

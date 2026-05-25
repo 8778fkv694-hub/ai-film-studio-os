@@ -5,6 +5,10 @@
 renders/
 reports/*.report.json
 
+# local secrets/settings
+.local/
+*.local.json
+
 # OS
 .DS_Store
 
