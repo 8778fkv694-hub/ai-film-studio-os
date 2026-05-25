@@ -1,0 +1,49 @@
+{
+  "id": "cinematic/image-v2",
+  "name": "Cinematic Image Keyframe Prompt",
+  "description": "Static keyframe image prompt for cinematic storyboard comic style.",
+  "style_ref": "styles/cinematic_v1.json",
+  "version": "2.0.0",
+  "sections": {
+    "master": [
+      "photographic cinematic storyboard keyframe",
+      "single static frame for a voiced comic animatic",
+      "visual style: ${style_name}",
+      "mood: ${style_mood}",
+      "palette: ${style_palette}",
+      "stable character identity across shots",
+      "consistent environment layout and prop continuity",
+      "clean frame, no captions, no watermark, no user interface"
+    ],
+    "scene": [
+      "scene: ${scene_name}",
+      "${scene_elements}",
+      "${scene_lighting}",
+      "${scene_anchors}"
+    ],
+    "characters": [
+      "${characters_text}"
+    ],
+    "props": [
+      "${props_text}"
+    ],
+    "shot": [
+      "shot ${shot_id}",
+      "${camera_intent}",
+      "${action_beats}",
+      "${voiceover_text}",
+      "${dialogue_text}",
+      "${continuity_notes}",
+      "${context_continuity}",
+      "${shot_positive}",
+      "${experience_positive}"
+    ],
+    "negative": [
+      "${style_forbidden}",
+      "${scene_forbidden}",
+      "${shot_negative}",
+      "${negative_experience}",
+      "face drift, outfit change, prop drift, wrong set layout, extra fingers, text artifacts, subtitles burned into image, logo, watermark"
+    ]
+  }
+}

@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { execSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
+import { loadTemplate, renderTemplate, loadRules, applyRules, joinList, joinSentences } from './shared/template-engine.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../');
 const IMAGE_EXTS = new Set(['.jpg', '.jpeg', '.png', '.webp', '.svg']);
@@ -31,19 +32,6 @@ function ensureDir(rel) {
 
 function clean(value) {
   return String(value || '').trim();
-}
-
-function joinList(items) {
-  return (items || []).map(clean).filter(Boolean).join(', ');
-}
-
-function joinSentences(items) {
-  return (items || [])
-    .flat()
-    .map(clean)
-    .filter(Boolean)
-    .map(s => s.endsWith('.') ? s : `${s}.`)
-    .join(' ');
 }
 
 function splitPromptItems(items) {
@@ -164,7 +152,73 @@ function csvCell(value) {
   return `"${s.replace(/"/g, '""')}"`;
 }
 
-function compileVideoPrompt(shotFile, gitHash, projectDefaults) {
+function buildVideoContext(shot, scene, style, characters, props, contextContinuity, rulesDoc, shotIndex) {
+  const { positiveAppend, negativeAppend } = applyRules(rulesDoc, {
+    has_context_refs: (shot.context_refs || []).length > 0,
+    has_props: props.length > 0,
+    has_dialogue: !!shot.dialogue?.text,
+    shot_index: shotIndex
+  });
+
+  const motion = cameraMotion(shot.cam_setup_ref);
+
+  return {
+    style_name: style?.name || '',
+    style_mood: (style?.mood_keywords || []).join(', '),
+    style_palette: (style?.palette || []).join(', '),
+    style_forbidden: (style?.forbidden || []).join(', '),
+
+    scene_name: scene.name || scene.id,
+    scene_elements: (scene.must_keep?.set_elements || []).join(', '),
+    scene_lighting: scene.must_keep?.lighting || '',
+    scene_forbidden: (scene.forbidden || []).join(', '),
+    scene_anchors: scene.anchors?.length
+      ? `match scene anchors: ${scene.anchors.map(a => `${a.id} ${a.note || ''}`.trim()).join('; ')}`
+      : '',
+
+    characters_text: characters.map(ch => `character ${characterVisual(ch)}`).join('. '),
+    props_text: props.map((p, i) => `prop ${propVisual(p, shot.props?.[i])}`).join('. '),
+
+    shot_id: shot.shot_id,
+    action_beats: shot.action?.beats?.length ? shot.action.beats.join(', ') : '',
+    voiceover_text: shot.voiceover?.text ? `Narration: "${shot.voiceover.text}"` : '',
+    dialogue_text: shot.dialogue?.text ? `${shot.dialogue.speaker || 'Character'} says: "${shot.dialogue.text}"` : '',
+    camera_intent: shot.cam_setup_ref || '',
+    camera_motion: motion,
+    continuity_notes: formatStateNotes(shot.continuity?.state_changes),
+    context_continuity: contextContinuity,
+    shot_positive: shot.prompt?.positive || '',
+    shot_negative: splitPromptItems([shot.prompt?.negative]).join(', '),
+
+    experience_positive: positiveAppend.join('. '),
+    negative_experience: negativeAppend.join(', ')
+  };
+}
+
+function buildVideoPromptLegacy(shot, scene, style, characters, props, contextContinuity) {
+  const styleLine = [style?.name ? `style: ${style.name}` : '', (style?.mood_keywords || []).join(', '), (style?.palette || []).join(', ')].filter(Boolean);
+  const sceneLine = [`scene: ${scene.name || scene.id}`, (scene.must_keep?.set_elements || []).join(', '), scene.must_keep?.lighting ? `lighting: ${scene.must_keep.lighting}` : ''].filter(Boolean);
+  const motion = cameraMotion(shot.cam_setup_ref);
+
+  const sentences = [
+    styleLine.length > 0 ? styleLine.join(', ') : '',
+    sceneLine.length > 0 ? sceneLine.join('. ') : '',
+    characters.map(ch => `character ${characterVisual(ch)}`).join('. '),
+    props.map((p, i) => `prop ${propVisual(p, shot.props?.[i])}`).join('. '),
+    shot.action?.beats?.length ? shot.action.beats.join(', ') : '',
+    shot.voiceover?.text ? `Narration: "${shot.voiceover.text}"` : '',
+    shot.dialogue?.text ? `${shot.dialogue.speaker || 'Character'} says: "${shot.dialogue.text}"` : '',
+    `Camera motion: ${motion}`,
+    formatStateNotes(shot.continuity?.state_changes),
+    shot.prompt?.positive || '',
+    contextContinuity,
+    'Stable visual consistency across entire clip. No character drift, no prop mutation, no scene layout shift.'
+  ].filter(Boolean);
+
+  return joinSentences(sentences);
+}
+
+function compileVideoPrompt(shotFile, gitHash, projectDefaults, shotIndex = 0) {
   const shot = readJson(`shots/${shotFile}`);
   if (!shot) {
     return { shot_id: shotFile.replace('.json', ''), error: 'shot file not found' };
@@ -200,110 +254,48 @@ function compileVideoPrompt(shotFile, gitHash, projectDefaults) {
     ? `Shot-to-shot continuity: maintain identical character identity, scene layout, lighting and prop positions as established in previous shot. Visual style must match preceding frame. Do not introduce new visual elements not present in the reference images.`
     : '';
 
-  // --- Build video prompt sections ---
-
-  const styleLine = [
-    style?.name ? `style: ${style.name}` : '',
-    style?.mood_keywords?.length ? `mood: ${style.mood_keywords.join(', ')}` : '',
-    style?.palette?.length ? `color palette: ${style.palette.join(', ')}` : ''
-  ].filter(Boolean);
-
-  const sceneLine = [
-    `scene: ${scene.name || scene.id}`,
-    scene.must_keep?.set_elements?.length
-      ? scene.must_keep.set_elements.join(', ')
-      : '',
-    scene.must_keep?.lighting ? `lighting: ${scene.must_keep.lighting}` : ''
-  ].filter(Boolean);
-
-  const characterLines = characters.map(ch => `character ${characterVisual(ch)}`);
-  const propLines = props.map((p, i) => `prop ${propVisual(p, shot.props?.[i])}`);
-
   const motion = cameraMotion(shot.cam_setup_ref);
-
-  const actionText = shot.action?.beats?.length
-    ? shot.action.beats.join(', ')
-    : '';
-
-  const dialogueText = shot.dialogue?.text
-    ? `${shot.dialogue.speaker || 'Character'} says: "${shot.dialogue.text}"`
-    : '';
-
-  const voiceoverText = shot.voiceover?.text
-    ? `Narration: "${shot.voiceover.text}"`
-    : '';
-
   const continuityNotes = formatStateNotes(shot.continuity?.state_changes);
 
-  const shotOverridePositive = shot.prompt?.positive || '';
+  const rulesDoc = loadRules();
+  const videoContext = buildVideoContext(shot, scene, style, characters, props, contextContinuity, rulesDoc, shotIndex);
 
-  // ---- NATURAL LANGUAGE VIDEO PROMPT (paragraph) ----
-  const videoPromptSentences = [
-    styleLine.length > 0 ? styleLine.join(', ') : '',
-    sceneLine.length > 0 ? sceneLine.join('. ') : '',
-    characterLines.length > 0 ? characterLines.join('. ') : '',
-    propLines.length > 0 ? propLines.join('. ') : '',
-    actionText,
-    voiceoverText,
-    dialogueText,
-    `Camera motion: ${motion}`,
-    continuityNotes,
-    shotOverridePositive,
-    contextContinuity,
-    'Stable visual consistency across entire clip. No character drift, no prop mutation, no scene layout shift.'
-  ].filter(Boolean);
+  const template = loadTemplate('cinematic/video');
+  const rendered = template ? renderTemplate(template, videoContext) : null;
+  const videoPrompt = rendered?.prompt
+    || buildVideoPromptLegacy(shot, scene, style, characters, props, contextContinuity);
 
-  const videoPrompt = joinSentences(videoPromptSentences);
+  const negativePrompt = rendered?.negative
+    || joinList([...new Set(
+      [].concat(
+        style?.forbidden || [],
+        scene.forbidden || [],
+        splitPromptItems([shot.prompt?.negative]),
+        ['face morphing', 'character drift', 'outfit change', 'prop mutation',
+         'scene layout shift', 'extra fingers', 'distorted limbs', 'text artifacts',
+         'burnt-in subtitles', 'logo', 'watermark', 'motion blur excessive', 'flickering', 'framing jump cut']
+      ).map(normalizeNegative).filter(Boolean)
+    )]);
 
-  // ---- KEYWORD-STYLE PROMPT (for tools preferring comma-joined format) ----
   const keywordItems = [
     ...(style?.mood_keywords || []),
     ...(scene.must_keep?.set_elements || []),
     scene.must_keep?.lighting ? scene.must_keep.lighting : '',
     ...characters.flatMap(ch => {
       const mk = ch.must_keep || {};
-      return [
-        ch.id,
-        mk.hair,
-        mk.outfit,
-        ...(mk.accessories || [])
-      ];
+      return [ch.id, mk.hair, mk.outfit, ...(mk.accessories || [])];
     }),
     ...props.map(p => p.id),
-    actionText.split(/[,;]/).map(clean).filter(Boolean),
-    dialogueText,
-    motion,
-    ...splitPromptItems([shotOverridePositive])
+    ...splitPromptItems([
+      (shot.action?.beats || []).join(', '),
+      shot.dialogue?.text ? `${shot.dialogue.speaker || ''} says: "${shot.dialogue.text}"` : '',
+      shot.prompt?.positive || ''
+    ])
   ];
 
   const videoPromptKeywords = joinList(
     [...new Set(keywordItems.map(clean).filter(Boolean).filter(s => s.length < 80))]
   );
-
-  // ---- NEGATIVE PROMPT ----
-  const negative = [
-    ...(style?.forbidden || []),
-    ...(scene.forbidden || []),
-    ...splitPromptItems([shot.prompt?.negative]),
-    'face morphing',
-    'character drift',
-    'outfit change',
-    'prop mutation',
-    'scene layout shift',
-    'extra fingers',
-    'distorted limbs',
-    'text artifacts',
-    'burnt-in subtitles',
-    'logo',
-    'watermark',
-    'motion blur excessive',
-    'flickering',
-    'framing jump cut'
-  ];
-
-  const negativePrompt = joinList([
-    ...new Set(negative.map(normalizeNegative).filter(Boolean))
-  ]);
 
   // ---- CONSTRAINT COLLECTION ----
   const constraints = {
@@ -568,8 +560,8 @@ function main() {
 
   const exportSuffix = onlyShotId ? `shot-${onlyShotId}` : '';
 
-  for (const f of shotFiles) {
-    const { promptSpec, finalPrompt, missingAssets } = compileVideoPrompt(f, gitHash, projectDefaults);
+  for (const [idx, f] of shotFiles.entries()) {
+    const { promptSpec, finalPrompt, missingAssets } = compileVideoPrompt(f, gitHash, projectDefaults, idx);
 
     if (promptSpec.error) {
       console.error(`[ERROR] ${promptSpec.shot_id}: ${promptSpec.error}`);

@@ -1,0 +1,48 @@
+{
+  "version": "1.0.0",
+  "updated_at": "2026-05-25T04:57:24.485Z",
+  "rules": [
+    {
+      "id": "exp-001",
+      "desc": "角色一致性增强 — 所有 shot 的 positive prompt 强制追加角色锁定语句",
+      "target": "positive_append",
+      "apply": "always",
+      "value": "Character identity locked to reference images. No face morphing or outfit variation."
+    },
+    {
+      "id": "exp-002",
+      "desc": "场景连续性 — 非首镜追加场景布局锁定",
+      "target": "positive_append",
+      "apply": "when_context_refs",
+      "value": "Scene layout locked to context reference frame. Do not reposition props or alter lighting source."
+    },
+    {
+      "id": "exp-003",
+      "desc": "道具一致性 — 所有 shot 追加道具锁定",
+      "target": "positive_append",
+      "apply": "when_props",
+      "value": "All props match reference images exactly. Prop must_keep: shape, color, size, material unchanged."
+    },
+    {
+      "id": "exp-004",
+      "desc": "负向提示词 — 追加通用质量退化词汇",
+      "target": "negative_append",
+      "apply": "always",
+      "value": "multiple characters, duplicate person, clone, inconsistent lighting, wrong angle, lens distortion, chromatic aberration"
+    },
+    {
+      "id": "exp-005",
+      "desc": "负向提示词 — 有对白镜头避免嘴型错误",
+      "target": "negative_append",
+      "apply": "when_dialogue",
+      "value": "mouth mismatch, silent face, frozen expression, unnatural dubbing"
+    },
+    {
+      "id": "exp-006",
+      "desc": "运镜规范 — 有 context_refs 时相机过渡要平滑",
+      "target": "positive_append",
+      "apply": "when_context_refs",
+      "value": "Camera transition smooth from previous shot continuity frame. No abrupt jump cut between shots."
+    }
+  ]
+}

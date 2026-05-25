@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { execSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
+import { loadTemplate, renderTemplate, loadRules, applyRules, joinSentences, joinList, clean } from './shared/template-engine.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../');
 const IMAGE_EXTS = new Set(['.jpg', '.jpeg', '.png', '.webp', '.svg']);
@@ -12,23 +13,6 @@ function readJson(rel) {
 
 function ensureDir(rel) {
   fs.mkdirSync(path.join(ROOT, rel), { recursive: true });
-}
-
-function clean(value) {
-  return String(value || '').trim();
-}
-
-function joinList(items, fallback = '') {
-  return (items || []).map(clean).filter(Boolean).join(', ') || fallback;
-}
-
-function joinPromptSections(sections) {
-  return sections
-    .flat()
-    .map(clean)
-    .filter(Boolean)
-    .map(s => s.endsWith('.') ? s : `${s}.`)
-    .join(' ');
 }
 
 function splitPromptItems(items) {
@@ -223,16 +207,16 @@ function compileImagePrompt(shotFile, gitHash) {
     'watermark'
   ];
 
-  const imagePromptMaster = joinPromptSections(master);
-  const imagePromptScene = joinPromptSections(scenePrompt);
-  const imagePromptCharacters = joinPromptSections(characterPrompt);
-  const imagePromptProps = joinPromptSections(propPrompt);
-  const imagePromptShot = joinPromptSections(shotPrompt);
+  const imagePromptMaster = joinSentences(master);
+  const imagePromptScene = joinSentences(scenePrompt);
+  const imagePromptCharacters = joinSentences(characterPrompt);
+  const imagePromptProps = joinSentences(propPrompt);
+  const imagePromptShot = joinSentences(shotPrompt);
   const negativePrompt = joinList([
     ...new Set(negative.map(normalizeNegativeItem).filter(Boolean))
   ]);
 
-  const imagePromptFinal = joinPromptSections([
+  const imagePromptFinal = joinSentences([
     imagePromptMaster,
     imagePromptScene,
     imagePromptCharacters,

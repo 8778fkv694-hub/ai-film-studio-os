@@ -1,0 +1,42 @@
+{
+  "id": "cinematic/video-v2",
+  "name": "Cinematic Video Prompt",
+  "description": "Natural-language video generation prompt for cinematic live-action. Suitable for Runway, Kling, Sora, Pika.",
+  "style_ref": "styles/cinematic_v1.json",
+  "version": "2.0.0",
+  "sections": {
+    "master": [
+      "style: ${style_name}, mood: ${style_mood}, color palette: ${style_palette}",
+      "cinematic live-action video shot"
+    ],
+    "scene": [
+      "scene: ${scene_name}",
+      "${scene_elements}",
+      "lighting: ${scene_lighting}"
+    ],
+    "characters": [
+      "${characters_text}"
+    ],
+    "props": [
+      "${props_text}"
+    ],
+    "shot": [
+      "${action_beats}",
+      "${voiceover_text}",
+      "${dialogue_text}",
+      "Camera motion: ${camera_motion}",
+      "${continuity_notes}",
+      "${shot_positive}",
+      "${context_continuity}",
+      "${experience_positive}",
+      "Stable visual consistency across entire clip. No character drift, no prop mutation, no scene layout shift."
+    ],
+    "negative": [
+      "${style_forbidden}",
+      "${scene_forbidden}",
+      "${shot_negative}",
+      "${negative_experience}",
+      "face morphing, character drift, outfit change, prop mutation, scene layout shift, extra fingers, distorted limbs, text artifacts, burnt-in subtitles, logo, watermark, motion blur excessive, flickering, framing jump cut"
+    ]
+  }
+}
