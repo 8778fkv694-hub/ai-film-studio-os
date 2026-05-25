@@ -57,6 +57,7 @@ export async function GET() {
       audioFiles: countFiles('assets/audio', '.mp3'),
       keyframes: countKeyframes(),
       imagePromptPackages: countFiles('prompts/image'),
+      videoPromptPackages: countFiles('prompts', '.prompt.json'),
     };
 
     // Calculate total duration

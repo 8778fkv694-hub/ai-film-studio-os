@@ -45,8 +45,8 @@ const tools: Tool[] = [
   },
   {
     id: 'build-prompts',
-    name: '视频提示词备用',
-    description: '保留原视频 Prompt 编译链路，后续接 API 时再用',
+    name: '视频提示词',
+    description: '编译完整视频生成提示词（场景+角色+动作+相机+连续性），含 conditioning keyframes',
     icon: <Hammer size={24} />,
     color: 'purple',
     command: 'build-prompts'
@@ -241,8 +241,8 @@ export default function ToolsTab() {
 
       {/* Pipeline Info */}
       <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 sm:p-6">
-        <h3 className="text-lg font-semibold mb-4 text-slate-200">推荐低成本工作流程</h3>
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <h3 className="text-lg font-semibold mb-4 text-slate-200">推荐工作流程</h3>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-5">
           <div className="text-center p-4 bg-slate-950 rounded-lg border border-slate-800">
             <div className="text-2xl mb-2">1</div>
             <div className="text-sm text-slate-300">结构校验</div>
@@ -255,23 +255,29 @@ export default function ToolsTab() {
           </div>
           <div className="text-center p-4 bg-slate-950 rounded-lg border border-slate-800">
             <div className="text-2xl mb-2">3</div>
-            <div className="text-sm text-slate-300">图片分镜包</div>
-            <div className="text-xs text-slate-500 mt-1">build-image-prompts.js</div>
+            <div className="text-sm text-slate-300">视频提示词</div>
+            <div className="text-xs text-slate-500 mt-1">build-prompts.js</div>
           </div>
           <div className="text-center p-4 bg-slate-950 rounded-lg border border-slate-800">
             <div className="text-2xl mb-2">4</div>
             <div className="text-sm text-slate-300">配音预演</div>
             <div className="text-xs text-slate-500 mt-1">gen-tts.js + Preview</div>
           </div>
+          <div className="text-center p-4 bg-slate-950 rounded-lg border border-slate-800">
+            <div className="text-2xl mb-2">5</div>
+            <div className="text-sm text-slate-300">图片分镜包</div>
+            <div className="text-xs text-slate-500 mt-1">build-image-prompts.js</div>
+          </div>
         </div>
       </div>
 
       {/* Help */}
       <div className="p-4 bg-slate-800/50 border border-slate-700 rounded-lg text-sm text-slate-400">
-        <strong className="text-slate-300">重要提示：</strong>
-        必须看到 <span className="text-emerald-400">结构校验: 通过</span> 和{' '}
-        <span className="text-emerald-400">逻辑检查: 通过</span> 才能继续后续步骤！
-        当前推荐先输出图片分镜包，把外部网页工具生成的关键帧回填后再做配音预演。
+        <strong className="text-slate-300">推荐顺序：</strong>
+        1) 结构校验 → 2) 逻辑检查 →{' '}
+        3) <span className="text-purple-400">视频提示词</span>（输出可直接贴到视频工具的自然语言 prompt，回填关键帧后可用 img2vid 做 conditioning）→{' '}
+        4) <span className="text-emerald-400">配音预演</span>（生成 TTS 预览配音分镜漫画）→{' '}
+        5) 图片分镜包（网页工具备用）。
       </div>
     </div>
   );

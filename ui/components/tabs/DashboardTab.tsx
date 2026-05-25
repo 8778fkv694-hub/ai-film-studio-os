@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import {
   LayoutDashboard, CheckCircle, AlertTriangle, XCircle,
   FileText, MapPin, Users, Clapperboard, Volume2,
-  ArrowRight, Play, RefreshCw, Sparkles, Image as ImageIcon
+  ArrowRight, Play, RefreshCw, Sparkles, Image as ImageIcon, Hammer
 } from 'lucide-react';
 
 interface ProjectStats {
@@ -22,6 +22,7 @@ interface ProjectStats {
     audioFiles: number;
     keyframes: number;
     imagePromptPackages: number;
+    videoPromptPackages: number;
   };
   checks: {
     validate: 'pending' | 'running' | 'passed' | 'failed';
@@ -238,7 +239,7 @@ export default function DashboardTab({ onNavigate }: DashboardTabProps) {
       )}
 
       {/* Resource Stats */}
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-7">
         <ResourceCard
           icon={<Clapperboard size={24} />}
           label="正式镜头"
@@ -268,6 +269,13 @@ export default function DashboardTab({ onNavigate }: DashboardTabProps) {
           onClick={() => onNavigate('assets')}
         />
         <ResourceCard
+          icon={<Hammer size={24} />}
+          label="视频提示词"
+          count={counts.videoPromptPackages}
+          color="purple"
+          onClick={() => onNavigate('tools')}
+        />
+        <ResourceCard
           icon={<Volume2 size={24} />}
           label="音频"
           count={counts.audioFiles}
@@ -293,6 +301,11 @@ export default function DashboardTab({ onNavigate }: DashboardTabProps) {
             onClick={() => onNavigate('script')}
           />
           <QuickAction
+            title="编译视频提示词"
+            description="生成每个镜头的视频生成 Prompt"
+            onClick={() => onNavigate('tools')}
+          />
+          <QuickAction
             title="生成 TTS"
             description="为所有对白生成语音"
             onClick={() => onNavigate('preview')}
@@ -301,11 +314,6 @@ export default function DashboardTab({ onNavigate }: DashboardTabProps) {
             title="配音分镜漫画"
             description="播放图片和对白"
             onClick={() => onNavigate('preview')}
-          />
-          <QuickAction
-            title="图片分镜包"
-            description="生成网页工具可用提示词"
-            onClick={() => onNavigate('tools')}
           />
         </div>
       </div>
@@ -318,7 +326,7 @@ export default function DashboardTab({ onNavigate }: DashboardTabProps) {
             { step: 1, label: '剧本拆分', done: counts.drafts > 0 || counts.shots > 0 },
             { step: 2, label: '完善分镜', done: counts.shots > 0 },
             { step: 3, label: '运行检查', done: checks.validate === 'passed' && checks.lint === 'passed' },
-            { step: 4, label: '编译图片包', done: counts.imagePromptPackages > 0 },
+            { step: 4, label: '视频提示词', done: counts.videoPromptPackages > 0 },
             { step: 5, label: '回填关键帧', done: counts.keyframes > 0 },
             { step: 6, label: '配音预演', done: counts.audioFiles > 0 },
           ].map((item) => (
