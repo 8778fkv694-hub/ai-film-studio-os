@@ -32,7 +32,10 @@ export async function POST(
     // Run build-prompts (supports --shot for this specific shot)
     const videoRes = await runScript('build-prompts.js', ['--shot', shotId, '--project-dir', projectDir]);
 
-    const success = imageRes.code === 0 && videoRes.code === 0;
+    // Run prompt quality scoring
+    const scoreRes = await runScript('score-prompts.js', ['--project-dir', projectDir]);
+
+    const success = imageRes.code === 0 && videoRes.code === 0 && scoreRes.code === 0;
 
     return NextResponse.json({
       success,
@@ -45,6 +48,11 @@ export async function POST(
         code: videoRes.code,
         stdout: videoRes.stdout,
         stderr: videoRes.stderr
+      },
+      score_prompts: {
+        code: scoreRes.code,
+        stdout: scoreRes.stdout,
+        stderr: scoreRes.stderr
       }
     });
   } catch (e: any) {

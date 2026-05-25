@@ -48,11 +48,22 @@ export async function GET(
       } catch {}
     }
 
+    // 5. Load quality metadata from [shot].prompt.json
+    let quality = null;
+    const promptPath = path.join(getResourcePath('prompts'), `${shotId}.prompt.json`);
+    if (fs.existsSync(promptPath)) {
+      try {
+        const promptObj = JSON.parse(fs.readFileSync(promptPath, 'utf-8'));
+        quality = promptObj.meta?.quality || null;
+      } catch {}
+    }
+
     return NextResponse.json({
       shot,
       video_prompt: videoPrompt,
       image_prompt: imagePrompt,
-      history
+      history,
+      quality
     });
   } catch (e: any) {
     return NextResponse.json({ error: e.message || '获取分镜详情失败' }, { status: 500 });

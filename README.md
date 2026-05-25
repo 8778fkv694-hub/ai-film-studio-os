@@ -87,56 +87,69 @@ assets/renders/S001/keyframes/frame_03.jpg
 ```
 API Key 只保存在本地 `.local/` 目录，并已加入 `.gitignore`。默认工作流仍然是“上传图片优先”，不依赖图片或视频 API。
 
-### 5. 配音分镜漫画预演 (Voiced Storyboard Comic)
-不用生成视频，先生成对白，在网页里看“静态图片 + 配音 + 镜头时长”的分镜漫画。
+### 5. 提示词质量评估 (Prompt Quality Scoring) 🎯
+在开始投递提示词前，运行评估脚本对编译出的提示词进行质量打分：
 ```bash
-# 1. 生成对白：根据 shot.dialogue 生成 .mp3 (使用 Edge TTS)
+# 扫描 prompts/*.prompt.json 并分析，输出报告至 reports/prompt-score.report.json
+node tools/scripts/score-prompts.js
+```
+*提示：它会检查是否缺失角色/道具/场景、是否缺失镜头运动词、提示词是否过长或过短、以及是否存在语义冲突词（如 day 与 night 同时出现）。*
+
+### 6. 连续性状态审计 (Continuity State Chain Audit) 🔗
+检查全片剧情推进中的角色服装、道具状态、场景布光在镜头间是否连贯：
+```bash
+# 1. 检查是否存在状态穿帮
+node tools/scripts/build-state-chain.js
+
+# 2. 应用并自动校准/重写 OUT 状态文件，使下一镜头能自动继承上一镜头的状态
+node tools/scripts/build-state-chain.js --apply
+```
+
+### 7. 导入人工生成结果 (Import Render Take) 🎬
+从外部网页工具生成并下载视频片段后，使用 Take 工具一键导入并版本化管理：
+```bash
+# 导入视频作为 take 并自动计算 prompt 哈希，提取尾帧作为下一镜头的 context_ref 关键帧
+node tools/scripts/import-take.js S001 my_runway_video.mp4 --platform "Runway Gen-3" --notes "第一版特写测试"
+```
+*你也可以在 Web UI 的「Takes 审片」选项卡中直接上传视频、查看所有 Take、进行五星打分与 Approve 标记。*
+
+### 8. 字幕编译与全片合成 (Subtitles & Video Composition) 🎞️
+项目音视频就绪后，编译时间轴字幕并一键合成最终成片：
+```bash
+# 1. 自动根据 dialogue/voiceover 与镜头时长编译 SRT/VTT/JSON 字幕
+node tools/scripts/build-subtitles.js
+
+# 2. 一键合成 MP4 并支持选择分辨率预设及字幕烧录
+# 支持预设：default_1080p (16:9), vertical_1080x1920 (9:16 竖屏), square_1080 (1:1 方屏)
+node tools/scripts/compose-video.js --preset vertical_1080x1920 --subtitles
+```
+*合成的成片会自动输出并留存在项目的 `exports/` 目录中。*
+
+### 9. 启动 Web 可视化看板 (Start UI Board) 💻
+```bash
+# 1. 生成占位 TTS 语音 (使用 Edge TTS)
 node tools/scripts/gen-tts.js
 
-# 2. 启动看板：进入 Web UI 界面
-cd ui
-npm install
-npm run dev
+# 2. 启动 Next.js 前端开发服务器
+npm --prefix ui run dev
 ```
-*打开浏览器 (http://localhost:9527)，点击 Preview，体验带配音的静态分镜漫画。*
-
-### 6. 编译视频提示词 (Compile Video Prompts)
-把人类可读的 Specs 编译成模型可读的 Final Prompts。
-```bash
-# 产物：prompts/*.final.json (自动注入参考图路径、Git 版本号)
-node tools/scripts/build-prompts.js
-```
-
-### 7. 生成与追踪 (Render & Track)
-对接模型生成视频（目前为 Mock），并自动记录版本历史。
-```bash
-# 自动记录 Seed、Cost、Prompt Hash 到 history.json
-node tools/scripts/manage-renders.js S001
-```
-
-### 8. 后期修复 (Fixups)
-发现手指坏了？不要重跑全片，提一个修复工单。
-```bash
-# 1. 在 fixups/ 创建工单 (参考 schema/fixup.schema.json)
-# 2. 运行修复
-node tools/scripts/process-fixups.js
-```
+*打开浏览器访问 http://localhost:9527，即可在可视化面板中完成分镜编辑、AI 润色、Prompt 一键复制、Takes 审片、资产库管理与 MP4 一键自定义预设导出。*
 
 ---
 
-## 📂 核心资产结构
+## 📂 核心资产与报告目录
 
 | 目录 | 说明 | 核心作用 |
 | :--- | :--- | :--- |
-| `projects/<id>/project.json` | **全片总控** | 定义时间轴 (Timeline)、全局风格、预算策略 |
-| `projects/<id>/shots/` | **镜头卡** | 每个镜头一个 JSON，定义时长、动作、对白、运镜 |
-| `projects/<id>/scenes/` | **场景库** | 定义 Anchors (标准参考图)、禁忌词 (Forbidden) |
-| `projects/<id>/characters/` | **角色库** | 定义外貌特征、服装 MustKeep、参考图 |
-| `projects/<id>/states/` | **状态机** | 记录剧情推进产生的状态变更 (如：道具已碎、门已开) |
-| `projects/<id>/assets/renders/` | **回填关键帧** | 存放外部网页工具生成后选中的镜头图片 |
-| `projects/<id>/exports/` | **交付表** | 输出 storyboard CSV/Markdown，方便复制到外部工具 |
-| `ui/` | **Web 看板** | 可视化时间轴、Animatic 播放器 |
-| `tools/` | **引擎室** | 所有的自动化脚本 (Lint, Compiler, TTS) |
+| `projects/<id>/project.json` | **全片总控** | 定义时间轴 (Timeline)、全局风格、激活项目入口 |
+| `projects/<id>/shots/` | **分镜卡 JSON** | 存放各镜头的时长、动作描述 (beats)、对白旁白、资源引用 |
+| `projects/<id>/scenes/` | **场景库** | 定义环境保留要素 (Set elements) 与禁忌词 (Forbidden) |
+| `projects/<id>/characters/` | **角色库** | 声明发型服装 (Must keep) 规范与参考图 |
+| `projects/<id>/states/` | **状态机** | 存放各个镜头的 OUT 状态，用于进行连续性判定 |
+| `projects/<id>/assets/renders/` | **Take 库** | 存放人工回填的关键帧 (`keyframes/`) 及视频版本 (`takes/`) |
+| `projects/<id>/reports/` | **审计报告** | `check-all.report.json`、`asset-index.json`、`prompt-score.report.json`、`state-chain.report.json` |
+| `projects/<id>/exports/` | **导出交付件** | 输出视频成片、SRT/VTT 字幕文件及分镜说明表 |
+
 
 ---
 

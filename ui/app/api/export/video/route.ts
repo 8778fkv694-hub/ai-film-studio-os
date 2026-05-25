@@ -15,9 +15,12 @@ export async function POST(request: Request) {
     const args = [toolPath];
     if (projectPath) args.push('--project-dir', projectPath);
 
-    // 读取可选的字幕参数
+    // 读取可选的字幕与预设参数
     try {
       const body = await request.json();
+      if (body.preset) {
+        args.push('--preset', String(body.preset));
+      }
       if (body.subtitles) {
         const family = String(body.subFontFamily || 'Microsoft YaHei').replace(/"/g, '').replace(/'/g, '').split(',')[0].trim();
         const hexMap: Record<string, string> = { '#ffffff': 'white', '#ffff00': 'yellow', '#00ff00': 'green', '#ff8800': 'orange', '#88ccff': 'blue' };

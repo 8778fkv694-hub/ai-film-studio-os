@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { execFileSync } from 'node:child_process';
 import { parseArgs } from './shared/dirs.js';
 
 const { workDir, projectRoot, remainingArgs } = parseArgs();
@@ -165,6 +166,24 @@ for (const s of shots) {
        }
      }
   }
+}
+
+// Run build-state-chain.js to update the continuity check report
+try {
+  execFileSync('node', [path.join(projectRoot, 'tools/scripts/build-state-chain.js'), '--project-dir', workDir], { stdio: 'ignore' });
+  const stateReportPath = path.join(workDir, 'reports', 'state-chain.report.json');
+  if (fs.existsSync(stateReportPath)) {
+    const stateReport = JSON.parse(fs.readFileSync(stateReportPath, 'utf-8'));
+    for (const iss of (stateReport.issues || [])) {
+      issues.push({
+        level: iss.level,
+        where: `states/continuity (${iss.shot_id})`,
+        msg: `${iss.code}: ${iss.message}`
+      });
+    }
+  }
+} catch (e) {
+  console.warn('⚠️  Could not run build-state-chain.js:', e.message);
 }
 
 // output report

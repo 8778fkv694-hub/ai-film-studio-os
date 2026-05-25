@@ -55,7 +55,7 @@
 ### 2. Render 版本管理 (Asset Management)
 - [x] **Takes 记录**: `renders/<shot_id>/takes.json` (实际上实现了 `history.json` + `manage-renders.js`)。
   - 记录：`take_id`, `prompt_hash`, `seed`, `model_version`, `cost`, `status` (pass/fail)。
-- [ ] **Review 标记**: 允许人工给 Take 打标签 (`bad_hands`, `lighting_mismatch`, `approved`)。
+- [x] **Review 标记**: 允许人工给 Take 打标签/状态 (`approved`, `rejected`, `needs_fixup`, `notes`, 星级评分)。
 
 ### 3. Fixups 工单系统 (Post-Production)
 - [x] **Fixup Schema**: 定义修复任务 (`inpaint`, `upscale`, `face_restore`)。 (已实现)
@@ -63,14 +63,16 @@
 
 ---
 
-## 📂 P3 — 高级特性（未来规划）
-### 4. Audio & Playback
+## 📂 P3 — 高级特性（已完成）
+### 4. Audio & Playback & Export
 - [x] **Schema**: 增加 `shot.dialogue` 字段。 (已实现)
 - [x] **TTS Gen**: `gen-tts.js` 批量生成对白音频 (Edge TTS)。 (已实现)
 - [x] **Player UI**: Web 播放器支持“图片+音频”同步播放。 (已实现 Player.tsx + API Route)
+- [x] **Subtitles**: 字幕时间轴自动计算与 SRT/VTT/JSON 字幕编译烧录。 (已实现)
+- [x] **Export Presets**: 预设输出分辨率（宽屏、竖屏、方屏）自适应缩放填充。 (已实现)
 ### 3. Web UI (Dashboard)
 - [x] **Scaffold**: Next.js 14 + Tailwind CSS 基础骨架 (`ui/` 目录)。
 - [x] **Home Page**: 读取 `project.json` 和 `shots/*.json` 展示 Timeline 概览。
 - [x] **Project Manager**: `project.json` 可视化编辑、导入/导出、覆盖保存。(已实现 ProjectManager.tsx + API)
-- [ ] **Shot Detail**: 镜头详情页，展示 Prompt、Specs 和 Render 历史。
+- [x] **Shot Detail**: 镜头详情工作台，展示并编辑 Specs、AI 润色、复制 Prompt、上传关键帧/视频、Takes 审片版本控制与 Prompt 质量评估。 (已实现)
 - [x] **Player**: 在网页上直接播放生成的 mp4。 (已实现 Animatic Player)

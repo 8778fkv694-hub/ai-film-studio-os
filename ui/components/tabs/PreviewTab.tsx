@@ -36,6 +36,7 @@ export default function PreviewTab() {
   const [exportingVideo, setExportingVideo] = useState(false);
   const [showExportDialog, setShowExportDialog] = useState(false);
   const [exportWithSubtitles, setExportWithSubtitles] = useState(true);
+  const [exportPreset, setExportPreset] = useState<string>('default_1080p');
   const [subtitleStyle, setSubtitleStyle] = useState<SubtitleStyle>({
     fontSize: 20,
     fontFamily: '"Microsoft YaHei", sans-serif',
@@ -315,6 +316,7 @@ export default function PreviewTab() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          preset: exportPreset,
           subtitles: withSubtitles,
           subFontSize: subtitleStyle.fontSize,
           subFontFamily: subtitleStyle.fontFamily,
@@ -1116,8 +1118,20 @@ export default function PreviewTab() {
             </div>
             <div className="p-6 space-y-4">
               <p className="text-sm text-slate-400">
-                将 {shots.length} 个分镜合成为一个 MP4 视频文件。是否包含字幕？
+                将 {shots.length} 个分镜合成为一个 MP4 视频文件。
               </p>
+              <div>
+                <label className="block text-xs font-semibold text-slate-400 mb-1.5">导出分辨率预设</label>
+                <select
+                  value={exportPreset}
+                  onChange={e => setExportPreset(e.target.value)}
+                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-slate-200 text-sm focus:outline-none focus:border-blue-500 transition font-medium"
+                >
+                  <option value="default_1080p">宽屏 1080p (1920x1080, 16:9)</option>
+                  <option value="vertical_1080x1920">竖屏 1080x1920 (1080x1920, 9:16)</option>
+                  <option value="square_1080">方屏 1080p (1080x1080, 1:1)</option>
+                </select>
+              </div>
               <label className="flex items-center gap-3 p-3 bg-slate-800/50 rounded-lg cursor-pointer hover:bg-slate-800 transition">
                 <input
                   type="checkbox"

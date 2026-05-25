@@ -810,6 +810,44 @@ export default function ShotDetailPanel({
                     </div>
                   ) : (
                     <div className="space-y-4">
+                      {/* Prompt Quality Evaluation */}
+                      {detailData?.quality && (
+                        <div className={`p-4 rounded-xl border space-y-2 ${
+                          detailData.quality.status === 'good'
+                            ? 'bg-emerald-950/20 text-emerald-300 border-emerald-800/30'
+                            : detailData.quality.status === 'fair'
+                            ? 'bg-amber-950/20 text-amber-300 border-amber-800/30'
+                            : 'bg-red-950/20 text-red-350 border-red-800/30'
+                        }`}>
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs font-bold flex items-center gap-1.5">
+                              🎯 提示词编译质量评分 (Quality Score)
+                            </span>
+                            <span className={`text-xs px-2.5 py-0.5 rounded-full font-bold font-mono ${
+                              detailData.quality.status === 'good'
+                                ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                                : detailData.quality.status === 'fair'
+                                ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
+                                : 'bg-red-500/10 text-red-400 border border-red-500/20'
+                            }`}>
+                              {detailData.quality.score} / 100 ({detailData.quality.status.toUpperCase()})
+                            </span>
+                          </div>
+                          {detailData.quality.issues && detailData.quality.issues.length > 0 ? (
+                            <ul className="text-xs space-y-1.5 text-slate-400 pl-1 list-none">
+                              {detailData.quality.issues.map((iss: any, idx: number) => (
+                                <li key={idx} className="flex items-start gap-2">
+                                  <span className="flex-shrink-0 mt-0.5">{iss.severity === 'error' ? '❌' : '⚠️'}</span>
+                                  <span>{iss.message}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          ) : (
+                            <p className="text-xs text-emerald-400/80 pl-1">✓ 该分镜提示词编译质量符合标准，没有发现潜在问题。</p>
+                          )}
+                        </div>
+                      )}
+
                       {/* Video Prompt */}
                       <div className="bg-slate-950/40 p-4 rounded-xl border border-slate-850 space-y-2">
                         <div className="flex justify-between items-center">

@@ -1,21 +1,34 @@
 {
-  "shot_id": "S004",
   "characters": {
-    "charA_v1": {
-      "location": "unknown",
-      "pose": "silent",
-      "outfit": "white hoodie, dark pants"
+    "visitor_group": {
+      "location": "in_scene",
+      "pose": "present",
+      "hair": "hair fully covered by cleanroom cap",
+      "outfit": "white cleanroom suit, mask, cleanroom shoes or shoe covers"
     }
   },
   "props": {
-    "mug_red_v1": {
-      "location": "near Lin Che",
+    "warning_signage": {
+      "location": "out_of_scene",
+      "state": "absent"
+    },
+    "running_equipment": {
+      "location": "out_of_scene",
+      "state": "absent"
+    },
+    "recycle_bin": {
+      "location": "out_of_scene",
+      "state": "absent"
+    },
+    "no_photography_sign": {
+      "location": "in_scene",
       "state": "displayed"
     }
   },
   "scene": {
-    "lighting": "night rain",
-    "weather": "rain",
-    "time": "midnight"
-  }
+    "lighting": "冷白光，顶部照明",
+    "weather": "clear",
+    "time": "day"
+  },
+  "shot_id": "S004"
 }
