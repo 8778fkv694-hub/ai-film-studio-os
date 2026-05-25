@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from 'react';
-import { Wrench, CheckCircle, AlertTriangle, FileCheck, Hammer, Play, Terminal, X, Image as ImageIcon, Workflow } from 'lucide-react';
+import { Wrench, CheckCircle, AlertTriangle, FileCheck, Hammer, Play, Terminal, X, Image as ImageIcon } from 'lucide-react';
 
 interface ToolResult {
   success: boolean;
@@ -50,14 +50,6 @@ const tools: Tool[] = [
     icon: <Hammer size={24} />,
     color: 'purple',
     command: 'build-prompts'
-  },
-  {
-    id: 'build-comfyui',
-    name: 'ComfyUI 工作流',
-    description: '导出每个镜头的 ComfyUI 可执行工作流 (checkpoint + prompt + 参考图)',
-    icon: <Workflow size={24} />,
-    color: 'blue',
-    command: 'build-comfyui'
   },
   {
     id: 'gen-tts',

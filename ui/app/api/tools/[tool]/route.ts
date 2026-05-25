@@ -10,7 +10,6 @@ const TOOL_MAP: Record<string, string> = {
   'lint': 'lint.js',
   'build-prompts': 'build-prompts.js',
   'build-image-prompts': 'build-image-prompts.js',
-  'build-comfyui': 'build-comfyui.js',
   'gen-tts': 'gen-tts.js',
 };
 
