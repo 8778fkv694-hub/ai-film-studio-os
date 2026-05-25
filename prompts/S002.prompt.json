@@ -188,8 +188,8 @@
   },
   "meta": {
     "compiler_version": "video-prompts-2.0.0",
-    "git_commit": "422795d",
-    "compiled_at": "2026-05-25T04:00:48.578Z",
+    "git_commit": "1951482",
+    "compiled_at": "2026-05-25T04:09:55.690Z",
     "compiled_from": {
       "shot": "shots/S002.json",
       "scene": "scenes/kitchen_apartment_01.json",

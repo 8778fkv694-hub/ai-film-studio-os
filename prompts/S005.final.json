@@ -18,8 +18,8 @@
   "tool_hint": "Copy \"prompt\" and \"negative\" into video generation tool. Upload \"condition_images\" for img2vid start/end frame conditioning if supported. Duration is a guideline.",
   "meta": {
     "compiler_version": "video-prompts-2.0.0",
-    "git_commit": "422795d",
-    "compiled_at": "2026-05-25T04:00:48.581Z",
+    "git_commit": "1951482",
+    "compiled_at": "2026-05-25T04:09:55.692Z",
     "compiled_from": {
       "shot": "shots/S005.json",
       "scene": "scenes/kitchen_apartment_01.json",

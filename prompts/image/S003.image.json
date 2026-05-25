@@ -142,8 +142,8 @@
   },
   "meta": {
     "compiler_version": "image-prompts-1.0.0",
-    "git_commit": "eb70d76",
-    "compiled_at": "2026-05-25T02:58:14.716Z",
+    "git_commit": "1951482",
+    "compiled_at": "2026-05-25T04:09:55.771Z",
     "compiled_from": {
       "shot": "shots/S003.json",
       "scene": "scenes/kitchen_apartment_01.json",
