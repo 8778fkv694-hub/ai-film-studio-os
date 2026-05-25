@@ -1,15 +1,16 @@
 import fs from 'fs';
 import path from 'path';
-import { exec } from 'child_process';
+import crypto from 'crypto';
+import { execFile } from 'child_process';
 import { NextResponse } from 'next/server';
 import { getResourcePath } from '@/lib/projects';
 
 const ALLOWED_EXTS = new Set(['.mp4', '.mov', '.webm', '.avi']);
 
 // Helper to execute ffmpeg commands asynchronously
-function runFFmpeg(cmd: string): Promise<string> {
+function runFFmpeg(args: string[]): Promise<string> {
   return new Promise((resolve, reject) => {
-    exec(cmd, (error, stdout, stderr) => {
+    execFile('ffmpeg', args, (error, stdout, stderr) => {
       if (error) {
         reject(stderr || error.message);
       } else {
@@ -39,48 +40,123 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: '仅支持 mp4、mov、webm、avi 格式的视频' }, { status: 400 });
     }
 
-    // Target Directories
-    const renderDir = path.join(getResourcePath('assets'), 'renders', shotId);
-    const videoDir = path.join(renderDir, 'video');
-    const keyframeDir = path.join(renderDir, 'keyframes');
+    // 1. Calculate prompt hash
+    const promptPath = path.join(getResourcePath('prompts'), `${shotId}.final.json`);
+    let promptHash = '';
+    if (fs.existsSync(promptPath)) {
+      try {
+        const promptContent = fs.readFileSync(promptPath, 'utf-8');
+        promptHash = crypto.createHash('md5').update(promptContent).digest('hex').substring(0, 8);
+      } catch (err) {
+        console.warn('Failed to calculate prompt hash:', err);
+      }
+    }
 
-    fs.mkdirSync(videoDir, { recursive: true });
-    fs.mkdirSync(keyframeDir, { recursive: true });
+    // 2. Load or initialize history.json
+    const historyFile = path.join(getResourcePath('assets'), 'renders', shotId, 'history.json');
+    let history: any = { shot_id: shotId, active_take_id: null, takes: [] };
+    if (fs.existsSync(historyFile)) {
+      try {
+        history = JSON.parse(fs.readFileSync(historyFile, 'utf-8'));
+      } catch (err) {
+        console.warn('Failed to parse history.json:', err);
+      }
+    }
+
+    // 3. Generate next take ID
+    let maxNum = 0;
+    for (const t of history.takes || []) {
+      const match = t.take_id.match(/take_(\d+)/);
+      if (match) {
+        const num = parseInt(match[1], 10);
+        if (num > maxNum) maxNum = num;
+      }
+    }
+    const takeId = `take_${String(maxNum + 1).padStart(3, '0')}`;
+
+    // Target Directories
+    const takeDir = path.join(getResourcePath('assets'), 'renders', shotId, 'takes', takeId);
+    fs.mkdirSync(takeDir, { recursive: true });
 
     // Save Video File
-    const videoPath = path.join(videoDir, `video_raw${ext}`);
+    const videoPath = path.join(takeDir, `video${ext}`);
     const bytes = Buffer.from(await file.arrayBuffer());
     fs.writeFileSync(videoPath, bytes);
 
-    const relativeVideoPath = `assets/renders/${shotId}/video/video_raw${ext}`;
-    const videoUrl = `/api/assets/video/${encodeURIComponent(shotId)}/video_raw${ext}`;
+    const relativeVideoPath = `assets/renders/${shotId}/takes/${takeId}/video${ext}`;
+    const videoUrl = `/api/assets/reference/renders/${encodeURIComponent(shotId)}/takes/${encodeURIComponent(takeId)}/video${ext}`;
 
     // Extract last frame using ffmpeg
-    // -sseof -1 offsets to 1 second before end, -update 1 overwrites to output single image
-    const framePath = path.join(keyframeDir, 'frame_last.jpg');
-    const ffmpegCmd = `ffmpeg -y -sseof -1 -i "${videoPath}" -update 1 -q:v 1 "${framePath}"`;
+    const framePath = path.join(takeDir, 'keyframe.jpg');
+    const ffmpegArgs = ['-y', '-sseof', '-1', '-i', videoPath, '-update', '1', '-q:v', '1', framePath];
 
     let ffmpegSuccess = false;
     let ffmpegError = '';
 
     try {
-      await runFFmpeg(ffmpegCmd);
+      await runFFmpeg(ffmpegArgs);
       ffmpegSuccess = true;
     } catch (err: any) {
       console.warn('FFmpeg execution failed, extraction skipped:', err);
       ffmpegError = String(err);
-      
-      // Attempt fallback if frame_last.jpg doesn't exist
-      // Write placeholder or warn UI to prompt manual upload
     }
+
+    // Load shot duration
+    let durationS = 4;
+    const shotPath = path.join(getResourcePath('shots'), `${shotId}.json`);
+    if (fs.existsSync(shotPath)) {
+      try {
+        durationS = JSON.parse(fs.readFileSync(shotPath, 'utf-8')).duration_s || 4;
+      } catch {}
+    }
+
+    // 4. Record Take
+    const newTake = {
+      take_id: takeId,
+      timestamp: new Date().toISOString(),
+      status: 'imported',
+      prompt_hash: promptHash,
+      video_path: relativeVideoPath,
+      keyframe_path: ffmpegSuccess ? `assets/renders/${shotId}/takes/${takeId}/keyframe.jpg` : '',
+      duration_s: durationS,
+      source: 'manual_external',
+      platform: 'manual',
+      review: {
+        rating: null,
+        tags: [],
+        notes: '',
+        approved: false
+      }
+    };
+
+    history.takes = history.takes || [];
+    history.takes.push(newTake);
+
+    // Set as active if none exists
+    if (!history.active_take_id) {
+      history.active_take_id = takeId;
+      
+      // Copy keyframe to global keyframes directory for player compatibility
+      if (ffmpegSuccess) {
+        const globalKeyframesDir = path.join(getResourcePath('assets'), 'renders', shotId, 'keyframes');
+        fs.mkdirSync(globalKeyframesDir, { recursive: true });
+        fs.copyFileSync(framePath, path.join(globalKeyframesDir, 'frame_last.jpg'));
+      }
+    }
+
+    // Save History
+    fs.mkdirSync(path.dirname(historyFile), { recursive: true });
+    fs.writeFileSync(historyFile, JSON.stringify(history, null, 2));
 
     return NextResponse.json({
       success: true,
+      take_id: takeId,
       videoPath: relativeVideoPath,
       videoUrl,
-      extractedFrame: ffmpegSuccess ? `assets/renders/${shotId}/keyframes/frame_last.jpg` : null,
+      extractedFrame: ffmpegSuccess ? `assets/renders/${shotId}/takes/${takeId}/keyframe.jpg` : null,
       ffmpegSuccess,
-      ffmpegError
+      ffmpegError,
+      history
     });
   } catch (e: any) {
     return NextResponse.json({ error: e.message || '上传视频失败' }, { status: 500 });

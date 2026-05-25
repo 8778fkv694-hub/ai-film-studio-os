@@ -1,0 +1,44 @@
+{
+  "shot_id": "S009",
+  "duration_s": 8,
+  "scene_ref": "scenes/scene_interior.json",
+  "cam_setup_ref": "comic_panel_01",
+  "characters": [
+    {
+      "ref": "characters/visitor_group.json"
+    }
+  ],
+  "props": [
+    {
+      "ref": "props/running_equipment.json",
+      "state": "operating"
+    },
+    {
+      "ref": "props/warning_signage.json",
+      "state": "visible"
+    }
+  ],
+  "action": {
+    "beats": [
+      "Wide shot of the entire clean room with all equipment running",
+      "Key safety tips overlay on the screen"
+    ]
+  },
+  "dialogue": null,
+  "voiceover": {
+    "speaker": "Narrator",
+    "text": "洁净车间管理的核心，是减少污染、保证质量、确保安全。请大家做到：规范更衣、完成风淋、只看不摸、不越线、不拍摄。感谢配合。",
+    "voice_id": "narrator_male_01"
+  },
+  "budget": {
+    "tier": "cheap",
+    "max_regen": 1
+  },
+  "prompt": {
+    "positive": "16:9 wide establishing shot, clean room interior with all machinery running and warning signs visible, visitors standing in a group, bright industrial overhead lighting, high angle, photorealistic, highly detailed, 8K, industrial documentary style, text overlay with safety tips",
+    "negative": "blurry, low quality, distorted faces, wrong proportions, text artifacts, watermark, logo, extra limbs, missing safety equipment, dark lighting, cluttered background"
+  },
+  "context_refs": [
+    "assets/renders/S008/keyframes/frame_01.jpg"
+  ]
+}

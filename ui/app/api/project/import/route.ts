@@ -1,11 +1,11 @@
-import { exec } from 'child_process';
+import { execFile } from 'child_process';
 import { promisify } from 'util';
 import path from 'path';
 import fs from 'fs';
 import { NextResponse } from 'next/server';
 import { getCurrentProjectPath } from '@/lib/projects';
 
-const execAsync = promisify(exec);
+const execFileAsync = promisify(execFile);
 
 export async function POST(request: Request) {
   try {
@@ -30,8 +30,7 @@ export async function POST(request: Request) {
     fs.writeFileSync(zipPath, bytes);
 
     // Call native unzip to extract and overwrite existing files
-    const cmd = `unzip -o "${zipPath}"`;
-    await execAsync(cmd, { cwd: workDir });
+    await execFileAsync('unzip', ['-o', zipPath], { cwd: workDir });
 
     // Clean up import zip
     fs.unlinkSync(zipPath);

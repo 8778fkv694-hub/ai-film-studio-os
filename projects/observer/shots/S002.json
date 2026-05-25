@@ -1,38 +1,37 @@
 {
   "shot_id": "S002",
-  "duration_s": 21,
-  "scene_ref": "scenes/scene_interior.json",
-  "cam_setup_ref": "comic_panel_01",
-  "characters": [],
+  "duration_s": 6,
+  "scene_ref": "scenes/scene_entrance.json",
+  "cam_setup_ref": "comic_panel_02",
+  "characters": [
+    {
+      "ref": "characters/visitor_group.json"
+    }
+  ],
   "props": [
     {
-      "ref": "TODO: match prop manually",
-      "state": "运行中"
-    },
-    {
-      "ref": "TODO: match prop manually",
-      "state": "警示标识"
+      "ref": "props/warning_signage.json",
+      "state": "displayed"
     }
   ],
   "action": {
     "beats": [
-      "展示运行设备、管道、警示标识",
-      "镜头缓慢平移展示地面通道"
+      "Visitor pauses at entrance, reading notice board with health and item restrictions"
     ]
   },
   "dialogue": null,
   "voiceover": {
-    "speaker": "旁白",
-    "text": "车间内存在运行设备、管道、气路、水路和电气装置。请不要靠近旋转部件、加热部件和压力管路。不要倚靠设备，不要触碰阀门、按钮、线缆和管道。行走时注意地面，防止滑倒、绊倒和碰撞。",
-    "voice_id": "default"
+    "speaker": "Narrator",
+    "text": "进入车间前，请确认自身状态。如有明显感冒、咳嗽、发热，或身上有明显异味、粉尘、油污等情况，不建议进入洁净区域。随身物品请按要求存放，食品、饮料、纸箱、普通纸张等易产尘物品不得带入车间。",
+    "voice_id": "narrator_male_01"
   },
   "budget": {
     "tier": "cheap",
     "max_regen": 1
   },
   "prompt": {
-    "positive": "洁净车间内部，运行中的机械设备，管道和阀门，黄色警示标识，地面有防滑通道标记，明亮冷光，工业安全氛围",
-    "negative": "人员遮挡，设备静止，光线昏暗"
+    "positive": "16:9 medium shot, visitor reading notice board at clean room entrance, notice board with health guidelines and prohibited items list, bright overhead lighting, slightly low angle, photorealistic, highly detailed, 8K, industrial documentary style",
+    "negative": "blurry, low quality, distorted faces, wrong proportions, text artifacts, watermark, logo, extra limbs, dark lighting, cluttered background"
   },
   "context_refs": [
     "assets/renders/S001/keyframes/frame_01.jpg"

@@ -8,7 +8,11 @@ const CONTENT_TYPES: Record<string, string> = {
   '.jpeg': 'image/jpeg',
   '.png': 'image/png',
   '.webp': 'image/webp',
-  '.svg': 'image/svg+xml'
+  '.svg': 'image/svg+xml',
+  '.mp4': 'video/mp4',
+  '.mov': 'video/quicktime',
+  '.webm': 'video/webm',
+  '.avi': 'video/x-msvideo'
 };
 
 export async function GET(
@@ -46,7 +50,7 @@ export async function GET(
   const ext = path.extname(relativePath).toLowerCase();
   const contentType = CONTENT_TYPES[ext];
   if (!contentType) {
-    return new NextResponse('Unsupported image type', { status: 400 });
+    return new NextResponse('Unsupported asset type', { status: 400 });
   }
 
   const assetsDir = getResourcePath('assets');

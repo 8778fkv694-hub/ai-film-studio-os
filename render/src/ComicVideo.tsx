@@ -1,9 +1,8 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import {
   AbsoluteFill,
   Composition,
   Sequence,
-  useVideoConfig,
   useCurrentFrame
 } from 'remotion';
 import { ShotScene } from './ShotScene';
@@ -22,7 +21,7 @@ const AllScenesContent: React.FC = () => {
     return (
       <AbsoluteFill style={{ backgroundColor: '#0a0a0a', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <div style={{ color: '#475569', fontSize: 24, fontFamily: 'sans-serif' }}>
-          未找到镜头数据。请先运行 prepare-data.ts 生成数据。
+          未找到镜头数据。请先运行 npm run prepare 生成数据。
         </div>
       </AbsoluteFill>
     );

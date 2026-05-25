@@ -85,6 +85,22 @@ function listExistingKeyframes(shotId) {
     .map(file => `assets/renders/${shotId}/keyframes/${file}`);
 }
 
+function resolveImageRef(ref) {
+  const exactPath = path.join(workDir, ref);
+  if (fs.existsSync(exactPath)) return ref;
+
+  const ext = path.extname(ref);
+  if (!ext) return null;
+
+  const base = ref.slice(0, -ext.length);
+  for (const candidateExt of IMAGE_EXTS) {
+    const candidate = `${base}${candidateExt}`;
+    if (fs.existsSync(path.join(workDir, candidate))) return candidate;
+  }
+
+  return null;
+}
+
 function collectReferences(scene, characters, props) {
   const refs = [];
 
@@ -159,10 +175,13 @@ function compileImagePrompt(shotFile, gitHash) {
   // Shot-to-shot visual continuity (StoryGen approach)
   const contextRefs = (shot.context_refs || [])
     .filter(ref => typeof ref === 'string' && ref.trim());
-  const availableContextRefs = contextRefs
-    .filter(ref => fs.existsSync(path.join(workDir, ref)));
+  const resolvedContextRefs = contextRefs
+    .map(ref => ({ declared: ref, resolved: resolveImageRef(ref) }));
+  const availableContextRefs = resolvedContextRefs
+    .filter(ref => ref.resolved)
+    .map(ref => ref.resolved);
   const missingContextRefs = contextRefs
-    .filter(ref => !fs.existsSync(path.join(workDir, ref)));
+    .filter(ref => !resolveImageRef(ref));
 
   const contextContinuity = availableContextRefs.length > 0
     ? `Shot-to-shot continuity: maintain exact character identity, scene layout, lighting and prop positions from previous shot. Visual style must match preceding frame.`

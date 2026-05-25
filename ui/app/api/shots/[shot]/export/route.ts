@@ -1,11 +1,11 @@
-import { exec } from 'child_process';
+import { execFile } from 'child_process';
 import { promisify } from 'util';
 import path from 'path';
 import fs from 'fs';
 import { NextResponse } from 'next/server';
 import { getCurrentProjectPath, getResourcePath } from '@/lib/projects';
 
-const execAsync = promisify(exec);
+const execFileAsync = promisify(execFile);
 
 export async function GET(
   request: Request,
@@ -74,9 +74,7 @@ export async function GET(
       fs.unlinkSync(zipPath);
     }
 
-    // Command to zip the temp folder contents
-    const cmd = `zip -r "${zipPath}" .`;
-    await execAsync(cmd, { cwd: tempExportDir });
+    await execFileAsync('zip', ['-r', zipPath, '.'], { cwd: tempExportDir });
 
     if (!fs.existsSync(zipPath)) {
       return new NextResponse('ZIP generation failed', { status: 500 });

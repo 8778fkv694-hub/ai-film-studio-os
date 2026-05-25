@@ -19,6 +19,9 @@ export async function POST(request: Request) {
     if (!projectId) {
       return new NextResponse('Project ID is required', { status: 400 });
     }
+    if (!/^[A-Za-z0-9_-]+$/.test(projectId)) {
+      return new NextResponse('Invalid project ID', { status: 400 });
+    }
 
     // 读取项目列表
     if (!fs.existsSync(PROJECTS_FILE)) {

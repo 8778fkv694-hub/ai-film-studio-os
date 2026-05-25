@@ -8,7 +8,7 @@
 import { Command } from 'commander';
 import chalk from 'chalk';
 import ora from 'ora';
-import { execSync, spawn } from 'child_process';
+import { execFileSync, spawn } from 'child_process';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -16,6 +16,8 @@ import { fileURLToPath } from 'url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
 const TOOLS_DIR = path.join(ROOT, 'tools/scripts');
+const PROJECTS_FILE = path.join(ROOT, 'projects.json');
+const PROJECTS_DIR = path.join(ROOT, 'projects');
 
 // 中文消息
 const MSG = {
@@ -24,6 +26,7 @@ const MSG = {
   commands: {
     status: '显示项目状态概览',
     check: '运行结构校验和逻辑检查',
+    checkAll: '运行一键项目健康检查',
     split: '将剧本拆分为分镜草稿',
     build: '编译提示词 (Prompt)',
     tts: '生成对白语音 (TTS)',
@@ -39,7 +42,7 @@ const MSG = {
     scenes: '场景数',
     characters: '角色数',
     props: '道具数',
-    noProject: '⚠️  未找到 project.json，请先初始化项目',
+    noProject: '⚠️  未找到活动项目，请先在 Web UI 或 afsos init 初始化项目',
   },
   check: {
     running: '正在运行检查...',
@@ -80,20 +83,52 @@ const MSG = {
 };
 
 // 辅助函数
+function readJsonFile(filePath) {
+  try {
+    if (!fs.existsSync(filePath)) return null;
+    return JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+  } catch {
+    return null;
+  }
+}
+
+function resolveProjectDir(projectId) {
+  if (!projectId || !/^[A-Za-z0-9_-]+$/.test(projectId)) return null;
+  const projectDir = path.join(PROJECTS_DIR, projectId);
+  return fs.existsSync(path.join(projectDir, 'project.json')) ? projectDir : null;
+}
+
+function resolveActiveProjectDir() {
+  const projectsData = readJsonFile(PROJECTS_FILE);
+  const activeDir = resolveProjectDir(projectsData?.activeProjectId);
+  if (activeDir) return activeDir;
+
+  for (const project of projectsData?.projects || []) {
+    const projectDir = resolveProjectDir(project.id);
+    if (projectDir) return projectDir;
+  }
+
+  return fs.existsSync(path.join(ROOT, 'project.json')) ? ROOT : null;
+}
+
+function getWorkDir() {
+  const opts = program.opts();
+  if (opts.projectDir) return path.resolve(process.cwd(), opts.projectDir);
+  return resolveProjectDir(opts.projectId) || resolveActiveProjectDir();
+}
+
 function countFiles(dir, ext = '.json') {
-  const absDir = path.join(ROOT, dir);
+  const workDir = getWorkDir();
+  if (!workDir) return 0;
+  const absDir = path.join(workDir, dir);
   if (!fs.existsSync(absDir)) return 0;
   return fs.readdirSync(absDir).filter(f => f.endsWith(ext)).length;
 }
 
 function readProjectJson() {
-  const p = path.join(ROOT, 'project.json');
-  if (!fs.existsSync(p)) return null;
-  try {
-    return JSON.parse(fs.readFileSync(p, 'utf-8'));
-  } catch {
-    return null;
-  }
+  const workDir = getWorkDir();
+  if (!workDir) return null;
+  return readJsonFile(path.join(workDir, 'project.json'));
 }
 
 function runScript(scriptName, args = []) {
@@ -103,7 +138,10 @@ function runScript(scriptName, args = []) {
     process.exit(1);
   }
   try {
-    const result = execSync(`node "${scriptPath}" ${args.join(' ')}`, {
+    const workDir = getWorkDir();
+    const finalArgs = [scriptPath, ...args];
+    if (workDir) finalArgs.push('--project-dir', workDir);
+    const result = execFileSync('node', finalArgs, {
       cwd: ROOT,
       encoding: 'utf-8',
       stdio: 'pipe'
@@ -120,6 +158,8 @@ const program = new Command();
 program
   .name('afsos')
   .description(MSG.welcome)
+  .option('--project-id <id>', '使用指定 projects/<id> 项目')
+  .option('--project-dir <dir>', '使用指定项目目录')
   .version('1.0.0');
 
 // status 命令
@@ -146,6 +186,7 @@ program
 
     console.log(chalk.white(`  ${MSG.status.projectName}: `) + chalk.green(project.name || '-'));
     console.log(chalk.white(`  ${MSG.status.projectId}:   `) + chalk.gray(project.id || '-'));
+    console.log(chalk.white('  项目目录:   ') + chalk.gray(getWorkDir()));
     console.log();
 
     const stats = [
@@ -210,12 +251,39 @@ program
     console.log();
   });
 
+// check-all 命令
+program
+  .command('check-all')
+  .description(MSG.commands.checkAll)
+  .option('-q, --quick', '只运行快速检查步骤 (跳过 UI 和 Remotion 构建)')
+  .action((options) => {
+    const scriptPath = path.join(TOOLS_DIR, 'check-all.js');
+    if (!fs.existsSync(scriptPath)) {
+      console.error(chalk.red(MSG.error.scriptNotFound.replace('{path}', scriptPath)));
+      process.exit(1);
+    }
+    try {
+      const workDir = getWorkDir();
+      const finalArgs = [scriptPath];
+      if (options.quick) finalArgs.push('--quick');
+      if (workDir) finalArgs.push('--project-dir', workDir);
+      
+      execFileSync('node', finalArgs, {
+        cwd: ROOT,
+        stdio: 'inherit'
+      });
+    } catch (e) {
+      process.exit(e.status || 1);
+    }
+  });
+
 // split 命令
 program
   .command('split [script]')
   .description(MSG.commands.split)
   .action((script = 'docs/script.txt') => {
-    const scriptPath = path.join(ROOT, script);
+    const workDir = getWorkDir() || ROOT;
+    const scriptPath = path.isAbsolute(script) ? script : path.join(workDir, script);
 
     if (!fs.existsSync(scriptPath)) {
       console.log(chalk.red(`  ${MSG.split.notFound}: ${script}`));
@@ -224,7 +292,7 @@ program
     }
 
     const spinner = ora(MSG.split.running).start();
-    const result = runScript('script-split.js', [script]);
+    const result = runScript('script-split.js', [scriptPath]);
 
     if (result.success) {
       const match = result.output.match(/(\d+)/);
@@ -294,50 +362,74 @@ program
 
 // init 命令
 program
-  .command('init')
+  .command('init [id]')
   .description(MSG.commands.init)
-  .action(() => {
+  .option('-n, --name <name>', '项目名称')
+  .option('-d, --description <description>', '项目描述', '')
+  .action((id = 'my_project', options) => {
     console.log(chalk.cyan('  🚀 初始化新项目...'));
+
+    if (!/^[A-Za-z0-9_-]+$/.test(id)) {
+      console.log(chalk.red('  ❌ Project ID 只能包含字母、数字、下划线和连字符'));
+      return;
+    }
+
+    fs.mkdirSync(PROJECTS_DIR, { recursive: true });
+    const projectDir = path.join(PROJECTS_DIR, id);
+    if (fs.existsSync(projectDir)) {
+      console.log(chalk.red(`  ❌ 项目已存在: ${projectDir}`));
+      return;
+    }
+    fs.mkdirSync(projectDir, { recursive: true });
 
     // 创建基础目录
     const dirs = ['docs', 'shots', 'shots_draft', 'scenes', 'characters', 'props', 'assets/audio', 'prompts', 'renders', 'reports'];
     dirs.forEach(dir => {
-      const absDir = path.join(ROOT, dir);
-      if (!fs.existsSync(absDir)) {
-        fs.mkdirSync(absDir, { recursive: true });
-        console.log(chalk.gray(`     创建目录: ${dir}/`));
-      }
+      const absDir = path.join(projectDir, dir);
+      fs.mkdirSync(absDir, { recursive: true });
+      console.log(chalk.gray(`     创建目录: projects/${id}/${dir}/`));
     });
 
     // 创建示例 project.json
-    const projectPath = path.join(ROOT, 'project.json');
-    if (!fs.existsSync(projectPath)) {
-      const template = {
-        id: 'my_project',
-        name: '我的新项目',
-        description: '项目描述',
-        default_style_ref: 'styles/cinematic_v1.json',
-        defaults: {
-          language: 'zh',
-          fps: 24
-        },
-        inventory: {
-          scenes: [],
-          characters: [],
-          props: []
-        },
-        timeline: []
-      };
-      fs.writeFileSync(projectPath, JSON.stringify(template, null, 2));
-      console.log(chalk.gray('     创建文件: project.json'));
-    }
+    const projectPath = path.join(projectDir, 'project.json');
+    const template = {
+      id,
+      name: options.name || '我的新项目',
+      description: options.description || '',
+      default_style_ref: 'styles/cinematic_v1.json',
+      defaults: {
+        language: 'zh',
+        fps: 24
+      },
+      inventory: {
+        scenes: [],
+        characters: [],
+        props: []
+      },
+      timeline: []
+    };
+    fs.writeFileSync(projectPath, JSON.stringify(template, null, 2));
+    console.log(chalk.gray(`     创建文件: projects/${id}/project.json`));
+
+    const projectsData = readJsonFile(PROJECTS_FILE) || { projects: [], activeProjectId: null };
+    const now = new Date().toISOString();
+    projectsData.projects = (projectsData.projects || []).filter(project => project.id !== id);
+    projectsData.projects.push({
+      id,
+      name: template.name,
+      description: template.description,
+      createdAt: now,
+      updatedAt: now
+    });
+    projectsData.activeProjectId = id;
+    fs.writeFileSync(PROJECTS_FILE, JSON.stringify(projectsData, null, 2));
 
     console.log();
     console.log(chalk.green.bold('  ✅ 项目初始化完成！'));
     console.log();
     console.log(chalk.gray('  下一步:'));
-    console.log(chalk.gray('  1. 编辑 project.json 设置项目信息'));
-    console.log(chalk.gray('  2. 将剧本放入 docs/script.txt'));
+    console.log(chalk.gray(`  1. 编辑 projects/${id}/project.json 设置项目信息`));
+    console.log(chalk.gray(`  2. 将剧本放入 projects/${id}/docs/script.txt`));
     console.log(chalk.gray('  3. 运行 afsos split 拆分剧本'));
     console.log();
   });

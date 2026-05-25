@@ -1,0 +1,156 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import crypto from 'node:crypto';
+import { execSync } from 'node:child_process';
+import { parseArgs } from './shared/dirs.js';
+
+const { workDir, remainingArgs } = parseArgs();
+
+function md5(str) {
+  return crypto.createHash('md5').update(str).digest('hex').substring(0, 8);
+}
+
+function ensureDir(p) {
+  fs.mkdirSync(p, { recursive: true });
+}
+
+function readJson(p) {
+  try {
+    return JSON.parse(fs.readFileSync(p, 'utf-8'));
+  } catch {
+    return null;
+  }
+}
+
+async function main() {
+  const shotId = remainingArgs[0];
+  const videoFilePath = remainingArgs[1];
+
+  if (!shotId || !videoFilePath) {
+    console.error('Usage: node tools/scripts/import-take.js <shot_id> <video_file_path> [--platform <name>] [--notes <text>] [--project-dir <dir>|--project-id <id>]');
+    process.exit(1);
+  }
+
+  // Parse custom parameters
+  const platformIndex = remainingArgs.indexOf('--platform');
+  const platform = (platformIndex !== -1 && platformIndex + 1 < remainingArgs.length) 
+    ? remainingArgs[platformIndex + 1] 
+    : 'manual';
+
+  const notesIndex = remainingArgs.indexOf('--notes');
+  const notes = (notesIndex !== -1 && notesIndex + 1 < remainingArgs.length) 
+    ? remainingArgs[notesIndex + 1] 
+    : '';
+
+  // 1. Verify shot file
+  const shotFile = path.join(workDir, 'shots', `${shotId}.json`);
+  if (!fs.existsSync(shotFile)) {
+    console.error(`❌ Shot file not found: ${shotFile}`);
+    process.exit(1);
+  }
+
+  // 2. Verify video file
+  if (!fs.existsSync(videoFilePath)) {
+    console.error(`❌ Input video file not found: ${videoFilePath}`);
+    process.exit(1);
+  }
+  const ext = path.extname(videoFilePath).toLowerCase();
+  const allowedExts = new Set(['.mp4', '.mov', '.webm', '.avi']);
+  if (!allowedExts.has(ext)) {
+    console.warn(`⚠️  Warning: extension "${ext}" is not standard, proceeding anyway...`);
+  }
+
+  // 3. Load or initialize history
+  const historyFile = path.join(workDir, `assets/renders/${shotId}/history.json`);
+  let history = readJson(historyFile);
+  if (!history) {
+    history = { shot_id: shotId, active_take_id: null, takes: [] };
+  }
+
+  // 4. Generate next take ID
+  let maxNum = 0;
+  for (const t of history.takes || []) {
+    const match = t.take_id.match(/take_(\d+)/);
+    if (match) {
+      const num = parseInt(match[1], 10);
+      if (num > maxNum) maxNum = num;
+    }
+  }
+  const takeId = `take_${String(maxNum + 1).padStart(3, '0')}`;
+  const takeDir = path.join(workDir, `assets/renders/${shotId}/takes/${takeId}`);
+  ensureDir(takeDir);
+
+  // 5. Copy video file
+  const destVideoPath = path.join(takeDir, `video${ext}`);
+  fs.copyFileSync(videoFilePath, destVideoPath);
+  console.log(`🎬 Copied video to ${destVideoPath}`);
+
+  // 6. Extract keyframe using ffmpeg
+  const destKeyframePath = path.join(takeDir, 'keyframe.jpg');
+  let ffmpegSuccess = false;
+  try {
+    console.log('[FFmpeg] Extracting last frame as keyframe...');
+    execSync(`ffmpeg -y -sseof -1 -i "${destVideoPath}" -update 1 -q:v 1 "${destKeyframePath}"`, { stdio: 'ignore' });
+    ffmpegSuccess = true;
+    console.log(`🖼️  Extracted keyframe to ${destKeyframePath}`);
+  } catch (err) {
+    console.warn('⚠️  Warning: FFmpeg failed to extract last frame. You might want to upload keyframe manually.');
+  }
+
+  // 7. Calculate prompt hash
+  const promptFile = path.join(workDir, `prompts/${shotId}.final.json`);
+  let promptHash = '';
+  if (fs.existsSync(promptFile)) {
+    promptHash = md5(fs.readFileSync(promptFile, 'utf-8'));
+  } else {
+    console.warn(`⚠️  Warning: prompts/${shotId}.final.json not found. prompt_hash will be empty.`);
+  }
+
+  // 8. Add take record
+  const relativeVideoPath = `assets/renders/${shotId}/takes/${takeId}/video${ext}`;
+  const relativeKeyframePath = ffmpegSuccess 
+    ? `assets/renders/${shotId}/takes/${takeId}/keyframe.jpg` 
+    : '';
+
+  const newTake = {
+    take_id: takeId,
+    timestamp: new Date().toISOString(),
+    status: 'imported',
+    prompt_hash: promptHash,
+    video_path: relativeVideoPath,
+    keyframe_path: relativeKeyframePath,
+    duration_s: readJson(path.join(workDir, `prompts/${shotId}.prompt.json`))?.params?.duration_s || 4,
+    source: 'manual_external',
+    platform: platform,
+    review: {
+      rating: null,
+      tags: [],
+      notes: notes,
+      approved: false
+    }
+  };
+
+  history.takes.push(newTake);
+
+  // 9. Set as active if none exists
+  if (!history.active_take_id) {
+    history.active_take_id = takeId;
+    console.log(`⭐️ Set ${takeId} as active take.`);
+    if (ffmpegSuccess) {
+      const globalKeyframesDir = path.join(workDir, `assets/renders/${shotId}/keyframes`);
+      ensureDir(globalKeyframesDir);
+      fs.copyFileSync(destKeyframePath, path.join(globalKeyframesDir, 'frame_last.jpg'));
+    }
+  }
+
+  // 10. Save history
+  ensureDir(path.dirname(historyFile));
+  fs.writeFileSync(historyFile, JSON.stringify(history, null, 2));
+
+  console.log(`✅ Successfully imported ${takeId} for ${shotId}!`);
+}
+
+main().catch(err => {
+  console.error('❌ Error importing take:', err.message);
+  process.exit(1);
+});

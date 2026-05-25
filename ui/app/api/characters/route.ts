@@ -23,7 +23,10 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const character = await request.json();
-    const filename = character._filename || `${character.id}.json`;
+    if (!character.id || !/^[A-Za-z0-9_-]+$/.test(character.id)) {
+      return NextResponse.json({ error: '无效角色 ID' }, { status: 400 });
+    }
+    const filename = path.basename(character._filename || `${character.id}.json`);
     delete character._filename;
     fs.writeFileSync(
       path.join(getResourcePath('characters'), filename),

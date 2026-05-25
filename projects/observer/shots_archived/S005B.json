@@ -1,0 +1,37 @@
+{
+  "shot_id": "S005B",
+  "duration_s": 9.5,
+  "scene_ref": "scenes/scene_interior.json",
+  "parent_shot_id": "S005",
+  "segment_index": 2,
+  "segment_count": 2,
+  "split_reason": "duration_s (19s) > max_duration (12s)",
+  "cam_setup_ref": "comic_panel_01",
+  "characters": [
+    {
+      "ref": "characters/visitor_group.json"
+    }
+  ],
+  "props": [],
+  "budget": {
+    "tier": "cheap",
+    "max_regen": 1
+  },
+  "action": {
+    "beats": [
+      "Visitors walking along designated path, not touching equipment"
+    ]
+  },
+  "voiceover": {
+    "speaker": "Narrator",
+    "text": "不得随意触摸设备、物料、工装、产品和记录表单。未经允许，不得操作设备，不得进入黄线以内或设备防护区域。",
+    "voice_id": "narrator_male_01"
+  },
+  "prompt": {
+    "positive": "Visitors in clean suits walking along marked path in clean workshop, machinery in background, yellow floor lines, sterile environment",
+    "negative": "touching equipment, removing mask, crossing yellow line"
+  },
+  "context_refs": [
+    "assets/renders/S005A/keyframes/frame_last.jpg"
+  ]
+}

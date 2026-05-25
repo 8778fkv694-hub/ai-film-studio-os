@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "prepare": "npx tsx scripts/prepare-data.ts",
+    "prepare": "node scripts/prepare-data.mjs",
     "preview": "npm run prepare && remotion preview src/index.ts",
     "render": "npm run prepare && remotion render src/index.ts ComicVideo output/comic-video.mp4",
     "render-still": "npm run prepare && remotion still src/index.ts ComicVideo output/comic-frame.png --frame=0"

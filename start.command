@@ -58,6 +58,10 @@ check_environment() {
     fi
 }
 
+resolve_active_project() {
+    node -e "const fs=require('fs'),path=require('path');const root=process.cwd();let d=null;try{d=JSON.parse(fs.readFileSync(path.join(root,'projects.json'),'utf8'))}catch{}function p(id){if(!id||!/^[A-Za-z0-9_-]+$/.test(id))return null;const dir=path.join(root,'projects',id);return fs.existsSync(path.join(dir,'project.json'))?dir:null}const active=p(d&&d.activeProjectId)||(d&&d.projects||[]).map(x=>p(x.id)).find(Boolean)||'';process.stdout.write(active)"
+}
+
 # 显示主菜单
 show_menu() {
     clear
@@ -73,6 +77,9 @@ show_menu() {
     echo -e "       ${ITALIC}像写代码一样做电影 (Make movies like writing code)${NC}"
     echo ""
     echo -e "${WHITE}🏠 当前目录: ${GREEN}$PWD${NC}"
+    if [ -n "$PROJECT_DIR" ]; then
+        echo -e "${WHITE}🎞️  活动项目: ${GREEN}$PROJECT_DIR${NC}"
+    fi
     echo -e "${WHITE}🟢 Node.js 版本: ${GREEN}$(node -v)${NC}"
     echo ""
     echo -e "${BLUE}🤖 [请选择操作]:${NC}"
@@ -84,14 +91,20 @@ show_menu() {
     echo -e "  ${GREEN}[6]${NC} 🎬 编译最终视频提示词 (Compile Video Prompts)"
     echo -e "  ${GREEN}[7]${NC} 🛠️  运行后期修复工单 (Process Fixups)"
     echo -e "  ${GREEN}[8]${NC} 🌾 生成演示 Demo 数据种子 (Seed Demo Data)"
+    echo -e "  ${GREEN}[9]${NC} 🩺  一键健康检查 (Run check-all)"
     echo -e "  ${RED}[0]${NC} ❌ 退出 (Exit)"
     echo ""
     echo -e "${MAGENTA}✨ ────────────────────────────────────────────────────────── ✨${NC}"
-    echo -n "👉 请输入选项 (0-8): "
+    echo -n "👉 请输入选项 (0-9): "
 }
 
 # 运行主逻辑
 check_environment
+PROJECT_DIR="$(resolve_active_project)"
+PROJECT_ARG=()
+if [ -n "$PROJECT_DIR" ]; then
+    PROJECT_ARG=(--project-dir "$PROJECT_DIR")
+fi
 
 while true; do
     show_menu
@@ -112,11 +125,11 @@ while true; do
             ;;
         2)
             echo -e "\n${CYAN}🛡️ 正在进行结构校验...${NC}"
-            node tools/scripts/validate.js
+            node tools/scripts/validate.js "${PROJECT_ARG[@]}"
             VALIDATE_STATUS=$?
             
             echo -e "\n${CYAN}🛡️ 正在进行逻辑 Lint 检查...${NC}"
-            node tools/scripts/lint.js
+            node tools/scripts/lint.js "${PROJECT_ARG[@]}"
             LINT_STATUS=$?
             
             echo ""
@@ -134,12 +147,17 @@ while true; do
             if [ -z "$script_path" ]; then
                 script_path="docs/script.txt"
             fi
+
+            check_script_path="$script_path"
+            if [[ "$script_path" != /* ]] && [ -n "$PROJECT_DIR" ]; then
+                check_script_path="$PROJECT_DIR/$script_path"
+            fi
             
-            if [ ! -f "$script_path" ]; then
+            if [ ! -f "$check_script_path" ]; then
                 echo -e "${RED}❌ 错误: 文件 '$script_path' 不存在！${NC}"
             else
                 echo -e "${YELLOW}运行 script-split.js...${NC}"
-                node tools/scripts/script-split.js "$script_path"
+                node tools/scripts/script-split.js "$script_path" "${PROJECT_ARG[@]}"
                 echo -e "\n${GREEN}✅ 剧本拆解完成！${NC}"
                 echo -e "💡 提示：分镜草稿已生成在 ${CYAN}shots_draft/${NC} 目录，请确认无误后移动到 ${CYAN}shots/${NC} 目录正式生效。"
             fi
@@ -148,7 +166,7 @@ while true; do
             ;;
         4)
             echo -e "\n${CYAN}🖼️  编译分镜与图片提示词包...${NC}"
-            node tools/scripts/build-image-prompts.js
+            node tools/scripts/build-image-prompts.js "${PROJECT_ARG[@]}"
             echo -e "\n${GREEN}✅ 编译完成！${NC}"
             echo -e "产物已输出到: ${CYAN}prompts/image/*.image.json${NC}, ${CYAN}exports/storyboard.csv${NC}, ${CYAN}exports/storyboard.md${NC}"
             echo -e "\n按任意键返回主菜单..."
@@ -156,14 +174,14 @@ while true; do
             ;;
         5)
             echo -e "\n${CYAN}🗣️  正在使用 Edge TTS 生成对白配音...${NC}"
-            node tools/scripts/gen-tts.js
+            node tools/scripts/gen-tts.js "${PROJECT_ARG[@]}"
             echo -e "\n${GREEN}✅ 配音生成完成！${NC}"
             echo -e "\n按任意键返回主菜单..."
             read -n 1 -s
             ;;
         6)
             echo -e "\n${CYAN}🎬 编译最终视频提示词...${NC}"
-            node tools/scripts/build-prompts.js
+            node tools/scripts/build-prompts.js "${PROJECT_ARG[@]}"
             echo -e "\n${GREEN}✅ 视频提示词编译完成！${NC}"
             echo -e "产物已输出到: ${CYAN}prompts/*.final.json${NC}"
             echo -e "\n按任意键返回主菜单..."
@@ -171,7 +189,7 @@ while true; do
             ;;
         7)
             echo -e "\n${CYAN}🛠️  运行后期修复工单...${NC}"
-            node tools/scripts/process-fixups.js
+            node tools/scripts/process-fixups.js "${PROJECT_ARG[@]}"
             echo -e "\n${GREEN}✅ 修复任务运行完成！${NC}"
             echo -e "\n按任意键返回主菜单..."
             read -n 1 -s
@@ -180,6 +198,34 @@ while true; do
             echo -e "\n${CYAN}🌾 正在生成长篇分镜漫画 Demo 的种子数据...${NC}"
             node tools/scripts/seed-long-comic-demo.js
             echo -e "\n${GREEN}✅ 种子数据生成完毕！可以使用 Web UI 进行预览。${NC}"
+            echo -e "\n按任意键返回主菜单..."
+            read -n 1 -s
+            ;;
+        9)
+            echo -e "\n${CYAN}🩺 一键健康检查 (check-all)...${NC}"
+            echo "请选择检查模式:"
+            echo -e "  ${GREEN}[1]${NC} 快速检查 (Quick Check - 只运行校验和提示词构建)"
+            echo -e "  ${GREEN}[2]${NC} 完整检查 (Full Check - 包含 UI 构建与 Remotion 准备)"
+            echo -n "👉 请输入模式选项 (1-2, 默认 1): "
+            read -r mode_opt
+            
+            CHECK_ARGS=("${PROJECT_ARG[@]}")
+            if [ "$mode_opt" != "2" ]; then
+                CHECK_ARGS+=(--quick)
+                echo -e "\n${YELLOW}正在运行快速健康检查...${NC}"
+            else
+                echo -e "\n${YELLOW}正在运行完整项目健康检查...${NC}"
+            fi
+            
+            node tools/scripts/check-all.js "${CHECK_ARGS[@]}"
+            CHECK_STATUS=$?
+            
+            echo ""
+            if [ $CHECK_STATUS -eq 0 ]; then
+                echo -e "${GREEN}✅ 检查通过！项目健康状态 OK。${NC}"
+            else
+                echo -e "${RED}❌ 检查失败！请处理上方报错。${NC}"
+            fi
             echo -e "\n按任意键返回主菜单..."
             read -n 1 -s
             ;;

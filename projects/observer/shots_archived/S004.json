@@ -1,0 +1,31 @@
+{
+  "shot_id": "S004",
+  "duration_s": 15,
+  "scene_ref": "scenes/scene_entrance.json",
+  "cam_setup_ref": "comic_panel_01",
+  "characters": [],
+  "props": [],
+  "action": {
+    "beats": [
+      "展示洁净车间全景",
+      "画面叠加文字提示：规范更衣、完成风淋、只看不摸、不越线、不拍摄"
+    ]
+  },
+  "dialogue": null,
+  "voiceover": {
+    "speaker": "旁白",
+    "text": "洁净车间管理的核心，是减少污染、保证质量、确保安全。请大家做到：规范更衣、完成风淋、只看不摸、不越线、不拍摄。感谢配合。",
+    "voice_id": "default"
+  },
+  "budget": {
+    "tier": "cheap",
+    "max_regen": 1
+  },
+  "prompt": {
+    "positive": "洁净车间全景，明亮无尘，设备整齐排列，地面洁净，画面中央叠加白色文字提示，简洁清晰，工业美学",
+    "negative": "阴影，杂乱，文字遮挡设备"
+  },
+  "context_refs": [
+    "assets/renders/S003B/keyframes/frame_01.png"
+  ]
+}

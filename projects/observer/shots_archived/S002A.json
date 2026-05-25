@@ -1,0 +1,42 @@
+{
+  "shot_id": "S002A",
+  "duration_s": 10.5,
+  "scene_ref": "scenes/scene_interior.json",
+  "parent_shot_id": "S002",
+  "segment_index": 1,
+  "segment_count": 2,
+  "split_reason": "duration_s (21s) > max_duration (12s)",
+  "cam_setup_ref": "comic_panel_01",
+  "characters": [],
+  "props": [
+    {
+      "ref": "props/running_equipment.json",
+      "state": "运行中"
+    },
+    {
+      "ref": "props/warning_signage.json",
+      "state": "警示标识"
+    }
+  ],
+  "budget": {
+    "tier": "cheap",
+    "max_regen": 1
+  },
+  "action": {
+    "beats": [
+      "展示运行设备、管道、警示标识"
+    ]
+  },
+  "voiceover": {
+    "speaker": "旁白",
+    "text": "车间内存在运行设备、管道、气路、水路和电气装置。请不要靠近旋转部件、加热部件和压力管路。不要倚靠设备，",
+    "voice_id": "default"
+  },
+  "prompt": {
+    "positive": "洁净车间内部，运行中的机械设备，管道和阀门，黄色警示标识，地面有防滑通道标记，明亮冷光，工业安全氛围",
+    "negative": "人员遮挡，设备静止，光线昏暗"
+  },
+  "context_refs": [
+    "assets/renders/S001/keyframes/frame_01.png"
+  ]
+}

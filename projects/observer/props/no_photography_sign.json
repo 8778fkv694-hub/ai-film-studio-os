@@ -1,0 +1,8 @@
+{
+  "id": "no_photography_sign",
+  "name": "禁止拍照标识",
+  "must_keep": true,
+  "references": {
+    "images": []
+  }
+}

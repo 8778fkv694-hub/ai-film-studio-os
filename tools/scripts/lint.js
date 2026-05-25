@@ -10,6 +10,7 @@ function readJson(p) {
 
 function listJson(dir) {
   const abs = path.join(workDir, dir);
+  if (!fs.existsSync(abs)) return [];
   return fs.readdirSync(abs)
     .filter(f => f.endsWith('.json'))
     .sort()
@@ -17,7 +18,10 @@ function listJson(dir) {
 }
 
 const shots = listJson('shots');
+const parentShotIds = new Set(shots.map(s => s.obj.parent_shot_id).filter(Boolean));
 const scenes = new Map(listJson('scenes').map(x => [x.file.replace('scenes/', ''), x.obj]));
+const characters = new Map(listJson('characters').map(x => [x.file, x.obj]));
+const props = new Map(listJson('props').map(x => [x.file, x.obj]));
 const projectPath = path.join(workDir, 'project.json');
 const project = fs.existsSync(projectPath) ? readJson(projectPath) : null;
 
@@ -61,8 +65,37 @@ for (const s of shots) {
     }
   }
 
+  for (const item of shot.characters || []) {
+    const ref = item.ref || '';
+    if (!ref) {
+      err('character ref missing', s.file);
+    } else if (String(ref).startsWith('TODO:')) {
+      warn(`character ref is placeholder: ${ref}`, s.file);
+    } else if (!characters.has(ref) && !fs.existsSync(path.join(workDir, ref))) {
+      err(`character ref not found: ${ref}`, s.file);
+    }
+  }
+
+  for (const item of shot.props || []) {
+    const ref = item.ref || '';
+    if (!ref) {
+      err('prop ref missing', s.file);
+    } else if (String(ref).startsWith('TODO:')) {
+      warn(`prop ref is placeholder: ${ref}`, s.file);
+    } else if (!props.has(ref) && !fs.existsSync(path.join(workDir, ref))) {
+      err(`prop ref not found: ${ref}`, s.file);
+    }
+  }
+
+  for (const ref of shot.context_refs || []) {
+    if (typeof ref !== 'string' || !ref.trim()) continue;
+    if (!fs.existsSync(path.join(workDir, ref))) {
+      warn(`context_ref not found: ${ref}`, s.file);
+    }
+  }
+
   // duration sanity
-  if (shot.duration_s > 12 && (shot?.budget?.tier || 'cheap') === 'cheap') {
+  if (shot.duration_s > 12 && (shot?.budget?.tier || 'cheap') === 'cheap' && !parentShotIds.has(shot.shot_id)) {
     warn('cheap pass duration_s > 12s (consider splitting)', s.file);
   }
 

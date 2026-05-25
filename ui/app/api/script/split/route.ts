@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server';
-import { exec } from 'child_process';
+import { execFile } from 'child_process';
 import { promisify } from 'util';
 import path from 'path';
 import { getCurrentProjectPath, getScriptPath } from '@/lib/projects';
 
-const execAsync = promisify(exec);
+const execFileAsync = promisify(execFile);
 
 export async function POST() {
   try {
@@ -13,10 +13,10 @@ export async function POST() {
     const scriptPath = getScriptPath();
     const toolPath = path.join(projectRoot, 'tools/scripts/script-split.js');
 
-    // 如果有多项目，传递项目目录给脚本
-    const projectDirArg = projectPath ? ` --project-dir "${projectPath}"` : '';
+    const args = [toolPath, scriptPath];
+    if (projectPath) args.push('--project-dir', projectPath);
 
-    const { stdout, stderr } = await execAsync(`node "${toolPath}" "${scriptPath}"${projectDirArg}`, {
+    const { stdout, stderr } = await execFileAsync('node', args, {
       cwd: projectRoot
     });
 

@@ -1,11 +1,11 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { parseArgs } from './shared/dirs.js';
 
-const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../');
+const { workDir: DEFAULT_WORK_DIR, projectRoot: ROOT, remainingArgs } = parseArgs();
 
-// 工作目录：默认 ROOT，可通过 --project-dir 覆盖
-let WORK_DIR = ROOT;
+// 工作目录：默认活动项目，可通过 --project-dir / --project-id 覆盖
+let WORK_DIR = DEFAULT_WORK_DIR;
 
 function readJson(rel) {
   try {
@@ -123,6 +123,28 @@ async function parseScriptWithAI(scriptText, settings) {
     console.log(`[ScriptSplit] [AI] Processing chunk ${Math.floor(i / chunkSize) + 1}/${Math.ceil(blocks.length / chunkSize)} (${chunkBlocks.length} blocks)...`);
     
     const chunkShots = await parseChunkWithAI(chunkText, settings, currentSceneRef);
+    
+    // Re-index shot IDs and continuity structures to be sequential based on overall count
+    for (let j = 0; j < chunkShots.length; j++) {
+      const shotIndex = allShots.length + j + 1;
+      chunkShots[j].shot_id = `S${String(shotIndex).padStart(3, '0')}`;
+      
+      // Update context_refs
+      if (shotIndex > 1) {
+        const prevId = `S${String(shotIndex - 1).padStart(3, '0')}`;
+        chunkShots[j].context_refs = [`assets/renders/${prevId}/keyframes/frame_01.jpg`];
+      } else {
+        chunkShots[j].context_refs = [];
+      }
+      
+      // Update continuity fields
+      if (chunkShots[j].continuity) {
+        const prevId = `S${String(shotIndex - 1).padStart(3, '0')}`;
+        chunkShots[j].continuity.state_in_ref = shotIndex > 1 ? `states/${prevId}_OUT.json` : 'states/S000_INIT.json';
+        chunkShots[j].continuity.handoff_to_next = [`S${String(shotIndex).padStart(3, '0')} finished`];
+      }
+    }
+    
     allShots.push(...chunkShots);
     
     // Update currentSceneRef based on the last shot's scene
@@ -321,22 +343,13 @@ class ScriptExtractor {
 
 async function main() {
   // 解析命令行参数：node script-split.js <script-path> [--project-dir <dir>]
-  const args = process.argv.slice(2);
+  const args = remainingArgs;
   let inputFile = 'docs/script.txt';
-  let projectDir = null;
 
   for (let i = 0; i < args.length; i++) {
-    if (args[i] === '--project-dir' && i + 1 < args.length) {
-      projectDir = args[i + 1];
-      i++;
-    } else if (!args[i].startsWith('--')) {
+    if (!args[i].startsWith('--')) {
       inputFile = args[i];
     }
-  }
-
-  // 如果指定了项目目录，覆盖 WORK_DIR
-  if (projectDir) {
-    WORK_DIR = projectDir;
   }
   
   // 加载项目库存（角色、道具、场景）

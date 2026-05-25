@@ -1,7 +1,18 @@
 {
   "shot_id": "S004",
-  "characters": {},
-  "props": {},
+  "characters": {
+    "charA_v1": {
+      "location": "unknown",
+      "pose": "silent",
+      "outfit": "white hoodie, dark pants"
+    }
+  },
+  "props": {
+    "mug_red_v1": {
+      "location": "near Lin Che",
+      "state": "displayed"
+    }
+  },
   "scene": {
     "lighting": "night rain",
     "weather": "rain",

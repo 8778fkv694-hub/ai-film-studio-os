@@ -23,7 +23,10 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const scene = await request.json();
-    const filename = scene._filename || `${scene.id}.json`;
+    if (!scene.id || !/^[A-Za-z0-9_-]+$/.test(scene.id)) {
+      return NextResponse.json({ error: '无效场景 ID' }, { status: 400 });
+    }
+    const filename = path.basename(scene._filename || `${scene.id}.json`);
     delete scene._filename;
     fs.writeFileSync(
       path.join(getResourcePath('scenes'), filename),

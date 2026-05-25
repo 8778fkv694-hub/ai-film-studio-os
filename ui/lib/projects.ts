@@ -48,6 +48,9 @@ export function getActiveProjectPath(): string | null {
 
 // 获取指定项目的路径
 export function getProjectPath(projectId: string): string {
+  if (!/^[A-Za-z0-9_-]+$/.test(projectId)) {
+    throw new Error('Invalid project ID');
+  }
   return path.join(PROJECTS_DIR, projectId);
 }
 

@@ -1,0 +1,42 @@
+{
+  "shot_id": "S001B",
+  "duration_s": 7.5,
+  "scene_ref": "scenes/scene_interior.json",
+  "parent_shot_id": "S001",
+  "segment_index": 2,
+  "segment_count": 2,
+  "split_reason": "duration_s (15s) > max_duration (12s)",
+  "cam_setup_ref": "comic_panel_02",
+  "characters": [
+    {
+      "ref": "characters/visitor_group.json"
+    }
+  ],
+  "props": [
+    {
+      "ref": "props/no_photography_sign.json",
+      "state": "visible"
+    }
+  ],
+  "budget": {
+    "tier": "cheap",
+    "max_regen": 1
+  },
+  "action": {
+    "beats": [
+      "人员站在指定区域听讲解"
+    ]
+  },
+  "voiceover": {
+    "speaker": "旁白",
+    "text": "如需交流问题，请在指定区域进行，不要影响现场人员操作。",
+    "voice_id": "default"
+  },
+  "prompt": {
+    "positive": "手机拍摄禁止图标，红色圆圈斜杠，清晰醒目，人员站在黄色指定区域线内，背景为洁净车间，讲解员手势引导，柔和照明，工业风格",
+    "negative": "模糊，杂乱，阴影过重"
+  },
+  "context_refs": [
+    "assets/renders/S001A/keyframes/frame_last.jpg"
+  ]
+}

@@ -15,39 +15,70 @@
       "scenes/scene_interior.json",
       "scenes/scene_exit.json"
     ],
-    "characters": [],
-    "props": []
+    "characters": [
+      "characters/visitor_group.json"
+    ],
+    "props": [
+      "props/no_photography_sign.json",
+      "props/running_equipment.json",
+      "props/warning_signage.json",
+      "props/recycle_bin.json"
+    ]
   },
   "timeline": [
     {
       "shot_id": "S001",
       "shot_file": "shots/S001.json",
       "tier": "cheap",
-      "duration_s": 15
+      "duration_s": 8
     },
     {
       "shot_id": "S002",
       "shot_file": "shots/S002.json",
       "tier": "cheap",
-      "duration_s": 21
+      "duration_s": 6
     },
     {
       "shot_id": "S003",
       "shot_file": "shots/S003.json",
       "tier": "cheap",
-      "duration_s": 17
+      "duration_s": 10
     },
     {
       "shot_id": "S004",
       "shot_file": "shots/S004.json",
       "tier": "cheap",
-      "duration_s": 15
+      "duration_s": 8
     },
     {
       "shot_id": "S005",
       "shot_file": "shots/S005.json",
       "tier": "cheap",
-      "duration_s": 19
+      "duration_s": 10
+    },
+    {
+      "shot_id": "S006",
+      "shot_file": "shots/S006.json",
+      "tier": "cheap",
+      "duration_s": 6
+    },
+    {
+      "shot_id": "S007",
+      "shot_file": "shots/S007.json",
+      "tier": "cheap",
+      "duration_s": 8
+    },
+    {
+      "shot_id": "S008",
+      "shot_file": "shots/S008.json",
+      "tier": "cheap",
+      "duration_s": 6
+    },
+    {
+      "shot_id": "S009",
+      "shot_file": "shots/S009.json",
+      "tier": "cheap",
+      "duration_s": 8
     }
   ]
 }

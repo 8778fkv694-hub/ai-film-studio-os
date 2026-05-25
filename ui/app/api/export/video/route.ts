@@ -1,21 +1,21 @@
 import { NextResponse } from 'next/server';
-import { exec } from 'child_process';
+import { execFile } from 'child_process';
 import { promisify } from 'util';
 import path from 'path';
 import fs from 'fs';
 import { getCurrentProjectPath } from '@/lib/projects';
 
-const execAsync = promisify(exec);
+const execFileAsync = promisify(execFile);
 
 export async function POST(request: Request) {
   try {
     const projectPath = getCurrentProjectPath();
     const projectRoot = path.resolve(process.cwd(), '..');
     const toolPath = path.join(projectRoot, 'tools/scripts/compose-video.js');
-    const projectDirArg = projectPath ? ` --project-dir "${projectPath}"` : '';
+    const args = [toolPath];
+    if (projectPath) args.push('--project-dir', projectPath);
 
     // 读取可选的字幕参数
-    let subArgs = '';
     try {
       const body = await request.json();
       if (body.subtitles) {
@@ -23,16 +23,20 @@ export async function POST(request: Request) {
         const hexMap: Record<string, string> = { '#ffffff': 'white', '#ffff00': 'yellow', '#00ff00': 'green', '#ff8800': 'orange', '#88ccff': 'blue' };
         const color = hexMap[body.subColor] || 'white';
         const strokeWidth = body.subStrokeWidth ?? 3;
-        subArgs = ` --subtitles --sub-font-size ${(body.subFontSize || 20) * 2.5} --sub-font-family "${family}" --sub-color "${color}" --sub-bg ${body.subBgOpacity ?? 0.7} --sub-stroke ${strokeWidth}`;
+        args.push(
+          '--subtitles',
+          '--sub-font-size', String((body.subFontSize || 20) * 2.5),
+          '--sub-font-family', family,
+          '--sub-color', color,
+          '--sub-bg', String(body.subBgOpacity ?? 0.7),
+          '--sub-stroke', String(strokeWidth)
+        );
       }
     } catch {
       // 无 body 或格式错误，跳过
     }
 
-    const { stdout, stderr } = await execAsync(
-      `node "${toolPath}"${projectDirArg}${subArgs}`,
-      { cwd: projectRoot, timeout: 600000 }
-    );
+    const { stdout, stderr } = await execFileAsync('node', args, { cwd: projectRoot, timeout: 600000 });
 
     // 解析输出中的 JSON 结果（最后一行）
     const lines = stdout.trim().split('\n');

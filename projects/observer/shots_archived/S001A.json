@@ -1,0 +1,40 @@
+{
+  "shot_id": "S001A",
+  "duration_s": 7.5,
+  "scene_ref": "scenes/scene_interior.json",
+  "parent_shot_id": "S001",
+  "segment_index": 1,
+  "segment_count": 2,
+  "split_reason": "duration_s (15s) > max_duration (12s)",
+  "cam_setup_ref": "comic_panel_02",
+  "characters": [
+    {
+      "ref": "characters/visitor_group.json"
+    }
+  ],
+  "props": [
+    {
+      "ref": "props/no_photography_sign.json",
+      "state": "visible"
+    }
+  ],
+  "budget": {
+    "tier": "cheap",
+    "max_regen": 1
+  },
+  "action": {
+    "beats": [
+      "手机拍摄禁止图标显示在画面中央"
+    ]
+  },
+  "voiceover": {
+    "speaker": "旁白",
+    "text": "车间内涉及工艺、设备和产品信息。未经许可，不得拍照、录像或直播。",
+    "voice_id": "default"
+  },
+  "prompt": {
+    "positive": "手机拍摄禁止图标，红色圆圈斜杠，清晰醒目，人员站在黄色指定区域线内，背景为洁净车间，讲解员手势引导，柔和照明，工业风格",
+    "negative": "模糊，杂乱，阴影过重"
+  },
+  "context_refs": []
+}

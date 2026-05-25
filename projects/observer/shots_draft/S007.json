@@ -1,0 +1,45 @@
+{
+  "shot_id": "S007",
+  "duration_s": 8,
+  "scene_ref": "scenes/scene_interior.json",
+  "cam_setup_ref": "comic_panel_01",
+  "characters": [
+    {
+      "ref": "characters/visitor_group.json"
+    }
+  ],
+  "props": [
+    {
+      "ref": "props/running_equipment.json",
+      "state": "operating"
+    },
+    {
+      "ref": "props/warning_signage.json",
+      "state": "visible"
+    }
+  ],
+  "action": {
+    "beats": [
+      "Wide view of the clean room interior showing running machinery and pipes",
+      "Warning signs are visible on equipment and along pathways",
+      "Visitors walk carefully on marked floor paths"
+    ]
+  },
+  "dialogue": null,
+  "voiceover": {
+    "speaker": "Narrator",
+    "text": "车间内存在运行设备、管道、气路、水路和电气装置。请不要靠近旋转部件、加热部件和压力管路。不要倚靠设备，不要触碰阀门、按钮、线缆和管道。行走时注意地面，防止滑倒、绊倒和碰撞。",
+    "voice_id": "narrator_male_01"
+  },
+  "budget": {
+    "tier": "cheap",
+    "max_regen": 1
+  },
+  "prompt": {
+    "positive": "16:9 wide establishing shot, clean room interior with running machinery, pipes, and warning signage, visitors walking on marked floor paths, bright industrial overhead lighting, high angle, photorealistic, highly detailed, 8K, industrial documentary style",
+    "negative": "blurry, low quality, distorted faces, wrong proportions, text artifacts, watermark, logo, extra limbs, missing safety equipment, dark lighting, cluttered background"
+  },
+  "context_refs": [
+    "assets/renders/S006/keyframes/frame_01.jpg"
+  ]
+}

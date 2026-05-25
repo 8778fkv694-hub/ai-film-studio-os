@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server';
-import { exec } from 'child_process';
+import { execFile } from 'child_process';
 import { promisify } from 'util';
 import path from 'path';
 import { getCurrentProjectPath } from '@/lib/projects';
 
-const execAsync = promisify(exec);
+const execFileAsync = promisify(execFile);
 
 const TOOL_MAP: Record<string, string> = {
   'validate': 'validate.js',
@@ -30,9 +30,10 @@ export async function POST(
     const projectPath = getCurrentProjectPath();
     const toolPath = path.join(projectRoot, 'tools/scripts', scriptName);
 
-    const projectDirArg = projectPath ? ` --project-dir "${projectPath}"` : '';
+    const args = [toolPath];
+    if (projectPath) args.push('--project-dir', projectPath);
 
-    const { stdout, stderr } = await execAsync(`node "${toolPath}"${projectDirArg}`, {
+    const { stdout, stderr } = await execFileAsync('node', args, {
       cwd: projectRoot,
       timeout: 60000
     });

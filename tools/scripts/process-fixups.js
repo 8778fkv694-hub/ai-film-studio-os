@@ -1,15 +1,15 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { parseArgs } from './shared/dirs.js';
 
-const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../');
+const { workDir } = parseArgs();
 
 function readJson(p) {
   try { return JSON.parse(fs.readFileSync(p, 'utf-8')); } catch { return null; }
 }
 
 function main() {
-  const fixupDir = path.join(ROOT, 'fixups');
+  const fixupDir = path.join(workDir, 'fixups');
   if (!fs.existsSync(fixupDir)) {
     console.log('[Fixup] No fixups directory found.');
     return;
@@ -24,7 +24,7 @@ function main() {
     const p = path.join(fixupDir, f);
     const ticket = readJson(p);
     
-    if (ticket.status === 'open') {
+    if (ticket?.status === 'open') {
       console.log(`[Fixup] Processing ticket ${ticket.fixup_id} (${ticket.type})...`);
       
       // MOCK PROCESSING

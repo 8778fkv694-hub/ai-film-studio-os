@@ -1,9 +1,9 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
-import { fileURLToPath } from 'node:url';
+import { parseArgs } from './shared/dirs.js';
 
-const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../');
+const { workDir, remainingArgs } = parseArgs();
 
 function readJson(p) {
   try {
@@ -21,13 +21,18 @@ function ensureDir(p) {
   fs.mkdirSync(p, { recursive: true });
 }
 
-// Mock Render Function (Replace with actual API call)
-async function mockRender(shotId, promptPath) {
-  console.log(`[Render] Simulating render for ${shotId}...`);
+// Mock Render Function
+async function mockRender(shotId, takeId) {
+  console.log(`[Render] Simulating render for ${shotId} (${takeId})...`);
   await new Promise(r => setTimeout(r, 500)); // Simulate delay
+  
+  const relativeVideoPath = `assets/renders/${shotId}/takes/${takeId}/video.mp4`;
+  const relativeKeyframePath = `assets/renders/${shotId}/takes/${takeId}/keyframe.jpg`;
+
   return {
     status: 'success',
-    file_path: `renders/${shotId}/takes/${shotId}_take_${Date.now()}.mp4`,
+    video_path: relativeVideoPath,
+    keyframe_path: relativeKeyframePath,
     cost: 0.05,
     model: "seedance-2.0-turbo",
     seed: Math.floor(Math.random() * 1000000)
@@ -35,38 +40,51 @@ async function mockRender(shotId, promptPath) {
 }
 
 async function main() {
-  const shotId = process.argv[2]; // e.g. S001
+  const shotId = remainingArgs[0]; // e.g. S001
   if (!shotId) {
-    console.error("Usage: node tools/scripts/manage-renders.js <shot_id>");
+    console.error("Usage: node tools/scripts/manage-renders.js <shot_id> [--project-dir <dir>|--project-id <id>]");
     process.exit(1);
   }
 
-  const promptFile = path.join(ROOT, `prompts/${shotId}.final.json`);
-  const historyFile = path.join(ROOT, `renders/${shotId}/history.json`);
-  const renderDir = path.join(ROOT, `renders/${shotId}/takes`);
-
+  const promptFile = path.join(workDir, `prompts/${shotId}.final.json`);
+  const historyFile = path.join(workDir, `assets/renders/${shotId}/history.json`);
+  
   if (!fs.existsSync(promptFile)) {
     console.error(`Prompt file not found: ${promptFile}. Run build-prompts.js first.`);
     process.exit(1);
   }
 
-  ensureDir(renderDir);
-
   // 1. Load History
   let history = readJson(historyFile);
   if (!history) {
-    history = { shot_id: shotId, best_take: null, takes: [] };
+    history = { shot_id: shotId, active_take_id: null, takes: [] };
   }
 
-  // 2. Prepare Take
-  const promptContent = fs.readFileSync(promptFile, 'utf-8');
-  const promptHash = md5(promptContent);
-  const takeId = `${shotId}_take_${history.takes.length + 1}`;
+  // 2. Prepare Take ID
+  // Find max take number to prevent collisions if any takes were deleted
+  let maxNum = 0;
+  for (const t of history.takes || []) {
+    const match = t.take_id.match(/take_(\d+)/);
+    if (match) {
+      const num = parseInt(match[1], 10);
+      if (num > maxNum) maxNum = num;
+    }
+  }
+  const takeId = `take_${String(maxNum + 1).padStart(3, '0')}`;
+  const takeDir = path.join(workDir, `assets/renders/${shotId}/takes/${takeId}`);
+  ensureDir(takeDir);
 
   // 3. Render (Mock)
-  const result = await mockRender(shotId, promptFile);
+  const result = await mockRender(shotId, takeId);
 
-  // 4. Record Take
+  // 4. Create Mock Files on disk so the UI/Remotion can see them
+  fs.writeFileSync(path.join(takeDir, 'video.mp4'), Buffer.alloc(0)); // empty file
+  fs.writeFileSync(path.join(takeDir, 'keyframe.jpg'), Buffer.alloc(0)); // empty file
+
+  // 5. Record Take
+  const promptContent = fs.readFileSync(promptFile, 'utf-8');
+  const promptHash = md5(promptContent);
+
   const newTake = {
     take_id: takeId,
     timestamp: new Date().toISOString(),
@@ -75,13 +93,32 @@ async function main() {
     model: result.model,
     seed: result.seed,
     cost_estimate: result.cost,
-    file_path: result.file_path,
-    duration_s: readJson(path.join(ROOT, `prompts/${shotId}.prompt.json`))?.params?.duration_s || 4
+    video_path: result.video_path,
+    keyframe_path: result.keyframe_path,
+    duration_s: readJson(path.join(workDir, `prompts/${shotId}.prompt.json`))?.params?.duration_s || 4,
+    source: 'automated_mock',
+    platform: 'mock_renderer',
+    review: {
+      rating: null,
+      tags: [],
+      notes: '',
+      approved: false
+    }
   };
 
   history.takes.push(newTake);
 
-  // 5. Save History
+  if (!history.active_take_id) {
+    history.active_take_id = takeId;
+    
+    // Copy keyframe to global keyframes directory for player compatibility
+    const globalKeyframesDir = path.join(workDir, `assets/renders/${shotId}/keyframes`);
+    ensureDir(globalKeyframesDir);
+    fs.writeFileSync(path.join(globalKeyframesDir, 'frame_last.jpg'), Buffer.alloc(0));
+  }
+
+  // 6. Save History
+  ensureDir(path.dirname(historyFile));
   fs.writeFileSync(historyFile, JSON.stringify(history, null, 2));
   console.log(`[Render] Take ${takeId} recorded in history. (Hash: ${promptHash})`);
 }

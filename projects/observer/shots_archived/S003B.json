@@ -1,0 +1,42 @@
+{
+  "shot_id": "S003B",
+  "duration_s": 8.5,
+  "scene_ref": "scenes/scene_exit.json",
+  "parent_shot_id": "S003",
+  "segment_index": 2,
+  "segment_count": 2,
+  "split_reason": "duration_s (17s) > max_duration (12s)",
+  "cam_setup_ref": "comic_panel_02",
+  "characters": [
+    {
+      "ref": "characters/visitor_group.json"
+    }
+  ],
+  "props": [
+    {
+      "ref": "props/recycle_bin.json",
+      "state": "放置中"
+    }
+  ],
+  "budget": {
+    "tier": "cheap",
+    "max_regen": 1
+  },
+  "action": {
+    "beats": [
+      "将洁净服、鞋套、口罩放回指定回收箱"
+    ]
+  },
+  "voiceover": {
+    "speaker": "旁白",
+    "text": "不得随意丢弃。离开后如有意见或问题，可统一反馈给陪同人员。",
+    "voice_id": "default"
+  },
+  "prompt": {
+    "positive": "人员穿着洁净服从车间走出，沿地面箭头路线，将白色洁净服折叠放入回收箱，背景为更衣室出口，整洁有序",
+    "negative": "杂乱丢弃，人员拥挤"
+  },
+  "context_refs": [
+    "assets/renders/S003A/keyframes/frame_last.jpg"
+  ]
+}

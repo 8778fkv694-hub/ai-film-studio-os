@@ -29,7 +29,10 @@ export async function POST(request: Request) {
       fs.mkdirSync(draftsDir, { recursive: true });
     }
     const shot = await request.json();
-    const filename = shot._filename || `${shot.shot_id}.json`;
+    if (!shot.shot_id || !/^[A-Za-z0-9_-]+$/.test(shot.shot_id)) {
+      return NextResponse.json({ error: '无效镜头 ID' }, { status: 400 });
+    }
+    const filename = path.basename(shot._filename || `${shot.shot_id}.json`);
     delete shot._filename;
     fs.writeFileSync(
       path.join(draftsDir, filename),

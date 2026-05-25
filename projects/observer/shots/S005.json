@@ -1,17 +1,26 @@
 {
   "shot_id": "S005",
-  "duration_s": 19,
+  "duration_s": 10,
   "scene_ref": "scenes/scene_interior.json",
   "cam_setup_ref": "comic_panel_01",
   "characters": [
     {
-      "ref": "TODO: match character path"
+      "ref": "characters/visitor_group.json"
     }
   ],
-  "props": [],
+  "props": [
+    {
+      "ref": "props/running_equipment.json",
+      "state": "active"
+    },
+    {
+      "ref": "props/warning_signage.json",
+      "state": "displayed"
+    }
+  ],
   "action": {
     "beats": [
-      "Visitors walking along designated path, not touching equipment"
+      "Visitors walk along designated pathway in clean room, staying away from machinery and yellow warning lines"
     ]
   },
   "dialogue": null,
@@ -25,8 +34,8 @@
     "max_regen": 1
   },
   "prompt": {
-    "positive": "Visitors in clean suits walking along marked path in clean workshop, machinery in background, yellow floor lines, sterile environment",
-    "negative": "touching equipment, removing mask, crossing yellow line"
+    "positive": "16:9 cinematic wide shot, clean room interior with running machinery and yellow warning lines on floor, group of visitors in clean suits walking along designated path, bright industrial overhead lighting, eye-level angle, photorealistic, highly detailed, 8K, industrial documentary style",
+    "negative": "blurry, low quality, distorted faces, wrong proportions, text artifacts, watermark, logo, extra limbs, missing safety equipment, dark lighting, cluttered background"
   },
   "context_refs": [
     "assets/renders/S004/keyframes/frame_01.jpg"

@@ -43,8 +43,28 @@ export async function GET() {
       const content = fs.readFileSync(path.join(shotsDir, f), 'utf-8');
       const shot = JSON.parse(content);
       const keyframes = listKeyframes(shot.shot_id);
-      const videoUrl = findUploadedVideo(shot.shot_id);
       
+      // Load history and takes
+      let takes: any[] = [];
+      let activeTake: any = null;
+      let videoUrl = findUploadedVideo(shot.shot_id); // legacy fallback
+
+      const historyPath = path.join(getResourcePath('assets'), 'renders', shot.shot_id, 'history.json');
+      if (fs.existsSync(historyPath)) {
+        try {
+          const history = JSON.parse(fs.readFileSync(historyPath, 'utf-8'));
+          takes = history.takes || [];
+          if (history.active_take_id) {
+            activeTake = takes.find((t: any) => t.take_id === history.active_take_id) || null;
+            if (activeTake && activeTake.video_path) {
+              videoUrl = `/api/assets/reference/${activeTake.video_path}`;
+            }
+          }
+        } catch {
+          // ignore
+        }
+      }
+
       // Load final compiled prompt if it exists
       let videoPrompt = null;
       const promptPath = path.join(promptsDir, `${shot.shot_id}.final.json`);
@@ -62,7 +82,9 @@ export async function GET() {
         _keyframes: keyframes,
         _selected_keyframe: keyframes[0] || null,
         _video_url: videoUrl,
-        _video_prompt: videoPrompt
+        _video_prompt: videoPrompt,
+        _takes: takes,
+        _active_take: activeTake
       };
     });
 
@@ -77,7 +99,10 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const shot = await request.json();
-    const filename = shot._filename || `${shot.shot_id}.json`;
+    if (!shot.shot_id || !/^[A-Za-z0-9_-]+$/.test(shot.shot_id)) {
+      return NextResponse.json({ error: '无效镜头 ID' }, { status: 400 });
+    }
+    const filename = path.basename(shot._filename || `${shot.shot_id}.json`);
     delete shot._filename;
     fs.writeFileSync(
       path.join(getResourcePath('shots'), filename),

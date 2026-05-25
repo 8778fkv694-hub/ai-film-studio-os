@@ -1,0 +1,8 @@
+{
+  "id": "warning_signage",
+  "name": "安全警示标识",
+  "must_keep": true,
+  "references": {
+    "images": []
+  }
+}

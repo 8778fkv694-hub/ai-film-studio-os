@@ -153,6 +153,30 @@ function listExistingKeyframes(shotId) {
     .map(file => `assets/renders/${shotId}/keyframes/${file}`);
 }
 
+function resolveImageRef(ref) {
+  const exactPath = path.join(workDir, ref);
+  if (fs.existsSync(exactPath)) return ref;
+
+  const ext = path.extname(ref);
+  if (!ext) return null;
+
+  const base = ref.slice(0, -ext.length);
+  for (const candidateExt of IMAGE_EXTS) {
+    const candidate = `${base}${candidateExt}`;
+    if (fs.existsSync(path.join(workDir, candidate))) return candidate;
+  }
+
+  return null;
+}
+
+function findImageRef(baseWithoutExt) {
+  for (const ext of IMAGE_EXTS) {
+    const candidate = `${baseWithoutExt}${ext}`;
+    if (fs.existsSync(path.join(workDir, candidate))) return candidate;
+  }
+  return null;
+}
+
 function csvCell(value) {
   const s = Array.isArray(value) ? value.join(' | ') : String(value ?? '');
   return `"${s.replace(/"/g, '""')}"`;
@@ -252,10 +276,13 @@ function compileVideoPrompt(shotFile, gitHash, projectDefaults, shotIndex = 0, t
   // --- Context refs from previous shots (StoryGen approach) ---
   const contextRefs = (shot.context_refs || [])
     .filter(ref => typeof ref === 'string' && ref.trim());
-  const availableContextRefs = contextRefs
-    .filter(ref => fs.existsSync(path.join(workDir, ref)));
+  const resolvedContextRefs = contextRefs
+    .map(ref => ({ declared: ref, resolved: resolveImageRef(ref) }));
+  const availableContextRefs = resolvedContextRefs
+    .filter(ref => ref.resolved)
+    .map(ref => ref.resolved);
   const missingContextRefs = contextRefs
-    .filter(ref => !fs.existsSync(path.join(workDir, ref)));
+    .filter(ref => !resolveImageRef(ref));
 
   // Automatically check predecessor shot's frame_last.jpg
   let predecessorShotId = null;
@@ -278,11 +305,13 @@ function compileVideoPrompt(shotFile, gitHash, projectDefaults, shotIndex = 0, t
   }
 
   if (predecessorShotId) {
-    const predFrameLastPath = `assets/renders/${predecessorShotId}/keyframes/frame_last.jpg`;
-    if (fs.existsSync(path.join(workDir, predFrameLastPath))) {
-      if (!availableContextRefs.includes(predFrameLastPath)) {
-        availableContextRefs.unshift(predFrameLastPath);
-        console.log(`[VideoPrompts] Stitched predecessor shot ${predecessorShotId}'s frame_last.jpg as context ref for ${currentShotId}`);
+    const predFramePath =
+      findImageRef(`assets/renders/${predecessorShotId}/keyframes/frame_last`) ||
+      findImageRef(`assets/renders/${predecessorShotId}/keyframes/frame_01`);
+    if (predFramePath) {
+      if (!availableContextRefs.includes(predFramePath)) {
+        availableContextRefs.unshift(predFramePath);
+        console.log(`[VideoPrompts] Stitched predecessor shot ${predecessorShotId}'s keyframe as context ref for ${currentShotId}`);
       }
     }
   }

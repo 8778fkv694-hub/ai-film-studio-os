@@ -44,12 +44,12 @@ const schemas = {
 };
 
 function validateDir(dir, schemaId) {
-  // styles/ 也是全局共享资源
-  let abs = path.join(projectRoot, dir);
-  if (!fs.existsSync(abs)) {
-    abs = path.join(workDir, dir);
-    if (!fs.existsSync(abs)) return true;
+  // styles/ 可以作为全局共享资源；其他项目资源必须校验当前工作项目目录。
+  let abs = path.join(workDir, dir);
+  if (!fs.existsSync(abs) && dir === 'styles') {
+    abs = path.join(projectRoot, dir);
   }
+  if (!fs.existsSync(abs)) return true;
 
   const files = fs.readdirSync(abs).filter(f => f.endsWith('.json'));
   const validate = ajv.getSchema(schemaId) || ajv.getSchema(schemaId + '.json');
@@ -64,7 +64,7 @@ function validateDir(dir, schemaId) {
     const valid = validate(obj);
     if (!valid) {
       ok = false;
-      console.error(`INVALID ${dir}/${f}`);
+      console.error(`INVALID ${path.relative(workDir, p) || `${dir}/${f}`}`);
       console.error(validate.errors);
     }
   }

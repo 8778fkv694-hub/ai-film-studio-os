@@ -7,7 +7,12 @@
       "outfit": "white hoodie, dark pants"
     }
   },
-  "props": {},
+  "props": {
+    "mug_red_v1": {
+      "location": "near Lin Che",
+      "state": "active"
+    }
+  },
   "scene": {
     "lighting": "night rain",
     "weather": "rain",

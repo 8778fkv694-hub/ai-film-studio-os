@@ -1,0 +1,42 @@
+{
+  "shot_id": "S002B",
+  "duration_s": 10.5,
+  "scene_ref": "scenes/scene_interior.json",
+  "parent_shot_id": "S002",
+  "segment_index": 2,
+  "segment_count": 2,
+  "split_reason": "duration_s (21s) > max_duration (12s)",
+  "cam_setup_ref": "comic_panel_01",
+  "characters": [],
+  "props": [
+    {
+      "ref": "props/running_equipment.json",
+      "state": "运行中"
+    },
+    {
+      "ref": "props/warning_signage.json",
+      "state": "警示标识"
+    }
+  ],
+  "budget": {
+    "tier": "cheap",
+    "max_regen": 1
+  },
+  "action": {
+    "beats": [
+      "镜头缓慢平移展示地面通道"
+    ]
+  },
+  "voiceover": {
+    "speaker": "旁白",
+    "text": "不要触碰阀门、按钮、线缆和管道。行走时注意地面，防止滑倒、绊倒和碰撞。",
+    "voice_id": "default"
+  },
+  "prompt": {
+    "positive": "洁净车间内部，运行中的机械设备，管道和阀门，黄色警示标识，地面有防滑通道标记，明亮冷光，工业安全氛围",
+    "negative": "人员遮挡，设备静止，光线昏暗"
+  },
+  "context_refs": [
+    "assets/renders/S002A/keyframes/frame_last.jpg"
+  ]
+}

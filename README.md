@@ -13,28 +13,57 @@
 ### 0. 环境准备
 确保已安装 Node.js (v18+)。
 ```bash
-cd ai-film-studio
+cd ai-film-studio-os
 npm --prefix tools install  # 安装核心工具依赖
+npm --prefix ui install     # 安装 Web UI 依赖
+```
+
+项目现在支持多项目目录。默认会读取 `projects.json` 里的 `activeProjectId`，例如当前活动项目是 `projects/observer/`。所有核心脚本都支持显式覆盖：
+```bash
+node tools/scripts/validate.js --project-dir projects/observer
+node tools/scripts/validate.js --project-id observer
 ```
 
 ### 1. 剧本与分镜 (Script to Shots)
-先把你的自然语言剧本放入 `docs/script.txt`，然后用工具自动拆解为分镜草稿。
+先把你的自然语言剧本放入活动项目的 `docs/script.txt`，然后用工具自动拆解为分镜草稿。
 ```bash
 # 智能拆解：识别场景、角色、道具，生成 JSON 草稿
 node tools/scripts/script-split.js docs/script.txt
 ```
-*提示：产物在 `shots_draft/`，请人工确认后移动到 `shots/` 目录正式生效。*
+*提示：默认产物在活动项目的 `shots_draft/`，请人工确认后移动到 `shots/` 目录正式生效。*
 
-### 2. 静态检查 (Pre-flight Checks) 🛡️ **(最重要的一步)**
-在生成任何东西之前，先跑一遍“安检”。这能帮你省下巨额的废片学费。
+#### 长镜头自动拆分：
+针对时长超过大模型建议长度（例如 12s）的长分镜，可以运行工具自动将其拆分为若干时长合理的短镜头，并自动更新时间线 (timeline) 和连续性状态链 (continuity state)：
 ```bash
-# 1. 结构校验：检查 JSON 格式是否符合 Schema
+# 1. 预演拆分计划 (Dry Run)，只输出方案不修改文件
+node tools/scripts/split-long-shots.js --max-duration 12
+
+# 2. 实际应用拆分 (Apply)，更新 timeline 并将原文件备份至 shots_archived/
+node tools/scripts/split-long-shots.js --apply --max-duration 12
+```
+
+### 2. 静态检查 & 一键健康检查 (Pre-flight & Health Checks) 🛡️ **(最重要的一步)**
+在生成任何东西之前，先跑一遍“安检”。这能帮你省下巨额的废片学费。
+
+#### 基础单项检查：
+```bash
+# 1. 结构校验：检查活动项目 JSON 格式是否符合 Schema
 node tools/scripts/validate.js
 
 # 2. 逻辑 Lint：检查连续性、禁忌词、资源缺失、Budget 越界
 node tools/scripts/lint.js
 ```
-*必须看到 `validate: ok` 和 `lint: ok` 才能继续！*
+
+#### 一键健康检查 (集成校验、提示词编译及前端构建)：
+你可以使用统一的健康检查工具确保项目随时处于可生产状态，无断链风险。
+```bash
+# 1. 一键完整健康检查 (包括 Remotion 和 UI 的打包测试，适合交付或提交前运行)
+node cli/index.js check-all
+
+# 2. 快速健康检查 (只运行 JSON 校验、Lint 与 Prompt 编译，适合日常频繁检查)
+node cli/index.js check-all --quick
+```
+*必须所有检查通过才能放心继续生成！*
 
 ### 3. 编译图片分镜任务包 (Image Prompt Packages)
 不接图片 API，先把每个镜头编译成可复制到网页工具的标准提示词包。
@@ -99,13 +128,13 @@ node tools/scripts/process-fixups.js
 
 | 目录 | 说明 | 核心作用 |
 | :--- | :--- | :--- |
-| `project.json` | **全片总控** | 定义时间轴 (Timeline)、全局风格、预算策略 |
-| `shots/` | **镜头卡** | 每个镜头一个 JSON，定义时长、动作、对白、运镜 |
-| `scenes/` | **场景库** | 定义 Anchors (标准参考图)、禁忌词 (Forbidden) |
-| `characters/` | **角色库** | 定义外貌特征、服装 MustKeep、参考图 |
-| `states/` | **状态机** | 记录剧情推进产生的状态变更 (如：道具已碎、门已开) |
-| `assets/renders/` | **回填关键帧** | 存放外部网页工具生成后选中的镜头图片 |
-| `exports/` | **交付表** | 输出 storyboard CSV/Markdown，方便复制到外部工具 |
+| `projects/<id>/project.json` | **全片总控** | 定义时间轴 (Timeline)、全局风格、预算策略 |
+| `projects/<id>/shots/` | **镜头卡** | 每个镜头一个 JSON，定义时长、动作、对白、运镜 |
+| `projects/<id>/scenes/` | **场景库** | 定义 Anchors (标准参考图)、禁忌词 (Forbidden) |
+| `projects/<id>/characters/` | **角色库** | 定义外貌特征、服装 MustKeep、参考图 |
+| `projects/<id>/states/` | **状态机** | 记录剧情推进产生的状态变更 (如：道具已碎、门已开) |
+| `projects/<id>/assets/renders/` | **回填关键帧** | 存放外部网页工具生成后选中的镜头图片 |
+| `projects/<id>/exports/` | **交付表** | 输出 storyboard CSV/Markdown，方便复制到外部工具 |
 | `ui/` | **Web 看板** | 可视化时间轴、Animatic 播放器 |
 | `tools/` | **引擎室** | 所有的自动化脚本 (Lint, Compiler, TTS) |
 

@@ -1,4 +1,4 @@
-import { exec } from 'child_process';
+import { execFile } from 'child_process';
 import { promisify } from 'util';
 import path from 'path';
 import fs from 'fs';
@@ -7,7 +7,7 @@ import { getCurrentProjectPath } from '@/lib/projects';
 
 export const dynamic = 'force-dynamic';
 
-const execAsync = promisify(exec);
+const execFileAsync = promisify(execFile);
 
 export async function GET() {
   try {
@@ -48,10 +48,7 @@ export async function GET() {
       return new NextResponse('No project files found to export', { status: 400 });
     }
 
-    // Command to zip core directories using native macOS zip
-    const cmd = `zip -r "${zipPath}" ${itemsToZip.map(item => `"${item}"`).join(' ')} -x "**/node_modules/*" -x "**/.git/*"`;
-    
-    await execAsync(cmd, { cwd: workDir });
+    await execFileAsync('zip', ['-r', zipPath, ...itemsToZip, '-x', '**/node_modules/*', '-x', '**/.git/*'], { cwd: workDir });
 
     if (!fs.existsSync(zipPath)) {
       return new NextResponse('ZIP generation failed', { status: 500 });

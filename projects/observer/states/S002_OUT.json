@@ -1,10 +1,16 @@
 {
   "shot_id": "S002",
-  "characters": {},
+  "characters": {
+    "charA_v1": {
+      "location": "unknown",
+      "pose": "silent",
+      "outfit": "white hoodie, dark pants"
+    }
+  },
   "props": {
     "mug_red_v1": {
       "location": "near Lin Che",
-      "state": "运行中"
+      "state": "displayed"
     }
   },
   "scene": {

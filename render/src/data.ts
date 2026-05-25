@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { manifest, type DataManifest } from './manifest';
 
-export type { ShotData, ShotSceneInput } from './manifest';
+export type { ShotData, ShotSceneInput } from './types';
 export type { DataManifest };
 
 export function useShots() {

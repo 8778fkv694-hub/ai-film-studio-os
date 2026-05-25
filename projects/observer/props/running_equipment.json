@@ -1,0 +1,8 @@
+{
+  "id": "running_equipment",
+  "name": "运行设备与管道",
+  "must_keep": true,
+  "references": {
+    "images": []
+  }
+}

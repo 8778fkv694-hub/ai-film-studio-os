@@ -1,0 +1,15 @@
+{
+  "id": "visitor_group",
+  "name": "参观人员",
+  "must_keep": {
+    "hair": "hair fully covered by cleanroom cap",
+    "outfit": "white cleanroom suit, mask, cleanroom shoes or shoe covers",
+    "accessories": [
+      "visitor badge",
+      "no exposed personal items"
+    ]
+  },
+  "references": {
+    "images": []
+  }
+}

@@ -23,7 +23,10 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const prop = await request.json();
-    const filename = prop._filename || `${prop.id}.json`;
+    if (!prop.id || !/^[A-Za-z0-9_-]+$/.test(prop.id)) {
+      return NextResponse.json({ error: '无效道具 ID' }, { status: 400 });
+    }
+    const filename = path.basename(prop._filename || `${prop.id}.json`);
     delete prop._filename;
     fs.writeFileSync(
       path.join(getResourcePath('props'), filename),

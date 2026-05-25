@@ -6,6 +6,7 @@
   "properties": {
     "shot_id": { "type": "string" },
     "best_take": { "type": ["string", "null"], "description": "ID of the selected best take" },
+    "active_take_id": { "type": ["string", "null"], "description": "ID of the currently active take" },
     "takes": {
       "type": "array",
       "items": {
@@ -14,19 +15,24 @@
         "properties": {
           "take_id": { "type": "string" },
           "timestamp": { "type": "string", "format": "date-time" },
-          "status": { "type": "string", "enum": ["pending", "rendering", "success", "failed"] },
+          "status": { "type": "string", "enum": ["pending", "rendering", "success", "failed", "imported", "approved", "rejected", "needs_fixup"] },
           "prompt_hash": { "type": "string", "description": "Hash of the prompt.final.json used" },
           "model": { "type": "string" },
           "seed": { "type": "integer" },
           "cost_estimate": { "type": "number" },
           "file_path": { "type": "string" },
+          "video_path": { "type": "string" },
+          "keyframe_path": { "type": "string" },
           "duration_s": { "type": "number" },
+          "source": { "type": "string" },
+          "platform": { "type": "string" },
           "review": {
             "type": "object",
             "properties": {
               "rating": { "type": "integer", "minimum": 1, "maximum": 5 },
               "tags": { "type": "array", "items": { "type": "string" } },
-              "notes": { "type": "string" }
+              "notes": { "type": "string" },
+              "approved": { "type": "boolean" }
             }
           }
         },

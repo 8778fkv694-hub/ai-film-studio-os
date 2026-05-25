@@ -3,7 +3,18 @@
 
 # renders/output
 renders/
+render/output/
+render/public/audio-*.mp3
+render/public/keyframe-*.jpg
+render/public/keyframe-*.jpeg
+render/public/keyframe-*.png
+render/public/keyframe-*.webp
 reports/*.report.json
+projects/*/.local/
+projects/*/assets/renders/
+projects/*/exports/*.mp4
+projects/*/exports/*.mov
+projects/*/exports/*.webm
 
 # local secrets/settings
 .local/
@@ -15,6 +26,18 @@ reports/*.report.json
 # Next.js
 .next/
 ui/.next/
+ui/tsconfig.tsbuildinfo
 out/
 build/
 dist/
+
+# Project-specific generated assets
+projects/*/exports/
+projects/*/assets/renders/
+projects/*/assets/audio/
+projects/*/prompts/
+projects/*/reports/*.report.json
+projects/*/reports/generated-assets-audit.json
+projects/*/reports/check-all.report.json
+projects/*/reports/lint.report.json
+projects/*/reports/asset-index.json
