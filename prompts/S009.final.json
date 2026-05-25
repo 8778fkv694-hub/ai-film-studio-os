@@ -1,0 +1,34 @@
+{
+  "shot_id": "S009",
+  "positive_text": "cinematic, moody, controlled lighting, lighting: dim warm lamp + blue moonlight, match scene anchor layout, stable identity: charA_v1, outfit fixed: white_hoodie + black_jeans, accessories fixed: silver_ring_left_hand, prop must_keep: mug_red_v1",
+  "negative_text": "no face drift, no outfit change, no extra fingers, no text artifacts",
+  "ref_images": [
+    "assets/scenes/kitchen_apartment_01/anchor_A.svg",
+    "assets/scenes/kitchen_apartment_01/anchor_B.svg",
+    "assets/scenes/kitchen_apartment_01/anchor_C.svg",
+    "assets/characters/charA_v1/front.svg",
+    "assets/characters/charA_v1/side.svg",
+    "assets/characters/charA_v1/fullbody.svg",
+    "assets/props/mug_red_v1/ref.svg"
+  ],
+  "meta": {
+    "compiler_version": "1.1.0",
+    "git_commit": "eb70d76",
+    "compiled_at": "2026-05-25T02:58:18.348Z",
+    "validation": {
+      "missing_assets": [],
+      "status": "OK"
+    },
+    "compiled_from": {
+      "shot": "shots/S009.json",
+      "scene": "scenes/kitchen_apartment_01.json",
+      "style": "styles/cinematic_v1.json",
+      "characters": [
+        "characters/charA_v1.json"
+      ],
+      "props": [
+        "props/mug_red_v1.json"
+      ]
+    }
+  }
+}

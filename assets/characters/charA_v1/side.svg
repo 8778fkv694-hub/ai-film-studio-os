@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="960" viewBox="0 0 720 960">
+  <rect width="720" height="960" fill="#111827"/>
+  <circle cx="350" cy="210" r="86" fill="#e5e7eb"/>
+  <path d="M285 160 c40-80 160-65 170 20 c-58-28-96-20-170-20z" fill="#020617"/>
+  <rect x="270" y="320" width="230" height="330" rx="58" fill="#f8fafc"/>
+  <rect x="290" y="630" width="84" height="230" rx="18" fill="#111827"/>
+  <rect x="410" y="630" width="84" height="230" rx="18" fill="#111827"/>
+  <path d="M262 420 c-78 44-92 112-32 132" fill="none" stroke="#e5e7eb" stroke-width="32" stroke-linecap="round"/>
+  <circle cx="228" cy="548" r="9" fill="#94a3b8"/>
+  <text x="96" y="910" fill="#cbd5e1" font-family="Arial" font-size="30">charA_v1 side: same hoodie, short black hair, left hand ring</text>
+</svg>

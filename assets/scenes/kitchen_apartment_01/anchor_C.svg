@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720">
+  <rect width="1280" height="720" fill="#020617"/>
+  <rect x="210" y="92" width="470" height="440" rx="10" fill="#1e3a5f"/>
+  <line x1="445" y1="92" x2="445" y2="532" stroke="#93c5fd" stroke-width="10" opacity=".55"/>
+  <line x1="210" y1="312" x2="680" y2="312" stroke="#93c5fd" stroke-width="10" opacity=".55"/>
+  <path d="M250 125 l-28 370 M360 120 l-34 390 M535 118 l-24 390 M638 140 l-34 360" stroke="#bfdbfe" stroke-width="7" opacity=".35"/>
+  <rect x="800" y="160" width="220" height="390" fill="#111827"/>
+  <rect x="1008" y="160" width="42" height="390" fill="#facc15" opacity=".65"/>
+  <text x="60" y="660" fill="#cbd5e1" font-family="Arial" font-size="28">Anchor C: rainy window, cool blue light, narrow hallway glow</text>
+</svg>

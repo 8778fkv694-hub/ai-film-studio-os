@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="720" viewBox="0 0 720 720">
+  <rect width="720" height="720" fill="#111827"/>
+  <rect x="235" y="260" width="220" height="270" rx="42" fill="#dc2626"/>
+  <path d="M452 330 c96 0 96 138 0 138" fill="none" stroke="#dc2626" stroke-width="42" stroke-linecap="round"/>
+  <path d="M295 235 c-34-78 44-94 0-174 M385 238 c-28-70 38-88 0-160" fill="none" stroke="#e2e8f0" stroke-width="16" opacity=".55"/>
+  <ellipse cx="345" cy="535" rx="145" ry="26" fill="#450a0a" opacity=".35"/>
+  <text x="138" y="650" fill="#cbd5e1" font-family="Arial" font-size="32">mug_red_v1: glossy red mug, must stay consistent</text>
+</svg>

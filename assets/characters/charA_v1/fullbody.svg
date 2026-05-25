@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="960" viewBox="0 0 720 960">
+  <rect width="720" height="960" fill="#0f172a"/>
+  <circle cx="360" cy="155" r="70" fill="#e5e7eb"/>
+  <path d="M300 130 c50-78 150-55 150 20 c-60-28-98-16-150-20z" fill="#020617"/>
+  <rect x="250" y="245" width="220" height="285" rx="54" fill="#f8fafc"/>
+  <rect x="270" y="520" width="78" height="295" rx="18" fill="#111827"/>
+  <rect x="372" y="520" width="78" height="295" rx="18" fill="#111827"/>
+  <path d="M250 325 l-92 120" stroke="#e5e7eb" stroke-width="34" stroke-linecap="round"/>
+  <path d="M470 325 l92 120" stroke="#e5e7eb" stroke-width="34" stroke-linecap="round"/>
+  <circle cx="158" cy="448" r="8" fill="#94a3b8"/>
+  <text x="82" y="910" fill="#cbd5e1" font-family="Arial" font-size="30">charA_v1 fullbody: fixed wardrobe and proportions</text>
+</svg>

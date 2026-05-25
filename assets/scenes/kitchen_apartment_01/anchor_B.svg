@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720">
+  <rect width="1280" height="720" fill="#0f172a"/>
+  <rect x="70" y="430" width="1140" height="160" rx="14" fill="#7c4a24"/>
+  <rect x="560" y="265" width="150" height="180" rx="24" fill="#dc2626"/>
+  <path d="M620 245 c-35-55 35-70 0-125 M670 245 c-25-45 25-65 0-110" fill="none" stroke="#e2e8f0" stroke-width="10" opacity=".5"/>
+  <circle cx="340" cy="330" r="42" fill="#e5e7eb"/>
+  <rect x="294" y="374" width="92" height="86" rx="22" fill="#f8fafc"/>
+  <circle cx="456" cy="434" r="10" fill="#cbd5e1"/>
+  <text x="60" y="660" fill="#cbd5e1" font-family="Arial" font-size="28">Anchor B: red mug close to camera, A seated behind table, warm lamp mood</text>
+</svg>

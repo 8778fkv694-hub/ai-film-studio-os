@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="960" viewBox="0 0 720 960">
+  <rect width="720" height="960" fill="#111827"/>
+  <circle cx="360" cy="210" r="92" fill="#e5e7eb"/>
+  <path d="M270 170 c60-90 170-70 190 5 c-60-35-118-18-190-5z" fill="#020617"/>
+  <rect x="225" y="320" width="270" height="330" rx="64" fill="#f8fafc"/>
+  <rect x="238" y="630" width="92" height="230" rx="18" fill="#111827"/>
+  <rect x="390" y="630" width="92" height="230" rx="18" fill="#111827"/>
+  <circle cx="198" cy="468" r="18" fill="#cbd5e1"/>
+  <circle cx="522" cy="468" r="18" fill="#cbd5e1"/>
+  <circle cx="196" cy="472" r="8" fill="#94a3b8"/>
+  <text x="82" y="910" fill="#cbd5e1" font-family="Arial" font-size="30">charA_v1 front: white hoodie, black jeans, silver ring left hand</text>
+</svg>

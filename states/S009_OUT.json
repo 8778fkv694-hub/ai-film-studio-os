@@ -1,0 +1,21 @@
+{
+  "shot_id": "S009",
+  "characters": {
+    "charA_v1": {
+      "outfit": "white hoodie, dark pants",
+      "pose": "standing tense",
+      "location": "old apartment"
+    }
+  },
+  "props": {
+    "mug_red_v1": {
+      "location": "near Lin Che",
+      "state": "warm"
+    }
+  },
+  "scene": {
+    "lighting": "night rain with warm practical lamp",
+    "weather": "rain",
+    "time": "midnight"
+  }
+}
