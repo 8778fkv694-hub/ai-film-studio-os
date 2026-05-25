@@ -1,8 +1,11 @@
 {
   "shot_id": "S013",
-  "positive_text": "cinematic, moody, controlled lighting, lighting: dim warm lamp + blue moonlight, match scene anchor layout, stable identity: charA_v1, outfit fixed: white_hoodie + black_jeans, accessories fixed: silver_ring_left_hand, prop must_keep: mug_red_v1",
-  "negative_text": "no face drift, no outfit change, no extra fingers, no text artifacts",
-  "ref_images": [
+  "duration_s": 12,
+  "prompt": "style: Cinematic Realism v1, mood: cinematic, moody, controlled lighting, color palette: warm highlights, cool shadows. scene: Apartment Kitchen Night. red fridge, wooden table, rainy window. lighting: dim warm lamp + blue moonlight. character (charA_v1): short_black, white_hoodie + black_jeans, silver_ring_left_hand. prop (mug_red_v1): state: story_clue, visually consistent. 钥匙刚插进去，门自己开了。屋里摆着同样的桌，同样的红杯。, 林澈低声说：这不是隔壁，这是我家。. Narration: \"钥匙刚插进去，门自己开了。屋里摆着同样的桌，同样的红杯。\". 林澈 says: \"这不是隔壁，这是我家。\". Camera motion: over-the-shoulder shot, slow rack focus between subjects. continuity locks: charA_v1 (location: apartment_kitchen_or_hallway, pose: listening); mug_red_v1 (location: near_main_character, state: warm_and_unexplained). cinematic realistic suspense comic panel, stable young Chinese man identity, rainy old apartment, red mug as recurring clue, coherent low-cost storyboard frame. Stable visual consistency across entire clip. No character drift, no prop mutation, no scene layout shift.",
+  "negative": "cartoon, neon cyberpunk (unless explicitly requested), sunlight, daylight, modern led lights, crowd, text artifacts, logo, watermark, extra fingers, face drift, face morphing, character drift, outfit change, prop mutation, scene layout shift, distorted limbs, burnt-in subtitles, motion blur excessive, flickering, framing jump cut",
+  "motion": "over-the-shoulder shot, slow rack focus between subjects",
+  "condition_images": [
+    "assets/renders/S013/keyframes/frame_01.jpg",
     "assets/scenes/kitchen_apartment_01/anchor_A.svg",
     "assets/scenes/kitchen_apartment_01/anchor_B.svg",
     "assets/scenes/kitchen_apartment_01/anchor_C.svg",
@@ -11,14 +14,11 @@
     "assets/characters/charA_v1/fullbody.svg",
     "assets/props/mug_red_v1/ref.svg"
   ],
+  "tool_hint": "Copy \"prompt\" and \"negative\" into video generation tool. Upload \"condition_images\" for img2vid start/end frame conditioning if supported. Duration is a guideline.",
   "meta": {
-    "compiler_version": "1.1.0",
-    "git_commit": "eb70d76",
-    "compiled_at": "2026-05-25T02:58:18.349Z",
-    "validation": {
-      "missing_assets": [],
-      "status": "OK"
-    },
+    "compiler_version": "video-prompts-2.0.0",
+    "git_commit": "422795d",
+    "compiled_at": "2026-05-25T04:00:48.585Z",
     "compiled_from": {
       "shot": "shots/S013.json",
       "scene": "scenes/kitchen_apartment_01.json",
