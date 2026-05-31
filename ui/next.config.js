@@ -6,6 +6,7 @@ const nextConfig = {
   turbopack: {
     root: path.resolve(__dirname, '..'),
   },
+  devIndicators: false,
 };
 
 module.exports = nextConfig;

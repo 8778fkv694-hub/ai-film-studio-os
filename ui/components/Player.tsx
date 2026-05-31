@@ -289,12 +289,23 @@ export default function Player({ shots, subtitleStyle, onSubtitleStyleChange, on
     }
   }, [isPlaying, handleNext]);
 
-  // Playback error fallback
-  const handlePlaybackError = useCallback(() => {
+  // Video playback error fallback
+  const handleVideoError = useCallback(() => {
     setVideoHasError(true);
     clearSafetyTimer();
-    setAudioDuration(0);
     if (isPlaying) {
+      safetyTimerRef.current = setTimeout(() => {
+        handleNext();
+      }, Math.max(1, currentShot.duration_s) * 1000);
+    }
+  }, [clearSafetyTimer, currentShot, isPlaying, handleNext]);
+
+  // Audio playback error fallback
+  const handleAudioError = useCallback(() => {
+    setAudioDuration(0);
+    // If there is no video, we must set a safety timer to advance the shot
+    if (isPlaying && !currentShot._video_url) {
+      clearSafetyTimer();
       safetyTimerRef.current = setTimeout(() => {
         handleNext();
       }, Math.max(1, currentShot.duration_s) * 1000);
@@ -337,7 +348,7 @@ export default function Player({ shots, subtitleStyle, onSubtitleStyleChange, on
               ref={videoRef}
               src={currentVideo}
               onLoadedMetadata={handleVideoMetadata}
-              onError={handlePlaybackError}
+              onError={handleVideoError}
               onEnded={handlePlaybackEnded}
               className="max-h-full max-w-full w-auto h-auto"
               style={{
@@ -515,7 +526,7 @@ export default function Player({ shots, subtitleStyle, onSubtitleStyleChange, on
         <audio
           ref={audioRef}
           onLoadedMetadata={handleAudioMetadata}
-          onError={handlePlaybackError}
+          onError={handleAudioError}
           onEnded={handlePlaybackEnded}
         />
       </div>
