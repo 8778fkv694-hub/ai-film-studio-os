@@ -1,40 +1,83 @@
 {
   "shot_id": "S002",
-  "duration_s": 21,
-  "scene_ref": "scenes/scene_interior.json",
-  "cam_setup_ref": "comic_panel_01",
-  "characters": [],
+  "duration_s": 22,
+  "scene_ref": "scenes/scene_entrance.json",
+  "cam_setup_ref": "comic_panel_02",
+  "characters": [
+    {
+      "ref": "characters/visitor_group.json"
+    }
+  ],
   "props": [
     {
-      "ref": "props/running_equipment.json",
-      "state": "运行中"
-    },
-    {
       "ref": "props/warning_signage.json",
-      "state": "警示标识"
+      "state": "displayed"
     }
   ],
   "action": {
     "beats": [
-      "展示运行设备、管道、警示标识",
-      "镜头缓慢平移展示地面通道"
+      "Visitor pauses at entrance, reading notice board with health and item restrictions"
     ]
   },
   "dialogue": null,
   "voiceover": {
-    "speaker": "旁白",
-    "text": "车间内存在运行设备、管道、气路、水路和电气装置。请不要靠近旋转部件、加热部件和压力管路。不要倚靠设备，不要触碰阀门、按钮、线缆和管道。行走时注意地面，防止滑倒、绊倒和碰撞。",
-    "voice_id": "default"
+    "speaker": "Narrator",
+    "text": "进入车间前，请确认自身状态。如有明显感冒、咳嗽、发热，或身上有明显异味、粉尘、油污等情况，不建议进入洁净区域。随身物品请按要求存放，食品、饮料、纸箱、普通纸张等易产尘物品不得带入车间。",
+    "voice_id": "narrator_male_01"
   },
   "budget": {
     "tier": "cheap",
     "max_regen": 1
   },
   "prompt": {
-    "positive": "洁净车间内部，运行中的机械设备，管道和阀门，黄色警示标识，地面有防滑通道标记，明亮冷光，工业安全氛围",
-    "negative": "人员遮挡，设备静止，光线昏暗"
+    "positive": "16:9 medium shot, visitor reading notice board at clean room entrance, notice board with health guidelines and prohibited items list, bright overhead lighting, slightly low angle, photorealistic, highly detailed, 8K, industrial documentary style",
+    "negative": "blurry, low quality, distorted faces, wrong proportions, text artifacts, watermark, logo, extra limbs, dark lighting, cluttered background"
   },
   "context_refs": [
     "assets/renders/S001B/keyframes/frame_01.png"
-  ]
+  ],
+  "_keyframes": [
+    "/api/assets/keyframes/S002/frame_01.png"
+  ],
+  "_selected_keyframe": "/api/assets/keyframes/S002/frame_01.png",
+  "_video_url": null,
+  "_video_prompt": {
+    "shot_id": "S002",
+    "duration_s": 22,
+    "prompt": "style: Cinematic Realism v1, mood: cinematic, moody, controlled lighting, color palette: warm highlights, cool shadows. cinematic live-action video shot. scene: 洁净车间入口. 门禁系统, 车间标识牌, 告示栏, 洁净通道入口. lighting: 明亮白光，工业照明. character (visitor_group): hair fully covered by cleanroom cap, white cleanroom suit, mask, cleanroom shoes or shoe covers, visitor badge + no exposed personal items. prop (warning_signage): state: displayed, visually consistent. Visitor pauses at entrance, reading notice board with health and item restrictions. Narration: \"进入车间前，请确认自身状态。如有明显感冒、咳嗽、发热，或身上有明显异味、粉尘、油污等情况，不建议进入洁净区域。随身物品请按要求存放，食品、饮料、纸箱、普通纸张等易产尘物品不得带入车间。\". Camera motion: medium shot, subtle hand-held camera feel, focus on subject action. 16:9 medium shot, visitor reading notice board at clean room entrance, notice board with health guidelines and prohibited items list, bright overhead lighting, slightly low angle, photorealistic, highly detailed, 8K, industrial documentary style. Shot-to-shot continuity: maintain identical character identity, scene layout, lighting and prop positions as established in previous shot. Visual style must match preceding frame. Do not introduce new visual elements not present in the reference images. Character identity locked to reference images. No face morphing or outfit variation.. Scene layout locked to context reference frame. Do not reposition props or alter lighting source.. All props match reference images exactly. Prop must_keep: shape, color, size, material unchanged.. Camera transition smooth from previous shot continuity frame. No abrupt jump cut between shots. Stable visual consistency across entire clip. No character drift, no prop mutation, no scene layout shift.",
+    "negative": "cartoon, neon cyberpunk (unless explicitly requested), 杂乱物品, 敞开大门, 普通衣物, blurry, low quality, distorted faces, wrong proportions, text artifacts, watermark, logo, extra limbs, dark lighting, cluttered background, multiple characters, duplicate person, clone, inconsistent lighting, wrong angle, lens distortion, chromatic aberration, face morphing, character drift, outfit change, prop mutation, scene layout shift, extra fingers, distorted limbs, text artifacts, burnt-in subtitles, logo, watermark, motion blur excessive, flickering, framing jump cut",
+    "motion": "medium shot, subtle hand-held camera feel, focus on subject action",
+    "condition_images": [
+      "assets/renders/S001/keyframes/frame_01.png",
+      "assets/renders/S002/keyframes/frame_01.png"
+    ],
+    "context_ref_images": [
+      "assets/renders/S001/keyframes/frame_01.png"
+    ],
+    "tool_hint": "Copy \"prompt\" and \"negative\" into video generation tool. Upload \"condition_images\" for img2vid start/end frame conditioning if supported. \"context_ref_images\" are previous shot keyframes for visual continuity. Duration is a guideline.",
+    "meta": {
+      "compiler_version": "video-prompts-2.0.0",
+      "git_commit": "4821517",
+      "compiled_at": "2026-05-26T05:30:46.589Z",
+      "compiled_from": {
+        "shot": "shots/S002.json",
+        "scene": "scenes/scene_entrance.json",
+        "style": "styles/cinematic_v1.json",
+        "characters": [
+          "characters/visitor_group.json"
+        ],
+        "props": [
+          "props/warning_signage.json"
+        ]
+      }
+    }
+  },
+  "_takes": [],
+  "_active_take": null,
+  "layout": {
+    "fitMode": "contain",
+    "scale": 1,
+    "stretchX": 0.8,
+    "stretchY": 1
+  }
 }

@@ -1,13 +1,7 @@
-import fs from 'fs';
 import path from 'path';
 import { NextResponse } from 'next/server';
 import { getResourcePath } from '@/lib/projects';
-
-const ALLOWED_EXTS = new Set(['.jpg', '.jpeg', '.png', '.webp', '.svg']);
-
-function safeShotId(shot: string) {
-  return /^[A-Za-z0-9_-]+$/.test(shot);
-}
+import { KEYFRAME_EXTS, safeShotId, saveKeyframeBuffer } from '@/lib/keyframes';
 
 export async function POST(
   request: Request,
@@ -27,24 +21,24 @@ export async function POST(
 
   const originalName = file.name || 'keyframe.jpg';
   const ext = path.extname(originalName).toLowerCase() || '.jpg';
-  if (!ALLOWED_EXTS.has(ext)) {
-    return NextResponse.json({ error: '仅支持 jpg、png、webp' }, { status: 400 });
+  if (!KEYFRAME_EXTS.has(ext)) {
+    return NextResponse.json({ error: '仅支持 jpg、jpeg、png、webp' }, { status: 400 });
   }
 
-  const keyframeDir = path.join(getResourcePath('assets'), 'renders', shot, 'keyframes');
-  fs.mkdirSync(keyframeDir, { recursive: true });
-
-  const existing = fs.readdirSync(keyframeDir).filter(name => ALLOWED_EXTS.has(path.extname(name).toLowerCase()));
-  const index = String(existing.length + 1).padStart(2, '0');
-  const filename = `frame_${index}${ext}`;
-  const filePath = path.join(keyframeDir, filename);
-
   const bytes = Buffer.from(await file.arrayBuffer());
-  fs.writeFileSync(filePath, bytes);
+  const mode = formData.get('mode') === 'replace' ? 'replace' : 'append';
+  const saved = saveKeyframeBuffer({
+    assetsDir: getResourcePath('assets'),
+    shotId: shot,
+    buffer: bytes,
+    originalName,
+    mode
+  });
 
   return NextResponse.json({
     success: true,
-    path: `assets/renders/${shot}/keyframes/${filename}`,
-    url: `/api/assets/keyframes/${encodeURIComponent(shot)}/${encodeURIComponent(filename)}`
+    path: saved.relativePath,
+    url: saved.url,
+    mode
   });
 }

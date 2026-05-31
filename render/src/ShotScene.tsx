@@ -83,14 +83,27 @@ export const ShotScene: React.FC<ShotSceneProps> = ({ shot, keyframePath, audioP
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
+  const layout = shot.layout as {
+    fitMode?: 'contain' | 'cover' | 'fill';
+    scale?: number;
+    stretchX?: number;
+    stretchY?: number;
+  } | undefined;
+
   const durationSeconds = shot.duration_s;
   const fadeFrames = Math.min(FADE_DURATION, fps * durationSeconds);
   const opacity = Math.min(1, frame / fadeFrames);
 
+  const imageStyle: React.CSSProperties = {
+    ...STYLE.image,
+    objectFit: layout?.fitMode || 'contain',
+    transform: `scale(${layout?.scale ?? 1.0}) scaleX(${layout?.stretchX ?? 1.0}) scaleY(${layout?.stretchY ?? 1.0})`,
+  };
+
   return (
     <div style={STYLE.container}>
       {keyframePath ? (
-        <Img src={staticFile(keyframePath)} style={STYLE.image} />
+        <Img src={staticFile(keyframePath)} style={imageStyle} />
       ) : (
         <div style={STYLE.placeholder}>
           <div style={{ fontSize: 48, marginBottom: 12 }}>{shot.shot_id}</div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Volume2, Play, RefreshCw, CheckCircle, AlertCircle, Loader2, Image as ImageIcon, Upload, Copy, Sparkles, X, Download, Film } from 'lucide-react';
 import Player, { SubtitleStyle } from '../Player';
 
@@ -23,6 +23,13 @@ interface Shot {
   } | null;
   _takes?: any[];
   _active_take?: any | null;
+  _filename?: string;
+  layout?: {
+    fitMode: 'contain' | 'cover' | 'fill';
+    scale: number;
+    stretchX: number;
+    stretchY: number;
+  };
 }
 
 export default function PreviewTab() {
@@ -51,6 +58,7 @@ export default function PreviewTab() {
   const [activeImageShot, setActiveImageShot] = useState<Shot | null>(null);
   const [isCopied, setIsCopied] = useState(false);
   const [expandedShots, setExpandedShots] = useState<Record<string, boolean>>({});
+  const layoutSaveTimeoutRef = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
 
   useEffect(() => {
     loadShots();
@@ -213,6 +221,45 @@ export default function PreviewTab() {
     } finally {
       setUploadingVideo(null);
     }
+  };
+
+  const handleShotLayoutChange = (shotId: string, layout: any) => {
+    const currentShot = shots.find(s => s.shot_id === shotId);
+    if (!currentShot) return;
+
+    const updatedShot = {
+      ...currentShot,
+      layout: layout || undefined
+    };
+
+    // 1. Update state immediately so player renders correctly without waiting for save
+    setShots(prevShots => prevShots.map(s => {
+      if (s.shot_id === shotId) {
+        return updatedShot;
+      }
+      return s;
+    }));
+
+    // 2. Debounce persisting the updated JSON to disk
+    if (layoutSaveTimeoutRef.current[shotId]) {
+      clearTimeout(layoutSaveTimeoutRef.current[shotId]);
+    }
+
+    layoutSaveTimeoutRef.current[shotId] = setTimeout(async () => {
+      try {
+        const res = await fetch('/api/shots', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(updatedShot)
+        });
+        if (!res.ok) {
+          console.error('Failed to persist layout adjustment for', shotId);
+        }
+      } catch (e) {
+        console.error('Error persisting layout adjustment:', e);
+      }
+      delete layoutSaveTimeoutRef.current[shotId];
+    }, 500); // 500ms debounce
   };
 
   const exportCSV = () => {
@@ -417,7 +464,7 @@ export default function PreviewTab() {
           </button>
           <button
             onClick={generateTTS}
-            disabled={generating || shotsWithDialogue.length === 0}
+            disabled={generating}
             className="flex items-center justify-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg transition text-sm disabled:opacity-50"
           >
             <Volume2 size={16} />
@@ -474,7 +521,7 @@ export default function PreviewTab() {
           <Play size={18} className="text-blue-400" />
           配音漫画播放器
         </h3>
-        <Player shots={shots} subtitleStyle={subtitleStyle} onSubtitleStyleChange={setSubtitleStyle} />
+        <Player shots={shots} subtitleStyle={subtitleStyle} onSubtitleStyleChange={setSubtitleStyle} onShotLayoutChange={handleShotLayoutChange} />
       </div>
 
       {/* Shot List with TTS Status */}
@@ -515,7 +562,7 @@ export default function PreviewTab() {
                   上传画面
                   <input
                     type="file"
-                    accept="image/jpeg,image/png,image/webp,image/svg+xml"
+                    accept="image/jpeg,image/png,image/webp"
                     className="hidden"
                     disabled={uploadingKeyframe === shot.shot_id}
                     onChange={(e) => {
@@ -577,11 +624,12 @@ export default function PreviewTab() {
                   </span>
                 )}
 
-                {shot.dialogue ? (
+                {shot.dialogue || shot.voiceover ? (
                   <>
                     <span className="min-w-0 flex-1 truncate text-sm text-slate-300">
-                      {shot.voiceover?.text ? `讲解：${shot.voiceover.text} / ` : ''}
-                      台词："{shot.dialogue.text}"
+                      {shot.voiceover?.text ? `讲解：${shot.voiceover.text}` : ''}
+                      {shot.voiceover?.text && shot.dialogue?.text ? ' / ' : ''}
+                      {shot.dialogue?.text ? `台词："${shot.dialogue.text}"` : ''}
                     </span>
                     <div className="flex gap-2">
                       <button
@@ -626,7 +674,7 @@ export default function PreviewTab() {
                   </>
                 ) : (
                   <>
-                    <span className="min-w-0 flex-1 truncate text-sm text-slate-500 italic">无对白</span>
+                    <span className="min-w-0 flex-1 truncate text-sm text-slate-500 italic">无对白与讲解</span>
                     <div className="flex gap-2">
                       <button
                         onClick={() => setActivePromptShot(shot)}

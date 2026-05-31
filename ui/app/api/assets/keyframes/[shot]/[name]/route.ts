@@ -7,8 +7,7 @@ const CONTENT_TYPES: Record<string, string> = {
   '.jpg': 'image/jpeg',
   '.jpeg': 'image/jpeg',
   '.png': 'image/png',
-  '.webp': 'image/webp',
-  '.svg': 'image/svg+xml'
+  '.webp': 'image/webp'
 };
 
 export async function GET(

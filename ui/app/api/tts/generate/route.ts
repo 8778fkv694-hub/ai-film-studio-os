@@ -24,7 +24,7 @@ export async function POST(request: Request) {
       // No body or invalid JSON, generate all
     }
 
-    const args = [toolPath];
+    const args = [toolPath, '--force'];
     if (shotId) args.push('--shot', shotId);
     if (projectPath) args.push('--project-dir', projectPath);
     const { stdout, stderr } = await execFileAsync('node', args, {

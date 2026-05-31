@@ -17,7 +17,7 @@ function countKeyframes(projectPath: string): number {
   const rendersDir = path.join(projectPath, 'assets/renders');
   if (!fs.existsSync(rendersDir)) return 0;
 
-  const imageExts = new Set(['.jpg', '.jpeg', '.png', '.webp', '.svg']);
+  const imageExts = new Set(['.jpg', '.jpeg', '.png', '.webp']);
   let count = 0;
 
   for (const shotId of fs.readdirSync(rendersDir)) {
@@ -159,11 +159,34 @@ export async function GET() {
     const lintPassed = lintReport ? lintIssues.filter((i: any) => i.level === 'ERROR').length === 0 : false;
 
     // Merge validate errors/warnings into issues
+    const parseFixable = (msg: string) => {
+      const m = msg.match(/文件不存在 \(([^)]+)\)/);
+      if (m) {
+        const filePath = m[1];
+        let type = 'unknown';
+        if (filePath.startsWith('scenes/')) type = 'scene';
+        else if (filePath.startsWith('characters/')) type = 'character';
+        else if (filePath.startsWith('props/')) type = 'prop';
+        else if (filePath.startsWith('states/')) type = 'state';
+        return { fixPath: filePath, fixType: type };
+      }
+      return null;
+    };
+
     const allIssues = [
-      ...lintIssues.map((i: any) => ({ level: i.level, where: i.where, msg: i.msg })),
-      ...(validateErrors || []).map(e => ({ level: 'ERROR', where: 'validate', msg: e })),
-      ...(validateWarnings || []).map(w => ({ level: 'WARN', where: 'validate', msg: w }))
-    ];
+      ...lintIssues.map((i: any) => {
+        const fixInfo = parseFixable(i.msg);
+        return { level: i.level, where: i.where, msg: i.msg, ...fixInfo };
+      }),
+      ...(validateErrors || []).map(e => {
+        const fixInfo = parseFixable(e);
+        return { level: 'ERROR', where: 'validate', msg: e, ...fixInfo };
+      }),
+      ...(validateWarnings || []).map(w => {
+        const fixInfo = parseFixable(w);
+        return { level: 'WARN', where: 'validate', msg: w, ...fixInfo };
+      })
+    ].filter((issue: any) => issue.level === 'ERROR' || issue.level === 'WARN');
 
     return NextResponse.json({
       project: project ? {

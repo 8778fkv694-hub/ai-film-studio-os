@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import "@xterm/xterm/css/xterm.css";
 
 export const metadata: Metadata = {
   title: "AI 影视工作室 OS",

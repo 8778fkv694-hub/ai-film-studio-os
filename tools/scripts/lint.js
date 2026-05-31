@@ -5,6 +5,27 @@ import { parseArgs } from './shared/dirs.js';
 
 const { workDir, projectRoot, remainingArgs } = parseArgs();
 
+let maxWarns = Infinity;
+let maxInfos = Infinity;
+
+for (let i = 0; i < remainingArgs.length; i++) {
+  const arg = remainingArgs[i];
+  if (arg === '--max-warns' && i + 1 < remainingArgs.length) {
+    maxWarns = parseInt(remainingArgs[i + 1], 10);
+    i++;
+  } else if (arg === '--max-infos' && i + 1 < remainingArgs.length) {
+    maxInfos = parseInt(remainingArgs[i + 1], 10);
+    i++;
+  }
+}
+
+if (process.env.AFSOS_LINT_MAX_WARNS !== undefined) {
+  maxWarns = parseInt(process.env.AFSOS_LINT_MAX_WARNS, 10);
+}
+if (process.env.AFSOS_LINT_MAX_INFOS !== undefined) {
+  maxInfos = parseInt(process.env.AFSOS_LINT_MAX_INFOS, 10);
+}
+
 function readJson(p) {
   return JSON.parse(fs.readFileSync(p, 'utf-8'));
 }
@@ -25,10 +46,37 @@ const characters = new Map(listJson('characters').map(x => [x.file, x.obj]));
 const props = new Map(listJson('props').map(x => [x.file, x.obj]));
 const projectPath = path.join(workDir, 'project.json');
 const project = fs.existsSync(projectPath) ? readJson(projectPath) : null;
+const timelineShotIds = new Set((project?.timeline || []).map(item => item.shot_id).filter(Boolean));
 
 const issues = [];
 function err(msg, where) { issues.push({ level: 'ERROR', where, msg }); }
 function warn(msg, where) { issues.push({ level: 'WARN', where, msg }); }
+function info(msg, where) { issues.push({ level: 'INFO', where, msg }); }
+
+function fileExistsWithImageExtFallback(relPath) {
+  const exactPath = path.join(workDir, relPath);
+  if (fs.existsSync(exactPath)) return true;
+
+  const ext = path.extname(relPath);
+  if (!ext) return false;
+
+  const dir = path.join(workDir, path.dirname(relPath));
+  const base = path.basename(relPath, ext);
+  if (!fs.existsSync(dir)) return false;
+
+  const imageExts = new Set(['.jpg', '.jpeg', '.png', '.webp']);
+  if (!imageExts.has(ext.toLowerCase())) return false;
+
+  return fs.readdirSync(dir).some(file => (
+    path.basename(file, path.extname(file)) === base &&
+    imageExts.has(path.extname(file).toLowerCase())
+  ));
+}
+
+function isPendingTimelineContextRef(relPath) {
+  const match = String(relPath).match(/^assets\/renders\/([A-Za-z0-9_-]+)\/keyframes\//);
+  return Boolean(match && timelineShotIds.has(match[1]));
+}
 
 // Project timeline lint (if project.json exists)
 if (project) {
@@ -90,14 +138,33 @@ for (const s of shots) {
 
   for (const ref of shot.context_refs || []) {
     if (typeof ref !== 'string' || !ref.trim()) continue;
-    if (!fs.existsSync(path.join(workDir, ref))) {
-      warn(`context_ref not found: ${ref}`, s.file);
+    if (!fileExistsWithImageExtFallback(ref)) {
+      if (isPendingTimelineContextRef(ref)) {
+        info(`context_ref pending generated keyframe: ${ref}`, s.file);
+      } else {
+        warn(`context_ref not found: ${ref}`, s.file);
+      }
     }
   }
 
-  // duration sanity
-  if (shot.duration_s > 12 && (shot?.budget?.tier || 'cheap') === 'cheap' && !parentShotIds.has(shot.shot_id)) {
-    warn('cheap pass duration_s > 12s (consider splitting)', s.file);
+  // duration and budget sanity
+  if ((shot?.budget?.tier || 'cheap') === 'cheap') {
+    if (shot.duration_s > 12 && !parentShotIds.has(shot.shot_id)) {
+      warn('cheap pass duration_s > 12s (consider splitting)', s.file);
+    }
+    if (shot?.budget?.max_regen > 1) {
+      warn(`cheap budget tier should not have max_regen > 1 (found ${shot.budget.max_regen})`, s.file);
+    }
+    if ((shot.characters || []).length > 3) {
+      warn(`cheap budget tier should avoid too many characters (found ${(shot.characters || []).length}, max recommended is 3)`, s.file);
+    }
+    const expensiveCamTerms = ['crane', 'drone', 'helicopter', 'underwater', 'bullet time', 'bullet-time', 'aerial', '3d tracking'];
+    const camSetup = String(shot.cam_setup_ref || '').toLowerCase();
+    const promptPos = String(shot.prompt?.positive || '').toLowerCase();
+    const hasExpensiveCam = expensiveCamTerms.some(term => camSetup.includes(term) || promptPos.includes(term));
+    if (hasExpensiveCam) {
+      warn(`cheap budget tier should avoid expensive camera setups/movements (ref: "${shot.cam_setup_ref}")`, s.file);
+    }
   }
 
   // continuity fields sanity
@@ -156,7 +223,7 @@ for (const s of shots) {
   if (shot.references && shot.references.images && shot.references.images.length > 0) {
      // This means the shot is trying to add/override references manually.
      // We should check if it *includes* the scene anchors.
-     if (scene.anchors && scene.anchors.length > 0) {
+      if (scene && scene.anchors && scene.anchors.length > 0) {
        const sceneAnchorPaths = scene.anchors.map(a => a.img);
        const shotRefPaths = shot.references.images;
        
@@ -192,13 +259,30 @@ fs.mkdirSync(path.join(workDir, 'reports'), { recursive: true });
 fs.writeFileSync(path.join(workDir, 'reports', 'lint.report.json'), JSON.stringify(report, null, 2));
 
 const errors = issues.filter(x => x.level === 'ERROR');
+const warnings = issues.filter(x => x.level === 'WARN');
+const infos = issues.filter(x => x.level === 'INFO');
+
 for (const i of issues) {
   const line = `${i.level}: ${i.where} :: ${i.msg}`;
   console.log(line);
 }
 
-if (errors.length) {
-  console.error(`lint: failed (${errors.length} errors)`);
+let failed = false;
+let failMsg = '';
+
+if (errors.length > 0) {
+  failed = true;
+  failMsg = `failed (${errors.length} errors)`;
+} else if (warnings.length > maxWarns) {
+  failed = true;
+  failMsg = `failed (warnings count ${warnings.length} > threshold ${maxWarns})`;
+} else if (infos.length > maxInfos) {
+  failed = true;
+  failMsg = `failed (infos count ${infos.length} > threshold ${maxInfos})`;
+}
+
+if (failed) {
+  console.error(`lint: ${failMsg}`);
   process.exit(2);
 } else {
   console.log('lint: ok');

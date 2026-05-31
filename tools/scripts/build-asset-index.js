@@ -16,6 +16,23 @@ console.log(`📂 工作项目目录: ${workDir}\n`);
 function checkFileExists(relPath) {
   if (fs.existsSync(path.join(workDir, relPath))) return true;
   if (fs.existsSync(path.join(projectRoot, relPath))) return true;
+
+  const ext = path.extname(relPath);
+  const imageExts = new Set(['.jpg', '.jpeg', '.png', '.webp']);
+  if (ext && imageExts.has(ext.toLowerCase())) {
+    for (const root of [workDir, projectRoot]) {
+      const dir = path.join(root, path.dirname(relPath));
+      const base = path.basename(relPath, ext);
+      if (!fs.existsSync(dir)) continue;
+      if (fs.readdirSync(dir).some(file => (
+        path.basename(file, path.extname(file)) === base &&
+        imageExts.has(path.extname(file).toLowerCase())
+      ))) {
+        return true;
+      }
+    }
+  }
+
   return false;
 }
 
@@ -44,8 +61,7 @@ function scanDirRecursive(baseDir, relativeDir = '') {
 }
 
 // 1. Scan Reference Images in assets/reference/
-const refImagesDir = path.join(workDir, 'assets/reference');
-const referenceImages = scanDirRecursive(refImagesDir, 'assets/reference')
+const referenceImages = scanDirRecursive(workDir, 'assets/reference')
   .filter(f => /\.(jpg|jpeg|png|webp|svg|gif|mp4|webm|mov)$/i.test(f));
 
 console.log(`📸 Found ${referenceImages.length} reference asset(s) in assets/reference/`);
@@ -79,8 +95,12 @@ console.log(`📦 Loaded ${propsList.length} prop(s)`);
 console.log(`🎬 Loaded ${scenesList.length} scene(s)`);
 
 const missingRefs = [];
+const pendingRefs = [];
 function addMissing(filePath, refBy, type) {
   missingRefs.push({ path: filePath, ref_by: refBy, type });
+}
+function addPending(filePath, refBy, type) {
+  pendingRefs.push({ path: filePath, ref_by: refBy, type });
 }
 
 // 3. Audit Asset definitions
@@ -126,6 +146,12 @@ if (fs.existsSync(projectPath)) {
   }
 }
 
+const timelineShotIds = new Set(timelineShots.map(item => item.shot_id).filter(Boolean));
+function isPendingTimelineContextRef(relPath) {
+  const match = String(relPath).match(/^assets\/renders\/([A-Za-z0-9_-]+)\/keyframes\//);
+  return Boolean(match && timelineShotIds.has(match[1]));
+}
+
 console.log(`🎞️  Auditing active timeline: ${timelineShots.length} shot(s)...`);
 
 for (const item of timelineShots) {
@@ -165,7 +191,11 @@ for (const item of timelineShots) {
     // Check context_refs
     for (const ref of shot.context_refs || []) {
       if (ref && typeof ref === 'string' && ref.trim() && !checkFileExists(ref)) {
-        addMissing(ref, shotFile, 'context_ref');
+        if (isPendingTimelineContextRef(ref)) {
+          addPending(ref, shotFile, 'context_ref');
+        } else {
+          addMissing(ref, shotFile, 'context_ref');
+        }
       }
     }
     
@@ -205,7 +235,8 @@ const report = {
     must_keep: s.obj.must_keep || {}
   })),
   reference_images: referenceImages,
-  missing_refs: missingRefs
+  missing_refs: missingRefs,
+  pending_refs: pendingRefs
 };
 
 const reportsDir = path.join(workDir, 'reports');
@@ -224,5 +255,11 @@ if (missingRefs.length > 0) {
   });
 } else {
   console.log(`✅ All references are intact and healthy!`);
+}
+if (pendingRefs.length > 0) {
+  console.log(`⏳ Found ${pendingRefs.length} pending generated context reference(s). These are expected until previous shots are rendered:`);
+  pendingRefs.forEach(m => {
+    console.log(`   - [${m.type.toUpperCase()}] ${m.path} (referenced by ${m.ref_by})`);
+  });
 }
 console.log(`📊 Asset index written to: reports/asset-index.json`);

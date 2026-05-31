@@ -1,8 +1,8 @@
 {
   "shot_id": "S001",
-  "duration_s": 15,
-  "scene_ref": "scenes/scene_interior.json",
-  "cam_setup_ref": "comic_panel_02",
+  "duration_s": 19,
+  "scene_ref": "scenes/scene_entrance.json",
+  "cam_setup_ref": "comic_panel_01",
   "characters": [
     {
       "ref": "characters/visitor_group.json"
@@ -10,29 +10,97 @@
   ],
   "props": [
     {
-      "ref": "props/no_photography_sign.json",
-      "state": "visible"
+      "ref": "props/warning_signage.json",
+      "state": "displayed"
     }
   ],
   "action": {
     "beats": [
-      "手机拍摄禁止图标显示在画面中央",
-      "人员站在指定区域听讲解"
+      "Visitors gather at clean room entrance, reading signage and access control panel"
     ]
   },
   "dialogue": null,
   "voiceover": {
-    "speaker": "旁白",
-    "text": "车间内涉及工艺、设备和产品信息。未经许可，不得拍照、录像或直播。如需交流问题，请在指定区域进行，不要影响现场人员操作。",
-    "voice_id": "default"
+    "speaker": "Narrator",
+    "text": "欢迎欢迎参观净水工厂滤芯车间。本车间为洁净管控区域，进入前请先了解以下注意事项。为了保证产品质量、现场安全和洁净环境，请大家按照要求进入，不随意、不触碰、不拍摄。",
+    "voice_id": "narrator_male_01"
   },
   "budget": {
     "tier": "cheap",
     "max_regen": 1
   },
   "prompt": {
-    "positive": "手机拍摄禁止图标，红色圆圈斜杠，清晰醒目，人员站在黄色指定区域线内，背景为洁净车间，讲解员手势引导，柔和照明，工业风格",
-    "negative": "模糊，杂乱，阴影过重"
+    "positive": "16:9 cinematic wide shot, clean room entrance with door access panel and warning signage, group of visitors in casual clothes standing and reading, bright industrial lighting, eye-level angle, photorealistic, highly detailed, 8K, industrial documentary style",
+    "negative": "blurry, low quality, distorted faces, wrong proportions, text artifacts, watermark, logo, extra limbs, dark lighting, cluttered background"
   },
-  "context_refs": []
+  "context_refs": [],
+  "_keyframes": [
+    "/api/assets/keyframes/S001/frame_01.png"
+  ],
+  "_selected_keyframe": "/api/assets/keyframes/S001/frame_01.png",
+  "_video_url": null,
+  "_video_prompt": {
+    "shot_id": "S001",
+    "duration_s": 19,
+    "prompt": "style: Cinematic Realism v1, mood: cinematic, moody, controlled lighting, color palette: warm highlights, cool shadows. cinematic live-action video shot. scene: 洁净车间入口. 门禁系统, 车间标识牌, 告示栏, 洁净通道入口. lighting: 明亮白光，工业照明. character (visitor_group): hair fully covered by cleanroom cap, white cleanroom suit, mask, cleanroom shoes or shoe covers, visitor badge + no exposed personal items. prop (warning_signage): state: displayed, visually consistent. Visitors gather at clean room entrance, reading signage and access control panel. Narration: \"欢迎参观滤芯洁净车间。本车间为洁净管控区域，进入前请先了解以下注意事项。为了保证产品质量、现场安全和洁净环境，请大家按照要求进入，不随意、不触碰、不拍摄。\". Camera motion: static wide establishing shot, slow dolly in from medium to close-up. 16:9 cinematic wide shot, clean room entrance with door access panel and warning signage, group of visitors in casual clothes standing and reading, bright industrial lighting, eye-level angle, photorealistic, highly detailed, 8K, industrial documentary style. Character identity locked to reference images. No face morphing or outfit variation.. All props match reference images exactly. Prop must_keep: shape, color, size, material unchanged. Stable visual consistency across entire clip. No character drift, no prop mutation, no scene layout shift.",
+    "negative": "cartoon, neon cyberpunk (unless explicitly requested), 杂乱物品, 敞开大门, 普通衣物, blurry, low quality, distorted faces, wrong proportions, text artifacts, watermark, logo, extra limbs, dark lighting, cluttered background, multiple characters, duplicate person, clone, inconsistent lighting, wrong angle, lens distortion, chromatic aberration, face morphing, character drift, outfit change, prop mutation, scene layout shift, extra fingers, distorted limbs, text artifacts, burnt-in subtitles, logo, watermark, motion blur excessive, flickering, framing jump cut",
+    "motion": "static wide establishing shot, slow dolly in from medium to close-up",
+    "condition_images": [
+      "assets/renders/S001/keyframes/frame_01.png"
+    ],
+    "context_ref_images": [],
+    "tool_hint": "Copy \"prompt\" and \"negative\" into video generation tool. Upload \"condition_images\" for img2vid start/end frame conditioning if supported. \"context_ref_images\" are previous shot keyframes for visual continuity. Duration is a guideline.",
+    "meta": {
+      "compiler_version": "video-prompts-2.0.0",
+      "git_commit": "4821517",
+      "compiled_at": "2026-05-26T05:19:07.653Z",
+      "compiled_from": {
+        "shot": "shots/S001.json",
+        "scene": "scenes/scene_entrance.json",
+        "style": "styles/cinematic_v1.json",
+        "characters": [
+          "characters/visitor_group.json"
+        ],
+        "props": [
+          "props/warning_signage.json"
+        ]
+      }
+    }
+  },
+  "_takes": [
+    {
+      "take_id": "take_001",
+      "timestamp": "2026-05-25T14:37:45.134Z",
+      "status": "imported",
+      "prompt_hash": "7776e675",
+      "video_path": "assets/renders/S001/takes/take_001/video.mp4",
+      "keyframe_path": "",
+      "duration_s": 15,
+      "source": "manual_external",
+      "platform": "Runway Gen-3",
+      "review": {
+        "rating": null,
+        "tags": [],
+        "notes": "Runway Import Test",
+        "approved": false
+      }
+    }
+  ],
+  "_active_take": {
+    "take_id": "take_001",
+    "timestamp": "2026-05-25T14:37:45.134Z",
+    "status": "imported",
+    "prompt_hash": "7776e675",
+    "video_path": "assets/renders/S001/takes/take_001/video.mp4",
+    "keyframe_path": "",
+    "duration_s": 15,
+    "source": "manual_external",
+    "platform": "Runway Gen-3",
+    "review": {
+      "rating": null,
+      "tags": [],
+      "notes": "Runway Import Test",
+      "approved": false
+    }
+  }
 }

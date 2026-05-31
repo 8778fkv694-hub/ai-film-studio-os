@@ -45,10 +45,34 @@ export default function DashboardTab({ onNavigate }: DashboardTabProps) {
   const [stats, setStats] = useState<ProjectStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [runningChecks, setRunningChecks] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [fixingPath, setFixingPath] = useState<string | null>(null);
+  const [ignoredKeys, setIgnoredKeys] = useState<string[]>([]);
 
   useEffect(() => {
     loadStats();
+    const saved = localStorage.getItem('afsos_ignored_issues');
+    if (saved) {
+      try {
+        setIgnoredKeys(JSON.parse(saved));
+      } catch (e) {
+        console.error(e);
+      }
+    }
   }, []);
+
+  const handleIgnoreIssue = (e: React.MouseEvent, issue: any) => {
+    e.stopPropagation();
+    const issueKey = `${issue.where}:${issue.msg}`;
+    const newKeys = [...ignoredKeys, issueKey];
+    setIgnoredKeys(newKeys);
+    localStorage.setItem('afsos_ignored_issues', JSON.stringify(newKeys));
+  };
+
+  const handleResetIgnored = () => {
+    setIgnoredKeys([]);
+    localStorage.removeItem('afsos_ignored_issues');
+  };
 
   const loadStats = async () => {
     setLoading(true);
@@ -70,14 +94,12 @@ export default function DashboardTab({ onNavigate }: DashboardTabProps) {
       // Run validate
       setStats(prev => prev ? { ...prev, checks: { ...prev.checks, validate: 'running' } } : prev);
       const vRes = await fetch('/api/tools/validate', { method: 'POST' });
-      const vData = await vRes.json();
-      const vPassed = vRes.ok && !vData.errors?.length;
+      await vRes.json();
 
       // Run lint
       setStats(prev => prev ? { ...prev, checks: { ...prev.checks, lint: 'running' } } : prev);
       const lRes = await fetch('/api/tools/lint', { method: 'POST' });
-      const lData = await lRes.json();
-      const lPassed = lRes.ok && !lData.errors?.length;
+      await lRes.json();
 
       // Update stats
       await loadStats();
@@ -85,6 +107,52 @@ export default function DashboardTab({ onNavigate }: DashboardTabProps) {
       console.error(e);
     } finally {
       setRunningChecks(false);
+    }
+  };
+
+  const handleQuickFix = async (e: React.MouseEvent, fixPath: string, fixType: string) => {
+    e.stopPropagation();
+    setFixingPath(fixPath);
+    try {
+      const res = await fetch('/api/tools/quick-fix', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fixPath, fixType })
+      });
+      if (res.ok) {
+        await loadStats();
+      } else {
+        const err = await res.json();
+        alert(err.error || '修复失败');
+      }
+    } catch (err: any) {
+      console.error(err);
+      alert('修复出错: ' + err.message);
+    } finally {
+      setFixingPath(null);
+    }
+  };
+
+  const handleIssueClick = (issue: any) => {
+    const msg = issue.msg || '';
+    const where = issue.where || '';
+
+    if (where === 'validate') {
+      if (msg.includes('scene_ref') || msg.includes('scenes/')) {
+        onNavigate('scenes');
+      } else if (msg.includes('角色') || msg.includes('characters/')) {
+        onNavigate('assets');
+      } else if (msg.includes('道具') || msg.includes('props/')) {
+        onNavigate('assets');
+      } else if (msg.includes('shots/') || msg.includes('镜头')) {
+        onNavigate('shots');
+      } else {
+        onNavigate('shots');
+      }
+    } else if (where.endsWith('.json')) {
+      onNavigate('shots');
+    } else {
+      onNavigate('tools');
     }
   };
 
@@ -103,6 +171,7 @@ export default function DashboardTab({ onNavigate }: DashboardTabProps) {
   }
 
   const { project, counts, checks, issues } = stats;
+  const visibleIssues = issues.filter((issue: any) => !ignoredKeys.includes(`${issue.where}:${issue.msg}`));
   const hasProject = !!project;
   const totalShots = counts.shots + counts.drafts;
 
@@ -215,26 +284,78 @@ export default function DashboardTab({ onNavigate }: DashboardTabProps) {
       {/* Issues */}
       {issues.length > 0 && (
         <div className="bg-red-900/20 border border-red-800 rounded-xl p-4">
-          <h3 className="text-lg font-semibold text-red-300 mb-3 flex items-center gap-2">
-            <XCircle size={20} />
-            待处理问题 ({issues.length})
-          </h3>
-          <div className="space-y-2 max-h-48 overflow-y-auto">
-            {issues.slice(0, 5).map((issue, idx) => (
-              <div key={idx} className="flex items-start gap-2 text-sm">
-                <span className={`px-2 py-0.5 rounded text-xs ${
-                  issue.level === 'ERROR' ? 'bg-red-800 text-red-200' : 'bg-yellow-800 text-yellow-200'
-                }`}>
-                  {issue.level === 'ERROR' ? '错误' : '警告'}
-                </span>
-                <span className="text-slate-400">{issue.where}:</span>
-                <span className="text-slate-300">{issue.msg}</span>
-              </div>
-            ))}
-            {issues.length > 5 && (
-              <div className="text-slate-500 text-sm">还有 {issues.length - 5} 个问题...</div>
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-lg font-semibold text-red-300 flex items-center gap-2">
+              <XCircle size={20} />
+              待处理问题 ({visibleIssues.length} / {issues.length})
+            </h3>
+            {ignoredKeys.length > 0 && (
+              <button
+                onClick={handleResetIgnored}
+                className="text-xs px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded transition"
+              >
+                🔄 恢复已忽略 ({ignoredKeys.length})
+              </button>
             )}
           </div>
+          {visibleIssues.length === 0 ? (
+            <div className="text-slate-400 text-sm py-2">所有问题已忽略或已解决。</div>
+          ) : (
+            <div className="space-y-2 max-h-60 overflow-y-auto">
+              {(isExpanded ? visibleIssues : visibleIssues.slice(0, 5)).map((issue: any, idx) => {
+                const displayWhere = issue.where === 'validate' ? '结构校验' : issue.where;
+                return (
+                  <div
+                    key={idx}
+                    onClick={() => handleIssueClick(issue)}
+                    className="flex items-center justify-between gap-4 text-sm p-1.5 rounded hover:bg-red-900/40 cursor-pointer transition"
+                  >
+                    <div className="flex items-start gap-2 flex-1">
+                      <span className={`px-2 py-0.5 rounded text-xs flex-shrink-0 mt-0.5 ${
+                        issue.level === 'ERROR' ? 'bg-red-800 text-red-200' : 'bg-yellow-800 text-yellow-200'
+                      }`}>
+                        {issue.level === 'ERROR' ? '错误' : '警告'}
+                      </span>
+                      <span className="text-slate-400 flex-shrink-0">{displayWhere}:</span>
+                      <span className="text-slate-300 break-all">{issue.msg}</span>
+                    </div>
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      {issue.fixPath && (
+                        <button
+                          disabled={fixingPath === issue.fixPath}
+                          onClick={(e) => handleQuickFix(e, issue.fixPath, issue.fixType)}
+                          className="px-2 py-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded text-xs font-semibold flex items-center gap-1 transition disabled:opacity-50"
+                        >
+                          {fixingPath === issue.fixPath ? (
+                            <div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                          ) : (
+                            '🔧 一键修复'
+                          )}
+                        </button>
+                      )}
+                      <button
+                        onClick={(e) => handleIgnoreIssue(e, issue)}
+                        className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded text-xs transition"
+                        title="忽略此问题"
+                      >
+                        🔕 忽略
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+              {visibleIssues.length > 5 && (
+                <div className="pt-2 flex justify-start">
+                  <button
+                    onClick={() => setIsExpanded(!isExpanded)}
+                    className="text-xs font-medium text-red-400 hover:text-red-300 hover:underline"
+                  >
+                    {isExpanded ? '收起全部 ▴' : `展开全部 (还有 ${visibleIssues.length - 5} 个问题) ▾`}
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       )}
 

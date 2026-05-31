@@ -3,7 +3,7 @@ import path from 'path';
 import { NextResponse } from 'next/server';
 import { getResourcePath } from '@/lib/projects';
 
-const ALLOWED_EXTS = new Set(['.jpg', '.jpeg', '.png', '.webp', '.svg']);
+const ALLOWED_EXTS = new Set(['.jpg', '.jpeg', '.png', '.webp']);
 
 export async function POST(request: Request) {
   try {
@@ -28,7 +28,7 @@ export async function POST(request: Request) {
     const originalName = file.name;
     const ext = path.extname(originalName).toLowerCase();
     if (!ALLOWED_EXTS.has(ext)) {
-      return NextResponse.json({ error: '仅支持 jpg、jpeg、png、webp、svg 格式' }, { status: 400 });
+      return NextResponse.json({ error: '仅支持 jpg、jpeg、png、webp 格式' }, { status: 400 });
     }
 
     // Create target dir

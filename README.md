@@ -87,6 +87,20 @@ assets/renders/S001/keyframes/frame_03.jpg
 ```
 API Key 只保存在本地 `.local/` 目录，并已加入 `.gitignore`。默认工作流仍然是“上传图片优先”，不依赖图片或视频 API。
 
+### 4.1 当前不接入 ComfyUI
+
+当前版本不接入 ComfyUI。系统不要求本地 GPU、模型权重、Python 推理环境或 ComfyUI 节点工作流。
+
+推荐继续使用“编译 Prompt -> 外部/Agent 生成 -> 上传或导入回填 -> 审片 -> 合成”的轻量流程。现存本地设置只用于在线文本模型，例如提示词优化和连续性辅助检查。
+
+### 4.2 推荐工作流：AI Agent 辅助生图 (最轻量与高质)
+
+为了确保轻量化与零本地系统负载，本系统推荐使用 **AI Agent 辅助生图** 的设计与开发工作流：
+1. **对话式触发**：在与 AI Agent 对话开发时，直接命令 Agent 使用其内置的高质量图像生成工具。
+2. **免配置与零负载**：无需在本地配置任何复杂的 Python 推理环境或占用 CPU/GPU/内存资源。
+3. **自动回填**：生成后由 Agent 自动将高清图片保存至对应镜头的关键帧路径（如 `projects/<id>/assets/renders/<shot_id>/keyframes/frame_01.png`）。
+4. **即时预览**：刷新 Web 页面即可直接预览已回填的精美画面。
+
 ### 5. 提示词质量评估 (Prompt Quality Scoring) 🎯
 在开始投递提示词前，运行评估脚本对编译出的提示词进行质量打分：
 ```bash

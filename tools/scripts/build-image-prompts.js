@@ -382,6 +382,22 @@ function main() {
 
   console.log(`[ImagePrompts] Compiling ${shotFiles.length} image prompt packages (Commit: ${gitHash})...`);
 
+  // Clean up orphaned image prompt files in prompts/image
+  const promptsImgDir = path.join(workDir, 'prompts/image');
+  if (fs.existsSync(promptsImgDir)) {
+    const activeShotIds = new Set(shotFiles.map(f => f.replace('.json', '')));
+    const files = fs.readdirSync(promptsImgDir);
+    for (const file of files) {
+      if (file.endsWith('.image.json')) {
+        const shotId = file.replace('.image.json', '');
+        if (!activeShotIds.has(shotId)) {
+          fs.unlinkSync(path.join(promptsImgDir, file));
+          console.log(`[ImagePrompts] Cleaned up orphaned prompt: prompts/image/${file}`);
+        }
+      }
+    }
+  }
+
   for (const shotFile of shotFiles) {
     const pkg = compileImagePrompt(shotFile, gitHash);
     fs.writeFileSync(

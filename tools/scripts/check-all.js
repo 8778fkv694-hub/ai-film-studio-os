@@ -22,25 +22,25 @@ if (projectId) {
 const steps = [
   {
     name: 'Validate JSON structures',
-    cmd: 'node',
+    cmd: process.execPath,
     args: ['tools/scripts/validate.js', ...subArgs],
     cwd: projectRoot,
   },
   {
     name: 'Business logic linting',
-    cmd: 'node',
+    cmd: process.execPath,
     args: ['tools/scripts/lint.js', ...subArgs],
     cwd: projectRoot,
   },
   {
     name: 'Build image prompts',
-    cmd: 'node',
+    cmd: process.execPath,
     args: ['tools/scripts/build-image-prompts.js', ...subArgs],
     cwd: projectRoot,
   },
   {
     name: 'Build video prompts',
-    cmd: 'node',
+    cmd: process.execPath,
     args: ['tools/scripts/build-prompts.js', ...subArgs],
     cwd: projectRoot,
   }
@@ -49,6 +49,12 @@ const steps = [
 if (!isQuick) {
   steps.push(
     {
+      name: 'npm dependency audit',
+      cmd: process.execPath,
+      args: ['tools/scripts/audit.js'],
+      cwd: projectRoot,
+    },
+    {
       name: 'Remotion data preparation',
       cmd: 'npm',
       args: ['--prefix', 'render', 'run', 'prepare', '--', ...subArgs],
@@ -56,8 +62,10 @@ if (!isQuick) {
     },
     {
       name: 'Remotion type checking',
-      cmd: 'npx',
-      args: ['tsc', '--noEmit'],
+      cmd: fs.existsSync(path.join(projectRoot, 'render', 'node_modules', '.bin', 'tsc'))
+        ? path.join(projectRoot, 'render', 'node_modules', '.bin', 'tsc')
+        : path.join(projectRoot, 'node_modules', '.bin', 'tsc'),
+      args: ['--noEmit'],
       cwd: path.join(projectRoot, 'render'),
     },
     {
@@ -81,7 +89,7 @@ for (const step of steps) {
   const run = spawnSync(step.cmd, step.args, {
     cwd: step.cwd,
     encoding: 'utf-8',
-    shell: true
+    shell: false
   });
   const durationMs = Date.now() - startTime;
 

@@ -1,8 +1,8 @@
 {
   "shot_id": "S003",
-  "duration_s": 17,
-  "scene_ref": "scenes/scene_exit.json",
-  "cam_setup_ref": "comic_panel_02",
+  "duration_s": 22,
+  "scene_ref": "scenes/scene_changing.json",
+  "cam_setup_ref": "comic_panel_01",
   "characters": [
     {
       "ref": "characters/visitor_group.json"
@@ -10,31 +10,79 @@
   ],
   "props": [
     {
+      "ref": "props/running_equipment.json",
+      "state": "inactive"
+    },
+    {
       "ref": "props/recycle_bin.json",
-      "state": "放置中"
+      "state": "empty"
     }
   ],
   "action": {
     "beats": [
-      "人员沿地面路线行走离开",
-      "将洁净服、鞋套、口罩放回指定回收箱"
+      "Visitors in changing area, sequentially putting on clean cap, mask, clean suit, and shoe covers"
     ]
   },
   "dialogue": null,
   "voiceover": {
-    "speaker": "旁白",
-    "text": "参观结束后，请按指定路线离开洁净车间。洁净服、鞋套、口罩等按现场要求回收或放置，不得随意丢弃。离开后如有意见或问题，可统一反馈给陪同人员。",
-    "voice_id": "default"
+    "speaker": "Narrator",
+    "text": "进入洁净车间必须按要求更衣。请依次穿戴洁净帽、口罩、洁净服、洁净鞋或鞋套。头发必须完全包入帽内，口罩遮住口鼻，洁净服拉链扣好，不得敞开。穿戴完成后，检查衣袖、裤脚、帽口是否整理到位。",
+    "voice_id": "narrator_male_01"
   },
   "budget": {
     "tier": "cheap",
     "max_regen": 1
   },
   "prompt": {
-    "positive": "人员穿着洁净服从车间走出，沿地面箭头路线，将白色洁净服折叠放入回收箱，背景为更衣室出口，整洁有序",
-    "negative": "杂乱丢弃，人员拥挤"
+    "positive": "16:9 cinematic wide shot, clean room changing area with lockers and benches, visitors in process of donning clean suits, caps, masks, and shoe covers, bright white lighting, eye-level angle, photorealistic, highly detailed, 8K, industrial documentary style",
+    "negative": "blurry, low quality, distorted faces, wrong proportions, text artifacts, watermark, logo, extra limbs, missing safety equipment, dark lighting, cluttered background"
   },
   "context_refs": [
     "assets/renders/S002B/keyframes/frame_01.png"
-  ]
+  ],
+  "_keyframes": [
+    "/api/assets/keyframes/S003/frame_01.png"
+  ],
+  "_selected_keyframe": "/api/assets/keyframes/S003/frame_01.png",
+  "_video_url": null,
+  "_video_prompt": {
+    "shot_id": "S003",
+    "duration_s": 22,
+    "prompt": "style: Cinematic Realism v1, mood: cinematic, moody, controlled lighting, color palette: warm highlights, cool shadows. cinematic live-action video shot. scene: 更衣区. 洁净服挂架, 口罩盒, 鞋套机, 全身镜, 更衣柜. lighting: 柔和白光，均匀照明. character (visitor_group): hair fully covered by cleanroom cap, white cleanroom suit, mask, cleanroom shoes or shoe covers, visitor badge + no exposed personal items. prop (running_equipment): state: inactive, visually consistent. prop (recycle_bin): state: empty, visually consistent. Visitors in changing area, sequentially putting on clean cap, mask, clean suit, and shoe covers. Narration: \"进入洁净车间必须按要求更衣。请依次穿戴洁净帽、口罩、洁净服、洁净鞋或鞋套。头发必须完全包入帽内，口罩遮住口鼻，洁净服拉链扣好，不得敞开。穿戴完成后，检查衣袖、裤脚、帽口是否整理到位。\". Camera motion: static wide establishing shot, slow dolly in from medium to close-up. 16:9 cinematic wide shot, clean room changing area with lockers and benches, visitors in process of donning clean suits, caps, masks, and shoe covers, bright white lighting, eye-level angle, photorealistic, highly detailed, 8K, industrial documentary style. Shot-to-shot continuity: maintain identical character identity, scene layout, lighting and prop positions as established in previous shot. Visual style must match preceding frame. Do not introduce new visual elements not present in the reference images. Character identity locked to reference images. No face morphing or outfit variation.. Scene layout locked to context reference frame. Do not reposition props or alter lighting source.. All props match reference images exactly. Prop must_keep: shape, color, size, material unchanged.. Camera transition smooth from previous shot continuity frame. No abrupt jump cut between shots. Stable visual consistency across entire clip. No character drift, no prop mutation, no scene layout shift.",
+    "negative": "cartoon, neon cyberpunk (unless explicitly requested), 常服, 敞开洁净服, 裸露头发, blurry, low quality, distorted faces, wrong proportions, text artifacts, watermark, logo, extra limbs, missing safety equipment, dark lighting, cluttered background, multiple characters, duplicate person, clone, inconsistent lighting, wrong angle, lens distortion, chromatic aberration, face morphing, character drift, outfit change, prop mutation, scene layout shift, extra fingers, distorted limbs, text artifacts, burnt-in subtitles, logo, watermark, motion blur excessive, flickering, framing jump cut",
+    "motion": "static wide establishing shot, slow dolly in from medium to close-up",
+    "condition_images": [
+      "assets/renders/S002/keyframes/frame_01.png",
+      "assets/renders/S003/keyframes/frame_01.png"
+    ],
+    "context_ref_images": [
+      "assets/renders/S002/keyframes/frame_01.png"
+    ],
+    "tool_hint": "Copy \"prompt\" and \"negative\" into video generation tool. Upload \"condition_images\" for img2vid start/end frame conditioning if supported. \"context_ref_images\" are previous shot keyframes for visual continuity. Duration is a guideline.",
+    "meta": {
+      "compiler_version": "video-prompts-2.0.0",
+      "git_commit": "4821517",
+      "compiled_at": "2026-05-26T05:30:46.591Z",
+      "compiled_from": {
+        "shot": "shots/S003.json",
+        "scene": "scenes/scene_changing.json",
+        "style": "styles/cinematic_v1.json",
+        "characters": [
+          "characters/visitor_group.json"
+        ],
+        "props": [
+          "props/running_equipment.json",
+          "props/recycle_bin.json"
+        ]
+      }
+    }
+  },
+  "_takes": [],
+  "_active_take": null,
+  "layout": {
+    "fitMode": "contain",
+    "scale": 1,
+    "stretchX": 0.8,
+    "stretchY": 1
+  }
 }

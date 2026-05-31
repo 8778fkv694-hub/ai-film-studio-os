@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { Play, Pause, SkipBack, SkipForward, Settings, X } from 'lucide-react';
+import { Play, Pause, SkipBack, SkipForward, Settings, X, Sliders, RotateCcw } from 'lucide-react';
 
 interface Shot {
   shot_id: string;
@@ -13,6 +13,12 @@ interface Shot {
   _keyframes?: string[];
   _selected_keyframe?: string | null;
   _video_url?: string | null;
+  layout?: {
+    fitMode: 'contain' | 'cover' | 'fill';
+    scale: number;
+    stretchX: number;
+    stretchY: number;
+  };
 }
 
 export interface SubtitleStyle {
@@ -36,14 +42,21 @@ interface PlayerProps {
   shots: Shot[];
   subtitleStyle: SubtitleStyle;
   onSubtitleStyleChange: (style: SubtitleStyle) => void;
+  onShotLayoutChange?: (shotId: string, layout: {
+    fitMode: 'contain' | 'cover' | 'fill';
+    scale: number;
+    stretchX: number;
+    stretchY: number;
+  } | null) => void;
 }
 
-export default function Player({ shots, subtitleStyle, onSubtitleStyleChange }: PlayerProps) {
+export default function Player({ shots, subtitleStyle, onSubtitleStyleChange, onShotLayoutChange }: PlayerProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [audioDuration, setAudioDuration] = useState(0);
   const [currentLine, setCurrentLine] = useState('');
   const [showSettings, setShowSettings] = useState(false);
+  const [videoHasError, setVideoHasError] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const safetyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -53,6 +66,70 @@ export default function Player({ shots, subtitleStyle, onSubtitleStyleChange }: 
   const currentShot = shots[currentIndex];
   const currentImage = currentShot?._selected_keyframe || currentShot?._keyframes?.[0] || null;
   const currentVideo = currentShot?._video_url || null;
+
+  const [showAdjustPanel, setShowAdjustPanel] = useState(false);
+  const [shotLayouts, setShotLayouts] = useState<Record<string, {
+    fitMode: 'contain' | 'cover' | 'fill';
+    scale: number;
+    stretchX: number;
+    stretchY: number;
+  }>>({});
+
+  // Sync shotLayouts when shots prop changes (persistent layout load)
+  useEffect(() => {
+    const initialLayouts: Record<string, {
+      fitMode: 'contain' | 'cover' | 'fill';
+      scale: number;
+      stretchX: number;
+      stretchY: number;
+    }> = {};
+
+    shots.forEach(shot => {
+      if (shot.layout) {
+        initialLayouts[shot.shot_id] = {
+          fitMode: shot.layout.fitMode || 'contain',
+          scale: typeof shot.layout.scale === 'number' ? shot.layout.scale : 1.0,
+          stretchX: typeof shot.layout.stretchX === 'number' ? shot.layout.stretchX : 1.0,
+          stretchY: typeof shot.layout.stretchY === 'number' ? shot.layout.stretchY : 1.0,
+        };
+      }
+    });
+    setShotLayouts(initialLayouts);
+  }, [shots]);
+
+  const currentLayout = shotLayouts[currentShot?.shot_id || ''] || {
+    fitMode: 'contain',
+    scale: 1.0,
+    stretchX: 1.0,
+    stretchY: 1.0
+  };
+
+  const updateCurrentLayout = (updates: Partial<typeof currentLayout>) => {
+    if (!currentShot?.shot_id) return;
+    const newLayout = {
+      ...currentLayout,
+      ...updates
+    };
+    setShotLayouts(prev => ({
+      ...prev,
+      [currentShot.shot_id]: newLayout
+    }));
+    if (onShotLayoutChange) {
+      onShotLayoutChange(currentShot.shot_id, newLayout);
+    }
+  };
+
+  const resetCurrentLayout = () => {
+    if (!currentShot?.shot_id) return;
+    setShotLayouts(prev => {
+      const copy = { ...prev };
+      delete copy[currentShot.shot_id];
+      return copy;
+    });
+    if (onShotLayoutChange) {
+      onShotLayoutChange(currentShot.shot_id, null);
+    }
+  };
 
 
   const clearSafetyTimer = useCallback(() => {
@@ -127,6 +204,7 @@ export default function Player({ shots, subtitleStyle, onSubtitleStyleChange }: 
 
   // Switch shot: load audio or video
   useEffect(() => {
+    setVideoHasError(false);
     advanceRequestedRef.current = false;
     clearSafetyTimer();
     setAudioDuration(0);
@@ -213,6 +291,7 @@ export default function Player({ shots, subtitleStyle, onSubtitleStyleChange }: 
 
   // Playback error fallback
   const handlePlaybackError = useCallback(() => {
+    setVideoHasError(true);
     clearSafetyTimer();
     setAudioDuration(0);
     if (isPlaying) {
@@ -251,37 +330,163 @@ export default function Player({ shots, subtitleStyle, onSubtitleStyleChange }: 
 
   return (
     <div className="w-full overflow-hidden rounded-lg border border-slate-800 bg-black shadow-2xl">
-      <div className="relative aspect-video w-full flex items-center justify-center bg-slate-950">
-        {currentVideo ? (
-          <video
-            ref={videoRef}
-            src={currentVideo}
-            onLoadedMetadata={handleVideoMetadata}
-            onError={handlePlaybackError}
-            onEnded={handlePlaybackEnded}
-            className="absolute inset-0 h-full w-full object-contain bg-black"
-            playsInline
-          />
-        ) : currentImage ? (
-          <img
-            src={currentImage}
-            alt={`${currentShot.shot_id} keyframe`}
-            className="absolute inset-0 h-full w-full object-contain bg-black"
-          />
-        ) : (
-          <div className="text-center p-8">
-            <div className="mx-auto mb-4 h-16 w-16 rounded-lg border border-slate-700 bg-slate-800 flex items-center justify-center text-slate-400">
-              {currentShot.shot_id}
+      <div className="relative w-full aspect-video bg-black">
+        <div className="absolute inset-0 flex items-center justify-center overflow-hidden">
+          {currentVideo && !videoHasError ? (
+            <video
+              ref={videoRef}
+              src={currentVideo}
+              onLoadedMetadata={handleVideoMetadata}
+              onError={handlePlaybackError}
+              onEnded={handlePlaybackEnded}
+              className="max-h-full max-w-full w-auto h-auto"
+              style={{
+                objectFit: currentLayout.fitMode,
+                transform: `scale(${currentLayout.scale}) scaleX(${currentLayout.stretchX}) scaleY(${currentLayout.stretchY})`,
+                transition: 'transform 0.1s ease-out'
+              }}
+              playsInline
+            />
+          ) : currentImage ? (
+            <img
+              src={currentImage}
+              alt={`${currentShot.shot_id} keyframe`}
+              className="max-h-full max-w-full w-auto h-auto"
+              style={{
+                objectFit: currentLayout.fitMode,
+                transform: `scale(${currentLayout.scale}) scaleX(${currentLayout.stretchX}) scaleY(${currentLayout.stretchY})`,
+                transition: 'transform 0.1s ease-out'
+              }}
+            />
+          ) : (
+            <div className="text-center p-8">
+              <div className="mx-auto mb-4 h-16 w-16 rounded-lg border border-slate-700 bg-slate-800 flex items-center justify-center text-slate-400">
+                {currentShot.shot_id}
+              </div>
+              <h2 className="text-2xl font-bold text-white mb-2">{currentShot.shot_id}</h2>
+              <p className="text-slate-400 font-mono text-sm mb-4">
+                {currentShot.scene_ref?.replace('scenes/', '').replace('.json', '')}
+              </p>
+              <div className="max-w-2xl rounded bg-slate-800/50 p-3 text-sm italic text-blue-200 sm:p-4 sm:text-lg">
+                "{currentShot.action?.beats?.[0] || '等待回填关键帧'}"
+              </div>
             </div>
-            <h2 className="text-2xl font-bold text-white mb-2">{currentShot.shot_id}</h2>
-            <p className="text-slate-400 font-mono text-sm mb-4">
-              {currentShot.scene_ref?.replace('scenes/', '').replace('.json', '')}
-            </p>
-            <div className="max-w-2xl rounded bg-slate-800/50 p-3 text-sm italic text-blue-200 sm:p-4 sm:text-lg">
-              "{currentShot.action?.beats?.[0] || '等待回填关键帧'}"
+          )}
+        </div>
+
+        {/* Floating Layout Adjust Control */}
+        <div className="absolute top-3 right-3 z-30">
+          <button
+            onClick={() => setShowAdjustPanel(!showAdjustPanel)}
+            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-xs font-semibold backdrop-blur-sm shadow-lg transition ${
+              showAdjustPanel
+                ? 'bg-amber-600 border-amber-500 text-white'
+                : 'bg-slate-900/85 border-slate-700 text-slate-300 hover:text-white hover:bg-slate-800'
+            }`}
+            title="画面拉伸与微调"
+          >
+            <Sliders size={14} />
+            <span>画面微调</span>
+          </button>
+
+          {showAdjustPanel && (
+            <div className="absolute top-full right-0 mt-2 w-64 bg-slate-900/95 border border-slate-700 rounded-xl p-4 shadow-2xl backdrop-blur-sm text-slate-200 space-y-3.5">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-slate-300">分镜 {currentShot?.shot_id} 画面微调</span>
+                <button
+                  onClick={() => setShowAdjustPanel(false)}
+                  className="text-slate-500 hover:text-slate-300 p-0.5"
+                >
+                  <X size={14} />
+                </button>
+              </div>
+
+              <div className="space-y-3">
+                {/* Fit Mode selection */}
+                <div>
+                  <label className="text-[10px] text-slate-400 block mb-1">填充模式</label>
+                  <div className="grid grid-cols-3 gap-1">
+                    {(['contain', 'cover', 'fill'] as const).map(mode => (
+                      <button
+                        key={mode}
+                        onClick={() => updateCurrentLayout({ fitMode: mode })}
+                        className={`text-[10px] py-1 rounded transition border ${
+                          currentLayout.fitMode === mode
+                            ? 'bg-blue-600 border-blue-500 text-white'
+                            : 'bg-slate-800 border-slate-700 text-slate-450 hover:text-slate-200'
+                        }`}
+                      >
+                        {mode === 'contain' ? '适应' : mode === 'cover' ? '裁剪' : '拉伸'}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Zoom Scale slider */}
+                <div>
+                  <div className="flex justify-between text-[10px] text-slate-400 mb-1">
+                    <span>等比缩放</span>
+                    <span>{Math.round(currentLayout.scale * 100)}%</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="0.5"
+                    max="2.0"
+                    step="0.05"
+                    value={currentLayout.scale}
+                    onChange={e => updateCurrentLayout({ scale: Number(e.target.value) })}
+                    className="w-full h-1 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-blue-500"
+                  />
+                </div>
+
+                {/* Stretch X Slider */}
+                <div>
+                  <div className="flex justify-between text-[10px] text-slate-400 mb-1">
+                    <span>水平伸缩</span>
+                    <span>{Math.round(currentLayout.stretchX * 100)}%</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="0.5"
+                    max="2.0"
+                    step="0.05"
+                    value={currentLayout.stretchX}
+                    onChange={e => updateCurrentLayout({ stretchX: Number(e.target.value) })}
+                    className="w-full h-1 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-blue-500"
+                  />
+                </div>
+
+                {/* Stretch Y Slider */}
+                <div>
+                  <div className="flex justify-between text-[10px] text-slate-400 mb-1">
+                    <span>垂直伸缩</span>
+                    <span>{Math.round(currentLayout.stretchY * 100)}%</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="0.5"
+                    max="2.0"
+                    step="0.05"
+                    value={currentLayout.stretchY}
+                    onChange={e => updateCurrentLayout({ stretchY: Number(e.target.value) })}
+                    className="w-full h-1 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-blue-500"
+                  />
+                </div>
+
+                {/* Reset button */}
+                <button
+                  onClick={resetCurrentLayout}
+                  className="w-full py-1.5 mt-1 bg-slate-850 hover:bg-slate-700 border border-slate-700 rounded-lg text-[10px] font-semibold text-slate-300 hover:text-white transition flex items-center justify-center gap-1"
+                >
+                  <RotateCcw size={10} />
+                  重置当前分镜画面
+                </button>
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
+
+
 
         {/* 统一底部字幕（电影风格：白字黑描边） */}
         {currentLine && (
@@ -291,9 +496,9 @@ export default function Player({ shots, subtitleStyle, onSubtitleStyleChange }: 
                 fontSize: `${subtitleStyle.fontSize}px`,
                 fontFamily: subtitleStyle.fontFamily,
                 color: subtitleStyle.textColor,
-                textShadow: subtitleStyle.strokeWidth > 0
-                  ? `${subtitleStyle.strokeWidth}px ${subtitleStyle.strokeWidth}px 0 #000, -${subtitleStyle.strokeWidth}px -${subtitleStyle.strokeWidth}px 0 #000, ${subtitleStyle.strokeWidth}px -${subtitleStyle.strokeWidth}px 0 #000, -${subtitleStyle.strokeWidth}px ${subtitleStyle.strokeWidth}px 0 #000, 0 ${subtitleStyle.strokeWidth}px 0 #000, 0 -${subtitleStyle.strokeWidth}px 0 #000, ${subtitleStyle.strokeWidth}px 0 0 #000, -${subtitleStyle.strokeWidth}px 0 0 #000`
-                  : 'none',
+                WebkitTextStroke: subtitleStyle.strokeWidth > 0 ? `${subtitleStyle.strokeWidth * 2}px #000` : 'none',
+                paintOrder: 'stroke fill',
+                textShadow: '0 2px 4px rgba(0,0,0,0.5)',
                 padding: '4px 0',
                 maxWidth: '90%',
                 textAlign: 'center',
@@ -401,9 +606,9 @@ export default function Player({ shots, subtitleStyle, onSubtitleStyleChange }: 
                       fontSize: `${Math.min(subtitleStyle.fontSize, 20)}px`,
                       fontFamily: subtitleStyle.fontFamily,
                       color: subtitleStyle.textColor,
-                      textShadow: subtitleStyle.strokeWidth > 0
-                        ? `${subtitleStyle.strokeWidth}px ${subtitleStyle.strokeWidth}px 0 #000, -${subtitleStyle.strokeWidth}px -${subtitleStyle.strokeWidth}px 0 #000, ${subtitleStyle.strokeWidth}px -${subtitleStyle.strokeWidth}px 0 #000, -${subtitleStyle.strokeWidth}px ${subtitleStyle.strokeWidth}px 0 #000, 0 ${subtitleStyle.strokeWidth}px 0 #000, 0 -${subtitleStyle.strokeWidth}px 0 #000, ${subtitleStyle.strokeWidth}px 0 0 #000, -${subtitleStyle.strokeWidth}px 0 0 #000`
-                        : 'none',
+                      WebkitTextStroke: subtitleStyle.strokeWidth > 0 ? `${subtitleStyle.strokeWidth * 2}px #000` : 'none',
+                      paintOrder: 'stroke fill',
+                      textShadow: '0 2px 4px rgba(0,0,0,0.5)',
                       fontWeight: 600,
                       lineHeight: 1.5,
                     }}>

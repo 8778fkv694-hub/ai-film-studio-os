@@ -41,3 +41,7 @@ projects/*/reports/generated-assets-audit.json
 projects/*/reports/check-all.report.json
 projects/*/reports/lint.report.json
 projects/*/reports/asset-index.json
+
+# Remotion generated config data
+render/public/data.json
+render/src/manifest.ts

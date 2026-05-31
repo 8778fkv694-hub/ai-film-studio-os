@@ -21,24 +21,6 @@ function ensureDir(p) {
   fs.mkdirSync(p, { recursive: true });
 }
 
-// Mock Render Function
-async function mockRender(shotId, takeId) {
-  console.log(`[Render] Simulating render for ${shotId} (${takeId})...`);
-  await new Promise(r => setTimeout(r, 500)); // Simulate delay
-  
-  const relativeVideoPath = `assets/renders/${shotId}/takes/${takeId}/video.mp4`;
-  const relativeKeyframePath = `assets/renders/${shotId}/takes/${takeId}/keyframe.jpg`;
-
-  return {
-    status: 'success',
-    video_path: relativeVideoPath,
-    keyframe_path: relativeKeyframePath,
-    cost: 0.05,
-    model: "seedance-2.0-turbo",
-    seed: Math.floor(Math.random() * 1000000)
-  };
-}
-
 async function main() {
   const shotId = remainingArgs[0]; // e.g. S001
   if (!shotId) {
@@ -71,33 +53,23 @@ async function main() {
     }
   }
   const takeId = `take_${String(maxNum + 1).padStart(3, '0')}`;
-  const takeDir = path.join(workDir, `assets/renders/${shotId}/takes/${takeId}`);
-  ensureDir(takeDir);
-
-  // 3. Render (Mock)
-  const result = await mockRender(shotId, takeId);
-
-  // 4. Create Mock Files on disk so the UI/Remotion can see them
-  fs.writeFileSync(path.join(takeDir, 'video.mp4'), Buffer.alloc(0)); // empty file
-  fs.writeFileSync(path.join(takeDir, 'keyframe.jpg'), Buffer.alloc(0)); // empty file
-
-  // 5. Record Take
+  // 3. Record a pending manual take slot. Actual videos/images are imported with import-take.js or the UI uploader.
   const promptContent = fs.readFileSync(promptFile, 'utf-8');
   const promptHash = md5(promptContent);
 
   const newTake = {
     take_id: takeId,
     timestamp: new Date().toISOString(),
-    status: result.status,
+    status: 'pending',
     prompt_hash: promptHash,
-    model: result.model,
-    seed: result.seed,
-    cost_estimate: result.cost,
-    video_path: result.video_path,
-    keyframe_path: result.keyframe_path,
+    model: 'manual_external',
+    seed: null,
+    cost_estimate: 0,
+    video_path: '',
+    keyframe_path: '',
     duration_s: readJson(path.join(workDir, `prompts/${shotId}.prompt.json`))?.params?.duration_s || 4,
-    source: 'automated_mock',
-    platform: 'mock_renderer',
+    source: 'manual_external',
+    platform: 'manual',
     review: {
       rating: null,
       tags: [],
@@ -110,17 +82,13 @@ async function main() {
 
   if (!history.active_take_id) {
     history.active_take_id = takeId;
-    
-    // Copy keyframe to global keyframes directory for player compatibility
-    const globalKeyframesDir = path.join(workDir, `assets/renders/${shotId}/keyframes`);
-    ensureDir(globalKeyframesDir);
-    fs.writeFileSync(path.join(globalKeyframesDir, 'frame_last.jpg'), Buffer.alloc(0));
   }
 
-  // 6. Save History
+  // 4. Save History
   ensureDir(path.dirname(historyFile));
   fs.writeFileSync(historyFile, JSON.stringify(history, null, 2));
-  console.log(`[Render] Take ${takeId} recorded in history. (Hash: ${promptHash})`);
+  console.log(`[Render] Pending manual take ${takeId} recorded in history. (Hash: ${promptHash})`);
+  console.log(`[Render] Import the finished file with: node tools/scripts/import-take.js ${shotId} <video_file>`);
 }
 
 main();

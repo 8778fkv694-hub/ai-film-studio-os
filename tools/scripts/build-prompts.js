@@ -620,6 +620,24 @@ function main() {
 
   console.log(`[VideoPrompts] Compiling ${shotFiles.length} shot(s) into video prompts (Commit: ${gitHash})...`);
 
+  // Clean up orphaned prompt files in prompts/
+  if (!onlyShotId) {
+    const promptsDir = path.join(workDir, 'prompts');
+    if (fs.existsSync(promptsDir)) {
+      const activeShotIds = new Set(shotFiles.map(f => f.replace('.json', '')));
+      const files = fs.readdirSync(promptsDir);
+      for (const file of files) {
+        if (file.endsWith('.prompt.json') || file.endsWith('.final.json')) {
+          const shotId = file.replace('.prompt.json', '').replace('.final.json', '');
+          if (!activeShotIds.has(shotId)) {
+            fs.unlinkSync(path.join(promptsDir, file));
+            console.log(`[VideoPrompts] Cleaned up orphaned prompt: prompts/${file}`);
+          }
+        }
+      }
+    }
+  }
+
   const packages = [];
   let totalMissing = 0;
   let errors = 0;

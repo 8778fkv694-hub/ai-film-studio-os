@@ -18,7 +18,7 @@
           "status": { "type": "string", "enum": ["pending", "rendering", "success", "failed", "imported", "approved", "rejected", "needs_fixup"] },
           "prompt_hash": { "type": "string", "description": "Hash of the prompt.final.json used" },
           "model": { "type": "string" },
-          "seed": { "type": "integer" },
+          "seed": { "type": ["integer", "null"] },
           "cost_estimate": { "type": "number" },
           "file_path": { "type": "string" },
           "video_path": { "type": "string" },

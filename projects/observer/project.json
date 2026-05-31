@@ -27,58 +27,112 @@
   },
   "timeline": [
     {
-      "shot_id": "S001",
-      "shot_file": "shots/S001.json",
-      "tier": "cheap",
-      "duration_s": 8
-    },
-    {
-      "shot_id": "S002",
-      "shot_file": "shots/S002.json",
-      "tier": "cheap",
-      "duration_s": 6
-    },
-    {
-      "shot_id": "S003",
-      "shot_file": "shots/S003.json",
+      "shot_id": "S001A",
+      "shot_file": "shots/S001A.json",
       "tier": "cheap",
       "duration_s": 10
     },
     {
-      "shot_id": "S004",
-      "shot_file": "shots/S004.json",
-      "tier": "cheap",
-      "duration_s": 8
-    },
-    {
-      "shot_id": "S005",
-      "shot_file": "shots/S005.json",
+      "shot_id": "S001B",
+      "shot_file": "shots/S001B.json",
       "tier": "cheap",
       "duration_s": 10
     },
     {
-      "shot_id": "S006",
-      "shot_file": "shots/S006.json",
+      "shot_id": "S002A",
+      "shot_file": "shots/S002A.json",
       "tier": "cheap",
-      "duration_s": 6
+      "duration_s": 12
     },
     {
-      "shot_id": "S007",
-      "shot_file": "shots/S007.json",
+      "shot_id": "S002B",
+      "shot_file": "shots/S002B.json",
+      "tier": "cheap",
+      "duration_s": 12
+    },
+    {
+      "shot_id": "S003A",
+      "shot_file": "shots/S003A.json",
+      "tier": "cheap",
+      "duration_s": 14
+    },
+    {
+      "shot_id": "S003B",
+      "shot_file": "shots/S003B.json",
+      "tier": "cheap",
+      "duration_s": 10
+    },
+    {
+      "shot_id": "S004A",
+      "shot_file": "shots/S004A.json",
       "tier": "cheap",
       "duration_s": 8
     },
     {
-      "shot_id": "S008",
-      "shot_file": "shots/S008.json",
+      "shot_id": "S004B",
+      "shot_file": "shots/S004B.json",
       "tier": "cheap",
-      "duration_s": 6
+      "duration_s": 9
     },
     {
-      "shot_id": "S009",
-      "shot_file": "shots/S009.json",
+      "shot_id": "S005A",
+      "shot_file": "shots/S005A.json",
       "tier": "cheap",
       "duration_s": 8
+    },
+    {
+      "shot_id": "S005B",
+      "shot_file": "shots/S005B.json",
+      "tier": "cheap",
+      "duration_s": 13
+    },
+    {
+      "shot_id": "S006A",
+      "shot_file": "shots/S006A.json",
+      "tier": "cheap",
+      "duration_s": 9
+    },
+    {
+      "shot_id": "S006B",
+      "shot_file": "shots/S006B.json",
+      "tier": "cheap",
+      "duration_s": 7
+    },
+    {
+      "shot_id": "S007A",
+      "shot_file": "shots/S007A.json",
+      "tier": "cheap",
+      "duration_s": 13
+    },
+    {
+      "shot_id": "S007B",
+      "shot_file": "shots/S007B.json",
+      "tier": "cheap",
+      "duration_s": 10
+    },
+    {
+      "shot_id": "S008A",
+      "shot_file": "shots/S008A.json",
+      "tier": "cheap",
+      "duration_s": 11
+    },
+    {
+      "shot_id": "S008B",
+      "shot_file": "shots/S008B.json",
+      "tier": "cheap",
+      "duration_s": 8
+    },
+    {
+      "shot_id": "S009A",
+      "shot_file": "shots/S009A.json",
+      "tier": "cheap",
+      "duration_s": 7
+    },
+    {
+      "shot_id": "S009B",
+      "shot_file": "shots/S009B.json",
+      "tier": "cheap",
+      "duration_s": 9
     }
   ]
 }

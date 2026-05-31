@@ -281,10 +281,11 @@ async function main() {
           const finalFontSize = Math.round((height / 1080) * subFontSize);
           const finalStrokeWidth = Math.round((height / 1080) * subStrokeWidth);
           const yPosition = height - 80;
+          const boxArg = subBgOpacity > 0 ? `:box=1:boxcolor=black@${subBgOpacity}:boxborderw=4` : `:box=0`;
 
           drawtexts.push(
             `drawtext=text='${escaped}'${fontArg}:fontsize=${finalFontSize}` +
-            `:fontcolor=white:box=0` +
+            `:fontcolor=${subColor}${boxArg}` +
             `:bordercolor=black:borderw=${finalStrokeWidth}` +
             `:x=(w-text_w)/2:y=${yPosition}:enable='between(t,${ts.toFixed(1)},${te.toFixed(1)})'`
           );

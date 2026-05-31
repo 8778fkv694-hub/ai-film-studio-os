@@ -1,4 +1,4 @@
-import { execSync } from 'node:child_process';
+import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import { parseArgs } from './shared/dirs.js';
@@ -18,11 +18,13 @@ const generatedPatterns = [
   /projects\/[^/]+\/reports\/generated-assets-audit\.json/,
   /render\/public\/audio-.*\.mp3/,
   /render\/public\/keyframe-.*\.(jpg|jpeg|png|webp)/,
+  /render\/public\/data\.json/,
+  /render\/src\/manifest\.ts/,
 ];
 
 try {
   // Get all tracked files from git
-  const stdout = execSync('git ls-files', { cwd: projectRoot, encoding: 'utf-8' });
+  const stdout = execFileSync('git', ['ls-files'], { cwd: projectRoot, encoding: 'utf-8' });
   const files = stdout.split('\n').map(f => f.trim()).filter(Boolean);
 
   const matchedFiles = files.filter(file => {
@@ -51,10 +53,8 @@ try {
     if (matchedFiles.length > 15) {
       console.warn(`  ... and ${matchedFiles.length - 15} more files.`);
     }
-    console.log('\n💡 To remove them from Git tracking without deleting them locally, run:');
+    console.log('\n💡 To remove them from Git tracking without deleting them locally, review the report and run:');
     console.log(chalkCmd(`git rm --cached <file-path>`));
-    console.log('Or to remove all audited files at once, run:');
-    console.log(chalkCmd(`git rm --cached ${matchedFiles.join(' ')}`));
   } else {
     console.log('\n✅ No generated files are tracked by Git. Great!');
   }

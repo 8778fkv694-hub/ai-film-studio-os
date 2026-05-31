@@ -1,31 +1,83 @@
 {
   "shot_id": "S004",
   "duration_s": 15,
-  "scene_ref": "scenes/scene_entrance.json",
-  "cam_setup_ref": "comic_panel_01",
-  "characters": [],
-  "props": [],
+  "scene_ref": "scenes/scene_air_shower.json",
+  "cam_setup_ref": "comic_panel_02",
+  "characters": [
+    {
+      "ref": "characters/visitor_group.json"
+    }
+  ],
+  "props": [
+    {
+      "ref": "props/no_photography_sign.json",
+      "state": "displayed"
+    }
+  ],
   "action": {
     "beats": [
-      "展示洁净车间全景",
-      "画面叠加文字提示：规范更衣、完成风淋、只看不摸、不越线、不拍摄"
+      "Visitor enters air shower chamber, raises arms, slowly rotates as air jets blow"
     ]
   },
   "dialogue": null,
   "voiceover": {
-    "speaker": "旁白",
-    "text": "洁净车间管理的核心，是减少污染、保证质量、确保安全。请大家做到：规范更衣、完成风淋、只看不摸、不越线、不拍摄。感谢配合。",
-    "voice_id": "default"
+    "speaker": "Narrator",
+    "text": "更衣完成后，请按要求进入风淋室。风淋过程中，人员应缓慢转身，让气流充分吹扫衣物表面。风淋未结束前，不得强行开门或提前离开。",
+    "voice_id": "narrator_male_01"
   },
   "budget": {
     "tier": "cheap",
     "max_regen": 1
   },
   "prompt": {
-    "positive": "洁净车间全景，明亮无尘，设备整齐排列，地面洁净，画面中央叠加白色文字提示，简洁清晰，工业美学",
-    "negative": "阴影，杂乱，文字遮挡设备"
+    "positive": "16:9 medium shot, interior of air shower chamber with air nozzles on walls, visitor in clean suit raising arms and slowly turning, bright blue-tinted lighting, eye-level angle, photorealistic, highly detailed, 8K, industrial documentary style",
+    "negative": "blurry, low quality, distorted faces, wrong proportions, text artifacts, watermark, logo, extra limbs, dark lighting, cluttered background"
   },
   "context_refs": [
     "assets/renders/S003B/keyframes/frame_01.png"
-  ]
+  ],
+  "_keyframes": [
+    "/api/assets/keyframes/S004/frame_01.png"
+  ],
+  "_selected_keyframe": "/api/assets/keyframes/S004/frame_01.png",
+  "_video_url": null,
+  "_video_prompt": {
+    "shot_id": "S004",
+    "duration_s": 15,
+    "prompt": "style: Cinematic Realism v1, mood: cinematic, moody, controlled lighting, color palette: warm highlights, cool shadows. cinematic live-action video shot. scene: 风淋室. 风淋室门, 气流出风口, 计时器, 自动门, 洁净通道. lighting: 冷白光，顶部照明. character (visitor_group): hair fully covered by cleanroom cap, white cleanroom suit, mask, cleanroom shoes or shoe covers, visitor badge + no exposed personal items. prop (no_photography_sign): state: displayed, visually consistent. Visitor enters air shower chamber, raises arms, slowly rotates as air jets blow. Narration: \"更衣完成后，请按要求进入风淋室。风淋过程中，人员应缓慢转身，让气流充分吹扫衣物表面。风淋未结束前，不得强行开门或提前离开。\". Camera motion: medium shot, subtle hand-held camera feel, focus on subject action. 16:9 medium shot, interior of air shower chamber with air nozzles on walls, visitor in clean suit raising arms and slowly turning, bright blue-tinted lighting, eye-level angle, photorealistic, highly detailed, 8K, industrial documentary style. Shot-to-shot continuity: maintain identical character identity, scene layout, lighting and prop positions as established in previous shot. Visual style must match preceding frame. Do not introduce new visual elements not present in the reference images. Character identity locked to reference images. No face morphing or outfit variation.. Scene layout locked to context reference frame. Do not reposition props or alter lighting source.. All props match reference images exactly. Prop must_keep: shape, color, size, material unchanged.. Camera transition smooth from previous shot continuity frame. No abrupt jump cut between shots. Stable visual consistency across entire clip. No character drift, no prop mutation, no scene layout shift.",
+    "negative": "cartoon, neon cyberpunk (unless explicitly requested), 开门状态下风淋, 未更衣人员, blurry, low quality, distorted faces, wrong proportions, text artifacts, watermark, logo, extra limbs, dark lighting, cluttered background, multiple characters, duplicate person, clone, inconsistent lighting, wrong angle, lens distortion, chromatic aberration, face morphing, character drift, outfit change, prop mutation, scene layout shift, extra fingers, distorted limbs, text artifacts, burnt-in subtitles, logo, watermark, motion blur excessive, flickering, framing jump cut",
+    "motion": "medium shot, subtle hand-held camera feel, focus on subject action",
+    "condition_images": [
+      "assets/renders/S003/keyframes/frame_01.png",
+      "assets/renders/S004/keyframes/frame_01.png"
+    ],
+    "context_ref_images": [
+      "assets/renders/S003/keyframes/frame_01.png"
+    ],
+    "tool_hint": "Copy \"prompt\" and \"negative\" into video generation tool. Upload \"condition_images\" for img2vid start/end frame conditioning if supported. \"context_ref_images\" are previous shot keyframes for visual continuity. Duration is a guideline.",
+    "meta": {
+      "compiler_version": "video-prompts-2.0.0",
+      "git_commit": "4821517",
+      "compiled_at": "2026-05-26T05:30:46.591Z",
+      "compiled_from": {
+        "shot": "shots/S004.json",
+        "scene": "scenes/scene_air_shower.json",
+        "style": "styles/cinematic_v1.json",
+        "characters": [
+          "characters/visitor_group.json"
+        ],
+        "props": [
+          "props/no_photography_sign.json"
+        ]
+      }
+    }
+  },
+  "_takes": [],
+  "_active_take": null,
+  "layout": {
+    "fitMode": "contain",
+    "scale": 1,
+    "stretchX": 0.75,
+    "stretchY": 1
+  }
 }

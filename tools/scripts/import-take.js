@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
-import { execSync } from 'node:child_process';
+import { execFileSync } from 'node:child_process';
 import { parseArgs } from './shared/dirs.js';
 
 const { workDir, remainingArgs } = parseArgs();
@@ -24,7 +24,7 @@ function readJson(p) {
 
 async function main() {
   const shotId = remainingArgs[0];
-  const videoFilePath = remainingArgs[1];
+  const videoFilePath = remainingArgs[1] ? path.resolve(process.cwd(), remainingArgs[1]) : null;
 
   if (!shotId || !videoFilePath) {
     console.error('Usage: node tools/scripts/import-take.js <shot_id> <video_file_path> [--platform <name>] [--notes <text>] [--project-dir <dir>|--project-id <id>]');
@@ -42,6 +42,11 @@ async function main() {
     ? remainingArgs[notesIndex + 1] 
     : '';
 
+  if (!/^[A-Za-z0-9_-]+$/.test(shotId)) {
+    console.error(`❌ Invalid shot_id: ${shotId}`);
+    process.exit(1);
+  }
+
   // 1. Verify shot file
   const shotFile = path.join(workDir, 'shots', `${shotId}.json`);
   if (!fs.existsSync(shotFile)) {
@@ -57,7 +62,8 @@ async function main() {
   const ext = path.extname(videoFilePath).toLowerCase();
   const allowedExts = new Set(['.mp4', '.mov', '.webm', '.avi']);
   if (!allowedExts.has(ext)) {
-    console.warn(`⚠️  Warning: extension "${ext}" is not standard, proceeding anyway...`);
+    console.error(`❌ Unsupported video extension "${ext}". Expected: .mp4, .mov, .webm, .avi`);
+    process.exit(1);
   }
 
   // 3. Load or initialize history
@@ -90,7 +96,7 @@ async function main() {
   let ffmpegSuccess = false;
   try {
     console.log('[FFmpeg] Extracting last frame as keyframe...');
-    execSync(`ffmpeg -y -sseof -1 -i "${destVideoPath}" -update 1 -q:v 1 "${destKeyframePath}"`, { stdio: 'ignore' });
+    execFileSync('ffmpeg', ['-y', '-sseof', '-1', '-i', destVideoPath, '-update', '1', '-q:v', '1', destKeyframePath], { stdio: 'ignore' });
     ffmpegSuccess = true;
     console.log(`🖼️  Extracted keyframe to ${destKeyframePath}`);
   } catch (err) {
@@ -106,6 +112,40 @@ async function main() {
     console.warn(`⚠️  Warning: prompts/${shotId}.final.json not found. prompt_hash will be empty.`);
   }
 
+  // 7.1 Probe actual video duration using ffprobe/ffmpeg
+  let videoDuration = null;
+  try {
+    const ffprobeOut = execFileSync('ffprobe', [
+      '-v', 'error',
+      '-show_entries', 'format=duration',
+      '-of', 'default=noprint_wrappers=1:nokey=1',
+      destVideoPath
+    ], { encoding: 'utf8' }).trim();
+    const parsedDuration = parseFloat(ffprobeOut);
+    if (!isNaN(parsedDuration) && parsedDuration > 0) {
+      videoDuration = Math.round(parsedDuration * 10) / 10;
+      console.log(`🎬 Probed video duration: ${videoDuration}s`);
+    }
+  } catch (err) {
+    try {
+      execFileSync('ffmpeg', ['-i', destVideoPath], { stdio: 'pipe', encoding: 'utf8' });
+    } catch (ffmpegErr) {
+      const stderr = ffmpegErr.stderr || '';
+      const match = stderr.match(/Duration:\s*(\d+):(\d+):(\d+\.\d+)/);
+      if (match) {
+        const h = parseInt(match[1], 10);
+        const m = parseInt(match[2], 10);
+        const s = parseFloat(match[3]);
+        const parsedDuration = h * 3600 + m * 60 + s;
+        videoDuration = Math.round(parsedDuration * 10) / 10;
+        console.log(`🎬 Probed video duration (via ffmpeg): ${videoDuration}s`);
+      }
+    }
+  }
+
+  const defaultDuration = readJson(path.join(workDir, `prompts/${shotId}.prompt.json`))?.params?.duration_s || 4;
+  const finalDuration = videoDuration !== null ? videoDuration : defaultDuration;
+
   // 8. Add take record
   const relativeVideoPath = `assets/renders/${shotId}/takes/${takeId}/video${ext}`;
   const relativeKeyframePath = ffmpegSuccess 
@@ -119,7 +159,7 @@ async function main() {
     prompt_hash: promptHash,
     video_path: relativeVideoPath,
     keyframe_path: relativeKeyframePath,
-    duration_s: readJson(path.join(workDir, `prompts/${shotId}.prompt.json`))?.params?.duration_s || 4,
+    duration_s: finalDuration,
     source: 'manual_external',
     platform: platform,
     review: {

@@ -38,7 +38,6 @@ export async function GET() {
       'docs',
       'prompt_templates',
       'prompt_experience',
-      'tools',
       'prompts',
       'renders',
       'render/output'

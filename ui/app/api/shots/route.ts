@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
-import { getResourcePath } from '@/lib/projects';
+import { getResourcePath, getCurrentProjectPath } from '@/lib/projects';
 
-const KEYFRAME_EXTS = new Set(['.jpg', '.jpeg', '.png', '.webp', '.svg']);
+const KEYFRAME_EXTS = new Set(['.jpg', '.jpeg', '.png', '.webp']);
 
 function listKeyframes(shotId: string) {
   if (!/^[A-Za-z0-9_-]+$/.test(shotId)) return [];
@@ -28,7 +28,12 @@ function findUploadedVideo(shotId: string) {
     return ext === '.mp4' || ext === '.mov' || ext === '.webm' || ext === '.avi';
   });
 
-  return videoFile ? `/api/assets/video/${encodeURIComponent(shotId)}/${encodeURIComponent(videoFile)}` : null;
+  if (!videoFile) return null;
+  const fullPath = path.join(videoDir, videoFile);
+  if (fs.existsSync(fullPath) && fs.statSync(fullPath).size > 0) {
+    return `/api/assets/video/${encodeURIComponent(shotId)}/${encodeURIComponent(videoFile)}`;
+  }
+  return null;
 }
 
 export async function GET() {
@@ -57,7 +62,13 @@ export async function GET() {
           if (history.active_take_id) {
             activeTake = takes.find((t: any) => t.take_id === history.active_take_id) || null;
             if (activeTake && activeTake.video_path) {
-              videoUrl = `/api/assets/reference/${activeTake.video_path}`;
+              const projectPath = getCurrentProjectPath();
+              const fullVideoPath = projectPath ? path.join(projectPath, activeTake.video_path) : '';
+              if (fullVideoPath && fs.existsSync(fullVideoPath) && fs.statSync(fullVideoPath).size > 0) {
+                videoUrl = `/api/assets/reference/${activeTake.video_path}`;
+              } else {
+                videoUrl = null;
+              }
             }
           }
         } catch {
@@ -96,6 +107,27 @@ export async function GET() {
   }
 }
 
+const SHOT_WHITELIST_FIELDS = [
+  'shot_id',
+  'duration_s',
+  'style_ref',
+  'scene_ref',
+  'cam_setup_ref',
+  'characters',
+  'props',
+  'action',
+  'dialogue',
+  'voiceover',
+  'continuity',
+  'budget',
+  'context_refs',
+  'prompt',
+  'parent_shot_id',
+  'segment_index',
+  'segment_count',
+  'split_reason'
+];
+
 export async function POST(request: Request) {
   try {
     const shot = await request.json();
@@ -103,10 +135,18 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: '无效镜头 ID' }, { status: 400 });
     }
     const filename = path.basename(shot._filename || `${shot.shot_id}.json`);
-    delete shot._filename;
+
+    // Extract only whitelisted fields to prevent polluting the file with UI layout/computed fields
+    const cleanShot: any = {};
+    for (const key of SHOT_WHITELIST_FIELDS) {
+      if (shot[key] !== undefined) {
+        cleanShot[key] = shot[key];
+      }
+    }
+
     fs.writeFileSync(
       path.join(getResourcePath('shots'), filename),
-      JSON.stringify(shot, null, 2),
+      JSON.stringify(cleanShot, null, 2),
       'utf-8'
     );
     return NextResponse.json({ success: true });

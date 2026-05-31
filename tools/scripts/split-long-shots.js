@@ -296,6 +296,30 @@ if (!fs.existsSync(reportsDir)) {
 }
 
 const reportItems = [];
+const archivedShotIds = new Set();
+
+// Helper to migrate or create a state file with updated shot_id
+function migrateOrCreateStateFile(srcPath, destPath, targetShotId) {
+  let stateObj = {
+    shot_id: targetShotId,
+    characters: {},
+    props: {},
+    scene: {}
+  };
+  if (srcPath && fs.existsSync(srcPath)) {
+    try {
+      stateObj = JSON.parse(fs.readFileSync(srcPath, 'utf-8'));
+      stateObj.shot_id = targetShotId;
+    } catch (e) {
+      console.warn(`⚠️ Failed to parse source state file ${srcPath}, creating a default one.`);
+    }
+  }
+  const statesDir = path.dirname(destPath);
+  if (!fs.existsSync(statesDir)) {
+    fs.mkdirSync(statesDir, { recursive: true });
+  }
+  fs.writeFileSync(destPath, JSON.stringify(stateObj, null, 2), 'utf-8');
+}
 
 for (const plan of splitPlans) {
   const parentId = plan.parent_id;
@@ -304,7 +328,26 @@ for (const plan of splitPlans) {
   // Archive parent JSON
   const archivePath = path.join(archiveDir, `${parentId}.json`);
   fs.renameSync(parentAbs, archivePath);
+  archivedShotIds.add(parentId);
   console.log(`📦 Archived: shots/${parentId}.json -> shots_archived/${parentId}.json`);
+
+  // Clean up old prompt files of the parent shot immediately
+  const parentPromptPath = path.join(workDir, 'prompts', `${parentId}.prompt.json`);
+  const parentFinalPath = path.join(workDir, 'prompts', `${parentId}.final.json`);
+  const parentImagePath = path.join(workDir, 'prompts/image', `${parentId}.image.json`);
+
+  if (fs.existsSync(parentPromptPath)) {
+    fs.unlinkSync(parentPromptPath);
+    console.log(`   🧹 Cleaned up: prompts/${parentId}.prompt.json`);
+  }
+  if (fs.existsSync(parentFinalPath)) {
+    fs.unlinkSync(parentFinalPath);
+    console.log(`   🧹 Cleaned up: prompts/${parentId}.final.json`);
+  }
+  if (fs.existsSync(parentImagePath)) {
+    fs.unlinkSync(parentImagePath);
+    console.log(`   🧹 Cleaned up: prompts/image/${parentId}.image.json`);
+  }
   
   // Write child JSONs
   for (const seg of plan.segments) {
@@ -317,54 +360,22 @@ for (const plan of splitPlans) {
   const parentShot = shots.find(s => s.obj.shot_id === parentId)?.obj;
   if (parentShot && parentShot.continuity) {
     const S = plan.segments.length;
-    // Copy parent OUT file to last child OUT file
+    // Migrate parent OUT file to last child OUT file
     const parentOutPath = path.join(workDir, `states/${parentId}_OUT.json`);
     const lastChildId = `${parentId}${suffixes[S - 1]}`;
     const lastOutPath = path.join(workDir, `states/${lastChildId}_OUT.json`);
-    if (fs.existsSync(parentOutPath)) {
-      fs.copyFileSync(parentOutPath, lastOutPath);
-      console.log(`   📄 Copied OUT state from ${parentId}_OUT.json to ${lastChildId}_OUT.json`);
-    }
+    migrateOrCreateStateFile(parentOutPath, lastOutPath, lastChildId);
+    console.log(`   📄 Migrated/created OUT state for ${lastChildId}`);
     
-    // Copy intermediate state files
+    // Migrate intermediate state files
     let currentInRef = parentShot.continuity.state_in_ref;
     for (let j = 0; j < S - 1; j++) {
       const childId = `${parentId}${suffixes[j]}`;
       const childOutPath = path.join(workDir, `states/${childId}_OUT.json`);
-      if (currentInRef) {
-        const inPath = path.join(workDir, currentInRef);
-        if (fs.existsSync(inPath)) {
-          fs.copyFileSync(inPath, childOutPath);
-          console.log(`   📄 Copied IN state from ${currentInRef} to ${childId}_OUT.json`);
-        }
-      }
+      const srcPath = currentInRef ? path.join(workDir, currentInRef) : null;
+      migrateOrCreateStateFile(srcPath, childOutPath, childId);
+      console.log(`   📄 Migrated/created IN state for ${childId}`);
       currentInRef = `states/${childId}_OUT.json`;
-    }
-  }
-  
-  // Update other shots' context_refs
-  const S = plan.segments.length;
-  const parentRenderStr = `assets/renders/${parentId}/`;
-  const lastChildRenderStr = `assets/renders/${parentId}${suffixes[S - 1]}/`;
-  
-  for (const otherShotInfo of shots) {
-    if (path.basename(otherShotInfo.abs, '.json') === parentId) continue;
-    
-    let modified = false;
-    const otherShot = otherShotInfo.obj;
-    if (otherShot.context_refs) {
-      otherShot.context_refs = otherShot.context_refs.map(ref => {
-        if (ref.includes(parentRenderStr)) {
-          modified = true;
-          return ref.replace(parentRenderStr, lastChildRenderStr);
-        }
-        return ref;
-      });
-    }
-    
-    if (modified) {
-      fs.writeFileSync(otherShotInfo.abs, JSON.stringify(otherShot, null, 2), 'utf-8');
-      console.log(`   🔗 Updated context_refs in ${otherShotInfo.file} to point to ${parentId}${suffixes[S - 1]}`);
     }
   }
   
@@ -382,6 +393,42 @@ for (const plan of splitPlans) {
 project.timeline = newTimeline;
 fs.writeFileSync(projectPath, JSON.stringify(project, null, 2), 'utf-8');
 console.log(`📝 Updated project.json timeline.`);
+
+// 2.5 Scan all active shots to update their context_refs pointing to old parent shots
+const activeShotsDir = path.join(workDir, 'shots');
+if (fs.existsSync(activeShotsDir)) {
+  const activeShotFiles = fs.readdirSync(activeShotsDir).filter(f => f.endsWith('.json'));
+  for (const activeFile of activeShotFiles) {
+    const activeFilePath = path.join(activeShotsDir, activeFile);
+    try {
+      const activeShot = JSON.parse(fs.readFileSync(activeFilePath, 'utf-8'));
+      if (activeShot.context_refs && Array.isArray(activeShot.context_refs)) {
+        let modified = false;
+        activeShot.context_refs = activeShot.context_refs.map(ref => {
+          for (const plan of splitPlans) {
+            const parentId = plan.parent_id;
+            const parentRenderStr = `assets/renders/${parentId}/`;
+            if (ref.includes(parentRenderStr)) {
+              const S = plan.segments.length;
+              const lastChildId = `${parentId}${suffixes[S - 1]}`;
+              const lastChildRenderStr = `assets/renders/${lastChildId}/`;
+              modified = true;
+              return ref.replace(parentRenderStr, lastChildRenderStr);
+            }
+          }
+          return ref;
+        });
+
+        if (modified) {
+          fs.writeFileSync(activeFilePath, JSON.stringify(activeShot, null, 2), 'utf-8');
+          console.log(`   🔗 Updated context_refs in shots/${activeFile} to point to new split child assets.`);
+        }
+      }
+    } catch (e) {
+      console.warn(`⚠️ Failed to update context_refs in shots/${activeFile}:`, e.message);
+    }
+  }
+}
 
 // 3. Write split report
 const report = {
