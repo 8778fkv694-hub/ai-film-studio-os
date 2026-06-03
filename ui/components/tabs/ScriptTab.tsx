@@ -47,10 +47,20 @@ export default function ScriptTab() {
   };
 
   const splitScript = async () => {
+    if (!script.trim()) {
+      setResult({ success: false, message: '剧本内容为空，请先填写或转换剧本再拆分。' });
+      setTimeout(() => setResult(null), 3000);
+      return;
+    }
     setSplitting(true);
     setResult(null);
     try {
-      const res = await fetch('/api/script/split', { method: 'POST' });
+      // 带上当前编辑器内容，后端先落盘再拆分（无需先手动点保存）
+      const res = await fetch('/api/script/split', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content: script })
+      });
       const data = await res.json();
       if (res.ok) {
         setResult({ success: true, message: `成功拆分为 ${data.count} 个镜头草稿` });
