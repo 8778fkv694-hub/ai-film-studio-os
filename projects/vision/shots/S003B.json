@@ -1,0 +1,44 @@
+{
+  "shot_id": "S003B",
+  "duration_s": 8,
+  "scene_ref": "scenes/scene_assembly_workshop.json",
+  "cam_setup_ref": "comic_panel_02",
+  "characters": [
+    {
+      "ref": "characters/master.json"
+    }
+  ],
+  "props": [
+    {
+      "ref": "props/xr_overlay.json",
+      "state": "alarm"
+    },
+    {
+      "ref": "props/assembly_station.json",
+      "state": "running"
+    }
+  ],
+  "budget": {
+    "tier": "standard",
+    "max_regen": 2
+  },
+  "action": {
+    "beats": [
+      "被点检标记的那项参数节点，在空间地图上由琥珀转为红色告警",
+      "数据分析员以全景孪生远程介入，呈现为车间内的半透明蓝色协作虚影",
+      "他抬手确认趋势、派发工单"
+    ]
+  },
+  "voiceover": {
+    "speaker": "澄",
+    "text": "这里，刚刚红了。别急——我把老师傅的分身，请到你身边来，一起看。",
+    "voice_id": "zh-CN-XiaoxiaoNeural"
+  },
+  "prompt": {
+    "positive": "16:9 cinematic medium shot at the membrane Winding Station (卷制工位); the winding-tension XR node shifts from amber to alarm red (#ef4444); a soft blue holographic avatar of an experienced master (老师傅分身) is summoned and materializes beside the station — clearly a translucent holographic presence, upper body and hands, not a solid person — leaning in to inspect the alarm together; soft even light, photorealistic, 8K",
+    "negative": "physical display screens, wall monitors, cyberpunk neon, solid ghost (analyst must read as semi-transparent overlay), cluttered background, cartoon, blurry, low quality, distorted faces, text artifacts, watermark, logo, dark lighting"
+  },
+  "context_refs": [
+    "S003A"
+  ]
+}

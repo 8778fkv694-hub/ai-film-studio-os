@@ -1,0 +1,8 @@
+{
+  "id": "filter_element",
+  "name": "膜元件",
+  "must_keep": "membrane element kept consistent across shots: flat membrane sheets being wound onto a white central core tube, and the finished high-end spiral-wound RO membrane element with a blue protective wrap and white core tube; precise industrial product",
+  "references": {
+    "images": []
+  }
+}

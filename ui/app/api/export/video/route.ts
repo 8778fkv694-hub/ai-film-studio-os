@@ -21,6 +21,8 @@ export async function POST(request: Request) {
       if (body.preset) {
         args.push('--preset', String(body.preset));
       }
+      // 声音来源：默认 TTS 配音；video=使用画面自带声音
+      args.push('--audio-source', body.audioSource === 'video' ? 'video' : 'tts');
       if (body.subtitles) {
         const family = String(body.subFontFamily || 'Microsoft YaHei').replace(/"/g, '').replace(/'/g, '').split(',')[0].trim();
         const hexMap: Record<string, string> = { '#ffffff': 'white', '#ffff00': 'yellow', '#00ff00': 'green', '#ff8800': 'orange', '#88ccff': 'blue' };

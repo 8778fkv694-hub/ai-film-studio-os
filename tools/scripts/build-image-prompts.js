@@ -162,6 +162,24 @@ function propLock(prop, shotProp) {
   ].filter(Boolean).join(', ');
 }
 
+/**
+ * Resolve full parent context for split shots.
+ * Prefers inline parent_context, falls back to reading shots_archived.
+ */
+function resolveParentContext(shot) {
+  if (!shot.parent_shot_id) return null;
+  // Prefer inline parent_context stored during split
+  if (shot.parent_context) return shot.parent_context;
+  // Fallback: read from shots_archived
+  const archived = readJson(`shots_archived/${shot.parent_shot_id}.json`);
+  if (!archived) return null;
+  return {
+    voiceover_full: archived.voiceover?.text || null,
+    dialogue_full: archived.dialogue?.text || null,
+    action_beats_full: archived.action?.beats || []
+  };
+}
+
 function compileImagePrompt(shotFile, gitHash) {
   const shot = readJson(`shots/${shotFile}`);
   const scene = readJson(shot.scene_ref);
@@ -216,12 +234,32 @@ function compileImagePrompt(shotFile, gitHash) {
   });
   const continuityNotes = formatStateNotes(shot.continuity?.state_changes);
 
+  // Resolve parent context for split shots
+  const parentCtx = resolveParentContext(shot);
+  const isSplitShot = !!parentCtx;
+
   const shotPrompt = [
     `shot ${shot.shot_id}`,
     shot.cam_setup_ref ? `camera intent: ${shot.cam_setup_ref}` : '',
+    // Full parent action beats (for split shots where local beats may be empty)
+    isSplitShot && parentCtx.action_beats_full?.length
+      ? `full action sequence: ${parentCtx.action_beats_full.join('; ')}` : '',
+    // Local segment action beats
     shot.action?.beats?.length ? `action beats: ${shot.action.beats.join('; ')}` : '',
-    shot.voiceover?.text ? `narration intent: ${shot.voiceover.speaker || 'Narrator'} explains "${shot.voiceover.text}"` : '',
-    shot.dialogue?.text ? `dialogue mood: ${shot.dialogue.speaker || 'speaker'} says "${shot.dialogue.text}"` : '',
+    // Full parent voiceover context + segment-specific narration
+    isSplitShot && parentCtx.voiceover_full
+      ? `scene narration (full context, segment ${shot.segment_index}/${shot.segment_count}): ${shot.voiceover?.speaker || 'Narrator'} explains "${parentCtx.voiceover_full}"` : '',
+    shot.voiceover?.text
+      ? (isSplitShot
+        ? `this segment narration: "${shot.voiceover.text}"`
+        : `narration intent: ${shot.voiceover.speaker || 'Narrator'} explains "${shot.voiceover.text}"`) : '',
+    // Full parent dialogue context + segment-specific dialogue
+    isSplitShot && parentCtx.dialogue_full
+      ? `scene dialogue (full context): "${parentCtx.dialogue_full}"` : '',
+    shot.dialogue?.text
+      ? (isSplitShot
+        ? `this segment dialogue: ${shot.dialogue.speaker || 'speaker'} says "${shot.dialogue.text}"`
+        : `dialogue mood: ${shot.dialogue.speaker || 'speaker'} says "${shot.dialogue.text}"`) : '',
     continuityNotes,
     contextContinuity,
     shot.prompt?.positive ? `shot positive notes: ${shot.prompt.positive}` : ''
@@ -263,6 +301,10 @@ function compileImagePrompt(shotFile, gitHash) {
     shot_id: shot.shot_id,
     task_type: 'keyframe_image',
     language: 'en',
+    system_prompt_ref: 'exports/project-system-prompt.txt',
+    workflow: {
+      tool_instructions: "IMPORTANT: Before generating, load the project system prompt from 'system_prompt_ref' as context. Then use this shot's prompt for generation."
+    },
     image_prompt_master: imagePromptMaster,
     image_prompt_scene: imagePromptScene,
     image_prompt_characters: imagePromptCharacters,
@@ -280,6 +322,7 @@ function compileImagePrompt(shotFile, gitHash) {
     duration_s: shot.duration_s,
     voiceover: shot.voiceover || null,
     dialogue: shot.dialogue || null,
+    parent_context: parentCtx || null,
     camera_intent: shot.cam_setup_ref || null,
     continuity: {
       state_in_ref: shot.continuity?.state_in_ref || null,

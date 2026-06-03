@@ -1,0 +1,84 @@
+{
+  "shot_id": "S006",
+  "duration_s": 15,
+  "scene_ref": "scenes/scene_interior.json",
+  "cam_setup_ref": "comic_panel_02",
+  "characters": [
+    {
+      "ref": "characters/visitor_group.json"
+    }
+  ],
+  "props": [
+    {
+      "ref": "props/no_photography_sign.json",
+      "state": "displayed"
+    }
+  ],
+  "action": {
+    "beats": [
+      "A no photography sign is prominently displayed on the wall",
+      "A group of visitors stands in a designated listening area, attentively facing the sign"
+    ]
+  },
+  "dialogue": null,
+  "voiceover": {
+    "speaker": "Narrator",
+    "text": "车间内涉及工艺、设备和产品信息。未经许可，不得拍照、录像或直播。如需交流问题，请在指定区域进行，不要影响现场人员操作。",
+    "voice_id": "narrator_male_01"
+  },
+  "budget": {
+    "tier": "cheap",
+    "max_regen": 1
+  },
+  "prompt": {
+    "positive": "16:9 medium shot, clean room interior with a no photography sign on the wall, a group of visitors in white clean suits standing in a designated area listening, bright industrial overhead lighting, eye-level angle, photorealistic, highly detailed, 8K, industrial documentary style",
+    "negative": "blurry, low quality, distorted faces, wrong proportions, text artifacts, watermark, logo, extra limbs, missing safety equipment, dark lighting, cluttered background"
+  },
+  "context_refs": [
+    "assets/renders/S005B/keyframes/frame_01.png"
+  ],
+  "_keyframes": [
+    "/api/assets/keyframes/S006/frame_01.png"
+  ],
+  "_selected_keyframe": "/api/assets/keyframes/S006/frame_01.png",
+  "_video_url": null,
+  "_video_prompt": {
+    "shot_id": "S006",
+    "duration_s": 15,
+    "prompt": "style: Cinematic Realism v1, mood: cinematic, moody, controlled lighting, color palette: warm highlights, cool shadows. cinematic live-action video shot. scene: 洁净车间内部. 运行设备, 黄色警示线, 压力管路, 仪表盘, 洁净通道, 禁止拍摄标识, 禁止触摸标识. lighting: 明亮白光，工业照明，无影. character (visitor_group): hair fully covered by cleanroom cap, white cleanroom suit, mask, cleanroom shoes or shoe covers, visitor badge + no exposed personal items. prop (no_photography_sign): state: displayed, visually consistent. A no photography sign is prominently displayed on the wall, A group of visitors stands in a designated listening area, attentively facing the sign. Narration: \"车间内涉及工艺、设备和产品信息。未经许可，不得拍照、录像或直播。如需交流问题，请在指定区域进行，不要影响现场人员操作。\". Camera motion: medium shot, subtle hand-held camera feel, focus on subject action. 16:9 medium shot, clean room interior with a no photography sign on the wall, a group of visitors in white clean suits standing in a designated area listening, bright industrial overhead lighting, eye-level angle, photorealistic, highly detailed, 8K, industrial documentary style. Shot-to-shot continuity: maintain identical character identity, scene layout, lighting and prop positions as established in previous shot. Visual style must match preceding frame. Do not introduce new visual elements not present in the reference images. Character identity locked to reference images. No face morphing or outfit variation.. Scene layout locked to context reference frame. Do not reposition props or alter lighting source.. All props match reference images exactly. Prop must_keep: shape, color, size, material unchanged.. Camera transition smooth from previous shot continuity frame. No abrupt jump cut between shots. Stable visual consistency across entire clip. No character drift, no prop mutation, no scene layout shift.",
+    "negative": "cartoon, neon cyberpunk (unless explicitly requested), 杂乱线缆, 溢出液体, 敞开门, 无标识区域, blurry, low quality, distorted faces, wrong proportions, text artifacts, watermark, logo, extra limbs, missing safety equipment, dark lighting, cluttered background, multiple characters, duplicate person, clone, inconsistent lighting, wrong angle, lens distortion, chromatic aberration, face morphing, character drift, outfit change, prop mutation, scene layout shift, extra fingers, distorted limbs, text artifacts, burnt-in subtitles, logo, watermark, motion blur excessive, flickering, framing jump cut",
+    "motion": "medium shot, subtle hand-held camera feel, focus on subject action",
+    "condition_images": [
+      "assets/renders/S005/keyframes/frame_01.png",
+      "assets/renders/S006/keyframes/frame_01.png"
+    ],
+    "context_ref_images": [
+      "assets/renders/S005/keyframes/frame_01.png"
+    ],
+    "tool_hint": "Copy \"prompt\" and \"negative\" into video generation tool. Upload \"condition_images\" for img2vid start/end frame conditioning if supported. \"context_ref_images\" are previous shot keyframes for visual continuity. Duration is a guideline.",
+    "meta": {
+      "compiler_version": "video-prompts-2.0.0",
+      "git_commit": "4821517",
+      "compiled_at": "2026-05-26T05:30:46.593Z",
+      "compiled_from": {
+        "shot": "shots/S006.json",
+        "scene": "scenes/scene_interior.json",
+        "style": "styles/cinematic_v1.json",
+        "characters": [
+          "characters/visitor_group.json"
+        ],
+        "props": [
+          "props/no_photography_sign.json"
+        ]
+      }
+    }
+  },
+  "_takes": [],
+  "_active_take": null,
+  "layout": {
+    "fitMode": "contain",
+    "scale": 1,
+    "stretchX": 0.8,
+    "stretchY": 1
+  }
+}

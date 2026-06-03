@@ -1,0 +1,42 @@
+{
+  "shot_id": "S006A",
+  "duration_s": 9,
+  "scene_ref": "scenes/scene_interior.json",
+  "parent_shot_id": "S006",
+  "segment_index": 1,
+  "segment_count": 2,
+  "split_reason": "duration_s (15s) > max_duration (12s)",
+  "cam_setup_ref": "comic_panel_02",
+  "characters": [
+    {
+      "ref": "characters/visitor_group.json"
+    }
+  ],
+  "props": [
+    {
+      "ref": "props/no_photography_sign.json",
+      "state": "displayed"
+    }
+  ],
+  "budget": {
+    "tier": "cheap",
+    "max_regen": 1
+  },
+  "action": {
+    "beats": [
+      "A no photography sign is prominently displayed on the wall"
+    ]
+  },
+  "voiceover": {
+    "speaker": "Narrator",
+    "text": "车间内涉及工艺、设备和产品信息。未经许可，不得拍照、录像或直播。",
+    "voice_id": "narrator_male_01"
+  },
+  "prompt": {
+    "positive": "16:9 medium shot, clean room interior with a no photography sign on the wall, a group of visitors in white clean suits standing in a designated area listening, bright industrial overhead lighting, eye-level angle, photorealistic, highly detailed, 8K, industrial documentary style",
+    "negative": "blurry, low quality, distorted faces, wrong proportions, text artifacts, watermark, logo, extra limbs, missing safety equipment, dark lighting, cluttered background"
+  },
+  "context_refs": [
+    "assets/renders/S005/keyframes/frame_01.png"
+  ]
+}

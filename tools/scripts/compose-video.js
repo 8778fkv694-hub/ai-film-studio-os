@@ -20,6 +20,38 @@ async function findFfmpeg() {
   return null;
 }
 
+let ffprobeBin = null;
+async function findFfprobe() {
+  for (const p of ['/opt/homebrew/bin/ffprobe', '/usr/local/bin/ffprobe', 'ffprobe', '/opt/miniconda3/bin/ffprobe']) {
+    try { await execFileAsync(p, ['-version']); return p; } catch {}
+  }
+  return null;
+}
+
+// 读取媒体时长（秒）
+async function getDurationSec(file) {
+  if (!ffprobeBin) return null;
+  try {
+    const { stdout } = await execFileAsync(ffprobeBin, [
+      '-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', file
+    ]);
+    const d = parseFloat(stdout.trim());
+    return Number.isFinite(d) && d > 0 ? d : null;
+  } catch { return null; }
+}
+
+// 检测视频文件是否含音轨
+async function hasAudioStream(file) {
+  if (!ffprobeBin) return false;
+  try {
+    const { stdout } = await execFileAsync(ffprobeBin, [
+      '-v', 'error', '-select_streams', 'a',
+      '-show_entries', 'stream=index', '-of', 'csv=p=0', file
+    ]);
+    return stdout.trim().length > 0;
+  } catch { return false; }
+}
+
 // Find support for drawtext filter
 async function findDrawtextFfmpeg() {
   for (const p of ['/opt/miniconda3/bin/ffmpeg', '/usr/local/bin/ffmpeg', '/opt/homebrew/bin/ffmpeg', 'ffmpeg']) {
@@ -33,6 +65,7 @@ async function findDrawtextFfmpeg() {
 
 // Parse remaining arguments
 let preset = 'default_1080p';
+let audioSource = 'tts'; // tts(默认) | video
 let includeSubtitles = false;
 let subFontSize = 20;
 let subFontFamily = 'Microsoft YaHei';
@@ -42,6 +75,7 @@ let subStrokeWidth = 3;
 
 for (let i = 0; i < remainingArgs.length; i++) {
   if (remainingArgs[i] === '--preset' && i + 1 < remainingArgs.length) preset = remainingArgs[i + 1];
+  if (remainingArgs[i] === '--audio-source' && i + 1 < remainingArgs.length) audioSource = remainingArgs[i + 1] === 'video' ? 'video' : 'tts';
   if (remainingArgs[i] === '--subtitles') includeSubtitles = true;
   if (remainingArgs[i] === '--sub-font-size' && i + 1 < remainingArgs.length) subFontSize = parseInt(remainingArgs[i + 1]);
   if (remainingArgs[i] === '--sub-font-family' && i + 1 < remainingArgs.length) subFontFamily = remainingArgs[i + 1].replace(/"/g, '').replace(/'/g, '').split(',')[0].trim();
@@ -151,30 +185,55 @@ async function composeShot(ffmpeg, shot, shotIndex, tmpDir, width, height) {
   console.log(`[Compose] ${shotId}: image=${!!imageFile} video=${!!videoFile} audio=${!!audioFile} duration=${durationS}s`);
 
   // Build aspect-ratio correct scale and pad filters
-  const vfScale = `scale=${width}:${height}:force_original_aspect_ratio=decrease,pad=${width}:${height}:(ow-iw)/2:(oh-ih)/2`;
+  const vfScale = `scale=${width}:${height}:force_original_aspect_ratio=decrease,pad=${width}:${height}:(ow-iw)/2:(oh-ih)/2,setsar=1`;
+
+  // 统一编码参数：所有片段必须完全一致，concat -c copy 才不会在片段边界（尤其图片段）卡住。
+  // 固定帧率 + 固定时基 + 统一音频采样率/声道。
+  const VOPTS = ['-c:v', 'libx264', '-preset', 'fast', '-crf', '23', '-pix_fmt', 'yuv420p', '-r', String(fps), '-video_track_timescale', '90000'];
+  const AOPTS = ['-c:a', 'aac', '-b:a', '128k', '-ar', '44100', '-ac', '2'];
+
+  // 确保始终有一条音轨（无配音则补等长静音），让每段都同时具备 v+a 轨
+  let audioInput = audioFile;
+  if (!audioInput) {
+    audioInput = path.join(tmpDir, `silence_${shotId}.m4a`);
+    await createSilence(ffmpeg, durationS, audioInput);
+  }
 
   if (videoFile) {
-    if (audioFile) {
-      await execFileAsync(ffmpeg, ['-y', '-i', videoFile, '-i', audioFile, '-t', String(durationS), '-c:v', 'libx264', '-preset', 'fast', '-crf', '23', '-vf', vfScale, '-pix_fmt', 'yuv420p', '-c:a', 'aac', '-b:a', '128k', '-shortest', outputFile]);
+    // 声音来源：默认 TTS（视频只当画面，必须显式 -map 选 TTS 音轨，否则 ffmpeg 默认会选用视频自带声音）。
+    // audioSource==='video' 且视频确实带音轨时，才使用画面自带声音。
+    let useOwnAudio = false;
+    if (audioSource === 'video' && ffprobeBin) {
+      useOwnAudio = await hasAudioStream(videoFile);
+    }
+    if (useOwnAudio) {
+      // 用视频自带声音（音画同源，按视频自身长度）
+      await execFileAsync(ffmpeg, ['-y', '-i', videoFile, '-t', String(durationS), '-vf', vfScale, ...VOPTS, ...AOPTS, '-map', '0:v:0', '-map', '0:a:0', '-shortest', outputFile]);
     } else {
-      const sp = path.join(tmpDir, `silence_${shotId}.m4a`);
-      await createSilence(ffmpeg, durationS, sp);
-      await execFileAsync(ffmpeg, ['-y', '-i', videoFile, '-i', sp, '-t', String(durationS), '-c:v', 'libx264', '-preset', 'fast', '-crf', '23', '-vf', vfScale, '-pix_fmt', 'yuv420p', '-c:a', 'aac', '-b:a', '128k', '-shortest', outputFile]);
+      // 用 TTS 配音：目标时长 = durationS（≈配音长度）。视频比配音短时按“10% 规则”补足，且绝不截断旁白（不加 -shortest）。
+      const videoDur = await getDurationSec(videoFile);
+      let videoVf = vfScale;
+      if (videoDur && videoDur > 0.1 && durationS - videoDur > 0.2) {
+        const stretch = durationS / videoDur;           // >1 表示需要放慢/补足
+        if (stretch <= 1.10) {
+          // 差距在 10% 以内：轻微放慢视频铺满（PTS 拉伸）
+          videoVf = `setpts=${stretch.toFixed(4)}*PTS,${vfScale}`;
+          console.log(`[Compose]   ${shotId}: 视频${videoDur.toFixed(1)}s < 目标${durationS}s，放慢×${stretch.toFixed(3)}填满`);
+        } else {
+          // 差距超 10%：末帧定格补足，保旁白完整
+          const pad = (durationS - videoDur).toFixed(3);
+          videoVf = `${vfScale},tpad=stop_mode=clone:stop_duration=${pad}`;
+          console.log(`[Compose]   ${shotId}: 视频${videoDur.toFixed(1)}s < 目标${durationS}s，末帧定格补 ${pad}s（保旁白）`);
+        }
+      }
+      await execFileAsync(ffmpeg, ['-y', '-i', videoFile, '-i', audioInput, '-t', String(durationS), '-vf', videoVf, ...VOPTS, ...AOPTS, '-map', '0:v:0', '-map', '1:a:0', outputFile]);
     }
   } else if (imageFile) {
-    if (audioFile) {
-      await execFileAsync(ffmpeg, ['-y', '-loop', '1', '-i', imageFile, '-i', audioFile, '-t', String(durationS), '-c:v', 'libx264', '-preset', 'fast', '-crf', '23', '-pix_fmt', 'yuv420p', '-vf', vfScale, '-c:a', 'aac', '-b:a', '128k', '-shortest', outputFile]);
-    } else {
-      const sp = path.join(tmpDir, `silence_${shotId}.m4a`);
-      await createSilence(ffmpeg, durationS, sp);
-      await execFileAsync(ffmpeg, ['-y', '-loop', '1', '-i', imageFile, '-i', sp, '-t', String(durationS), '-c:v', 'libx264', '-preset', 'fast', '-crf', '23', '-pix_fmt', 'yuv420p', '-vf', vfScale, '-c:a', 'aac', '-b:a', '128k', '-shortest', outputFile]);
-    }
+    // 图片段：用 -t 铺满整段时长（不加 -shortest，避免配音比时长短时图片被提前截断）
+    await execFileAsync(ffmpeg, ['-y', '-loop', '1', '-i', imageFile, '-i', audioInput, '-t', String(durationS), '-vf', vfScale, ...VOPTS, ...AOPTS, '-map', '0:v:0', '-map', '1:a:0', outputFile]);
   } else {
-    if (audioFile) {
-      await execFileAsync(ffmpeg, ['-y', '-f', 'lavfi', '-i', `color=c=black:s=${width}x${height}:d=${durationS}`, '-i', audioFile, '-t', String(durationS), '-c:v', 'libx264', '-preset', 'fast', '-crf', '23', '-pix_fmt', 'yuv420p', '-c:a', 'aac', '-b:a', '128k', '-shortest', outputFile]);
-    } else {
-      await execFileAsync(ffmpeg, ['-y', '-f', 'lavfi', '-i', `color=c=black:s=${width}x${height}:d=${durationS}`, '-f', 'lavfi', '-i', 'anullsrc=r=44100:cl=mono', '-t', String(durationS), '-c:v', 'libx264', '-preset', 'fast', '-crf', '23', '-pix_fmt', 'yuv420p', '-c:a', 'aac', '-b:a', '64k', '-shortest', outputFile]);
-    }
+    // 纯黑底：同样用 -t 铺满
+    await execFileAsync(ffmpeg, ['-y', '-f', 'lavfi', '-i', `color=c=black:s=${width}x${height}:d=${durationS}`, '-i', audioInput, '-t', String(durationS), '-vf', vfScale, ...VOPTS, ...AOPTS, '-map', '0:v:0', '-map', '1:a:0', outputFile]);
   }
 
   return outputFile;
@@ -207,13 +266,22 @@ function findSystemFont(family) {
 async function concatSegments(ffmpeg, segmentFiles, outputPath) {
   const listFile = outputPath + '.list.txt';
   fs.writeFileSync(listFile, segmentFiles.map(f => `file '${f}'`).join('\n'), 'utf-8');
-  await execFileAsync(ffmpeg, ['-y', '-f', 'concat', '-safe', '0', '-i', listFile, '-c', 'copy', outputPath]);
+  // 视频直拷（各段编码参数已统一，无需重编码）；音频重编码以消除拼接边界的 Non-monotonic DTS（图片/视频混排时尤其明显）。
+  await execFileAsync(ffmpeg, [
+    '-y', '-f', 'concat', '-safe', '0', '-i', listFile,
+    '-c:v', 'copy',
+    '-c:a', 'aac', '-b:a', '128k', '-ar', '44100', '-ac', '2',
+    '-movflags', '+faststart',
+    outputPath
+  ]);
   fs.rmSync(listFile, { force: true });
 }
 
 async function main() {
   const ffmpeg = await findFfmpeg();
   if (!ffmpeg) { console.error('[Compose] ffmpeg 未安装'); process.exit(1); }
+  ffprobeBin = await findFfprobe();
+  console.log(`[Compose] 声音来源: ${audioSource === 'video' ? '画面自带声音' : 'TTS 配音'}`);
 
   const projectPath = path.join(workDir, 'project.json');
   if (!fs.existsSync(projectPath)) { console.error('[Compose] project.json 不存在'); process.exit(1); }

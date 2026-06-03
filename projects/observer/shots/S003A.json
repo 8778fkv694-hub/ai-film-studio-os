@@ -1,0 +1,44 @@
+{
+  "shot_id": "S003A",
+  "duration_s": 14,
+  "scene_ref": "scenes/scene_changing.json",
+  "parent_shot_id": "S003",
+  "segment_index": 1,
+  "segment_count": 2,
+  "split_reason": "duration_s (22s) > max_duration (12s)",
+  "cam_setup_ref": "comic_panel_01",
+  "characters": [
+    {
+      "ref": "characters/visitor_group.json"
+    }
+  ],
+  "props": [
+    {
+      "ref": "props/running_equipment.json",
+      "state": "inactive"
+    },
+    {
+      "ref": "props/recycle_bin.json",
+      "state": "empty"
+    }
+  ],
+  "budget": {
+    "tier": "cheap",
+    "max_regen": 1
+  },
+  "action": {
+    "beats": []
+  },
+  "voiceover": {
+    "speaker": "Narrator",
+    "text": "进入洁净车间必须按要求更衣。请依次穿戴洁净帽、口罩、洁净服、洁净鞋或鞋套。头发必须完全包入帽内，口罩遮住口鼻，",
+    "voice_id": "narrator_male_01"
+  },
+  "prompt": {
+    "positive": "16:9 cinematic wide shot, clean room changing area with lockers and benches, visitors in process of donning clean suits, caps, masks, and shoe covers, bright white lighting, eye-level angle, photorealistic, highly detailed, 8K, industrial documentary style",
+    "negative": "blurry, low quality, distorted faces, wrong proportions, text artifacts, watermark, logo, extra limbs, missing safety equipment, dark lighting, cluttered background"
+  },
+  "context_refs": [
+    "assets/renders/S002/keyframes/frame_01.png"
+  ]
+}

@@ -6,7 +6,14 @@
       "description": "参观滤芯洁净车间注意事项视频脚本",
       "createdAt": "2026-05-25T10:03:55.129Z",
       "updatedAt": "2026-05-25T10:03:55.129Z"
+    },
+    {
+      "id": "vision",
+      "name": "看得见的水",
+      "description": "滤芯装配车间 XR 概念预告 / 企业愿景片（点检·监控·学习三场景）",
+      "createdAt": "2026-06-02T00:00:00.000Z",
+      "updatedAt": "2026-06-02T00:00:00.000Z"
     }
   ],
-  "activeProjectId": "observer"
+  "activeProjectId": "vision"
 }

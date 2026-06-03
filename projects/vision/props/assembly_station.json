@@ -1,0 +1,8 @@
+{
+  "id": "assembly_station",
+  "name": "膜元件产线设备",
+  "must_keep": "membrane-element production machinery: a membrane Winding Station / roll-winding machine (卷膜机/卷制工位) winding flat membrane sheets onto a white central core tube, an end-cap Assembly & potting station, and a Flux Testing bench; brushed stainless steel + frosted glass, clean surfaces, NO buttons and NO physical screens",
+  "references": {
+    "images": []
+  }
+}

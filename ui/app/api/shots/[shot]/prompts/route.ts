@@ -26,6 +26,9 @@ export async function POST(
     const { shot: shotId } = await params;
     const projectDir = path.resolve(getResourcePath('shots'), '..');
 
+    // Run build-project-context (builds project system prompt context)
+    const contextRes = await runScript('build-project-context.js', ['--project-dir', projectDir]);
+
     // Run build-image-prompts (builds all, very fast)
     const imageRes = await runScript('build-image-prompts.js', ['--project-dir', projectDir]);
     
@@ -35,7 +38,7 @@ export async function POST(
     // Run prompt quality scoring
     const scoreRes = await runScript('score-prompts.js', ['--project-dir', projectDir]);
 
-    const success = imageRes.code === 0 && videoRes.code === 0 && scoreRes.code === 0;
+    const success = contextRes.code === 0 && imageRes.code === 0 && videoRes.code === 0 && scoreRes.code === 0;
 
     return NextResponse.json({
       success,

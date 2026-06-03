@@ -1,0 +1,51 @@
+{
+  "shot_id": "S004A",
+  "duration_s": 9,
+  "scene_ref": "scenes/scene_assembly_workshop.json",
+  "cam_setup_ref": "comic_panel_05",
+  "characters": [
+    {
+      "ref": "characters/newbie.json"
+    },
+    {
+      "ref": "characters/master.json"
+    }
+  ],
+  "props": [
+    {
+      "ref": "props/assembly_station.json",
+      "state": "teaching"
+    },
+    {
+      "ref": "props/filter_element.json",
+      "state": "in_hand"
+    },
+    {
+      "ref": "props/xr_overlay.json",
+      "state": "roi_highlight"
+    }
+  ],
+  "action": {
+    "beats": [
+      "新人站在装配工位前，分步语音讲解响起",
+      "讲到哪里，对应的装配区域就在空间里被 XR 高亮框点亮（对应 ROI highlight）",
+      "老师傅装配滤芯的手法以柔和蓝色全息回放叠加示范"
+    ]
+  },
+  "voiceover": {
+    "speaker": "讲解",
+    "text": "来，封装这一手最见功夫。看着亮起来的地方，跟着老师傅的手，把各个元件封装成组件。",
+    "voice_id": "zh-CN-XiaoyiNeural"
+  },
+  "budget": {
+    "tier": "standard",
+    "max_regen": 2
+  },
+  "context_refs": [
+    "S003B"
+  ],
+  "prompt": {
+    "positive": "16:9 cinematic over-the-shoulder shot with slow rack focus; a young Chinese apprentice (~20, blue cleanroom suit, white gloves, XR glasses) at the membrane Winding Station holds flat membrane sheets and a white central core tube; XR ROI highlight frames light up the winding rollers; a soft blue holographic playback of a master hands demonstrates the membrane-winding and tension-control motion; warm tone, soft even light, photorealistic, 8K",
+    "negative": "physical display screens, wall monitors, cyberpunk neon, bulky VR headset, solid second person (master must read as hologram), cluttered background, cartoon, blurry, low quality, distorted faces, text artifacts, watermark, logo, extra fingers, dark lighting"
+  }
+}

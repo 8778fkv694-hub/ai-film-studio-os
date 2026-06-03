@@ -14,18 +14,23 @@ export async function POST(request: Request) {
 
     // Check if single shot_id is provided
     let shotId: string | null = null;
+    let targetDuration: number | null = null;
     try {
       const body = await request.json();
       shotId = body.shot_id || null;
       if (shotId && !/^[A-Za-z0-9_-]+$/.test(shotId)) {
         return NextResponse.json({ error: '无效镜头 ID' }, { status: 400 });
       }
+      const td = Number(body.target_duration);
+      if (Number.isFinite(td) && td > 0) targetDuration = td;
     } catch {
       // No body or invalid JSON, generate all
     }
 
     const args = [toolPath, '--force'];
     if (shotId) args.push('--shot', shotId);
+    // 匹配画面时长仅对单个镜头生效
+    if (shotId && targetDuration) args.push('--target-duration', String(targetDuration));
     if (projectPath) args.push('--project-dir', projectPath);
     const { stdout, stderr } = await execFileAsync('node', args, {
       cwd: projectRoot

@@ -1,0 +1,16 @@
+{
+  "id": "master",
+  "name": "老师傅（全息回放）",
+  "must_keep": {
+    "identity": "经验丰富的老师傅，以 XR 全息分身出现——半透明蓝色,上半身与一双卷制膜片、控制张力的手,发光动作残影,不是实体人物",
+    "hair": "covered (only hands/forearms usually visible in hologram)",
+    "outfit": "white cleanroom suit, rendered as soft blue holographic playback",
+    "accessories": [
+      "holographic motion-trail of hands winding membrane sheets onto a core tube and controlling winding tension",
+      "thin-stroke XR annotation following the gesture"
+    ]
+  },
+  "references": {
+    "images": []
+  }
+}

@@ -1,7 +1,18 @@
 import fs from 'fs';
 import path from 'path';
+import crypto from 'crypto';
 import { NextResponse } from 'next/server';
 import { getResourcePath } from '@/lib/projects';
+
+function currentPromptHash(shotId: string): string {
+  const promptPath = path.join(getResourcePath('prompts'), `${shotId}.final.json`);
+  if (!fs.existsSync(promptPath)) return '';
+  return crypto
+    .createHash('md5')
+    .update(fs.readFileSync(promptPath, 'utf-8'))
+    .digest('hex')
+    .substring(0, 8);
+}
 
 export async function POST(
   request: Request,
@@ -64,6 +75,15 @@ export async function POST(
       if (tags !== undefined) take.review.tags = tags;
       if (notes !== undefined) take.review.notes = notes;
       console.log(`[Takes API] Shot ${shotId} ${takeId} review updated`);
+    } else if (action === 'refresh_prompt_hash') {
+      const hash = currentPromptHash(shotId);
+      if (!hash) {
+        return NextResponse.json({ error: '当前镜头缺少 final.json，请先同步 Prompt' }, { status: 400 });
+      }
+      take.prompt_hash = hash;
+      take.prompt_hash_accepted_at = new Date().toISOString();
+      take.prompt_hash_note = 'accepted_current_take_as_matching_current_prompt';
+      console.log(`[Takes API] Shot ${shotId} ${takeId} prompt hash refreshed to ${hash}`);
     } else {
       return NextResponse.json({ error: `未知 action: ${action}` }, { status: 400 });
     }

@@ -1,0 +1,14 @@
+{
+  "id": "analyst",
+  "name": "数据分析员",
+  "must_keep": {
+    "identity": "数据分析员，约三十岁；以全景孪生远程介入，可呈现为车间内半透明的远程协作虚影",
+    "hair": "neat short hair",
+    "outfit": "white cleanroom suit OR semi-transparent telepresence overlay tint (blue)",
+    "accessories": [
+      "lightweight minimalist XR glasses",
+      "subtle holographic telepresence edge (only if appearing as remote overlay)"
+    ]
+  },
+  "references": { "images": [] }
+}

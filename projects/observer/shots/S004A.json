@@ -1,0 +1,40 @@
+{
+  "shot_id": "S004A",
+  "duration_s": 8,
+  "scene_ref": "scenes/scene_air_shower.json",
+  "parent_shot_id": "S004",
+  "segment_index": 1,
+  "segment_count": 2,
+  "split_reason": "duration_s (15s) > max_duration (12s)",
+  "cam_setup_ref": "comic_panel_02",
+  "characters": [
+    {
+      "ref": "characters/visitor_group.json"
+    }
+  ],
+  "props": [
+    {
+      "ref": "props/no_photography_sign.json",
+      "state": "displayed"
+    }
+  ],
+  "budget": {
+    "tier": "cheap",
+    "max_regen": 1
+  },
+  "action": {
+    "beats": []
+  },
+  "voiceover": {
+    "speaker": "Narrator",
+    "text": "更衣完成后，请按要求进入风淋室。风淋过程中，人员应缓慢转身，",
+    "voice_id": "narrator_male_01"
+  },
+  "prompt": {
+    "positive": "16:9 medium shot, interior of air shower chamber with air nozzles on walls, visitor in clean suit raising arms and slowly turning, bright blue-tinted lighting, eye-level angle, photorealistic, highly detailed, 8K, industrial documentary style",
+    "negative": "blurry, low quality, distorted faces, wrong proportions, text artifacts, watermark, logo, extra limbs, dark lighting, cluttered background"
+  },
+  "context_refs": [
+    "assets/renders/S003/keyframes/frame_01.png"
+  ]
+}

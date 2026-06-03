@@ -1,0 +1,44 @@
+{
+  "shot_id": "S004B",
+  "duration_s": 9,
+  "scene_ref": "scenes/scene_assembly_workshop.json",
+  "cam_setup_ref": "comic_panel_03",
+  "characters": [
+    {
+      "ref": "characters/newbie.json"
+    }
+  ],
+  "props": [
+    {
+      "ref": "props/xr_overlay.json",
+      "state": "quiz"
+    },
+    {
+      "ref": "props/assembly_station.json",
+      "state": "teaching"
+    }
+  ],
+  "action": {
+    "beats": [
+      "一张极简的 XR 测验卡片浮现在新人面前（对应讲解结尾的测验）",
+      "新人抬眼，选出正确答案",
+      "一个绿色对勾确认通过，新人微微一笑"
+    ]
+  },
+  "voiceover": {
+    "speaker": "讲解",
+    "text": "完成新员工引导式课程，答对了。这一手记在心里，往后这条线，就交到你手上了。",
+    "voice_id": "zh-CN-XiaoyiNeural"
+  },
+  "budget": {
+    "tier": "standard",
+    "max_regen": 2
+  },
+  "context_refs": [
+    "S004A"
+  ],
+  "prompt": {
+    "positive": "16:9 cinematic close-up with shallow depth of field; a minimalist floating XR quiz card in front of the young Chinese apprentice, clean thin-stroke options in primary blue (#4a8eff); the apprentice selects the correct answer and a green (#22c55e) check mark confirms; a faint warm smile; screen-free, soft even light, photorealistic, 8K",
+    "negative": "physical display screens, wall monitors, cyberpunk neon, cluttered background, cartoon, blurry, low quality, distorted faces, text artifacts, watermark, logo, dark lighting"
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "shot_id": "S002A",
+  "duration_s": 12,
+  "scene_ref": "scenes/scene_entrance.json",
+  "parent_shot_id": "S002",
+  "segment_index": 1,
+  "segment_count": 2,
+  "split_reason": "duration_s (22s) > max_duration (12s)",
+  "cam_setup_ref": "comic_panel_02",
+  "characters": [
+    {
+      "ref": "characters/visitor_group.json"
+    }
+  ],
+  "props": [
+    {
+      "ref": "props/warning_signage.json",
+      "state": "displayed"
+    }
+  ],
+  "budget": {
+    "tier": "cheap",
+    "max_regen": 1
+  },
+  "action": {
+    "beats": []
+  },
+  "voiceover": {
+    "speaker": "Narrator",
+    "text": "进入车间前，请确认自身状态。如有明显感冒、咳嗽、发热，或身上有明显异味、粉尘、油污等情况，",
+    "voice_id": "narrator_male_01"
+  },
+  "prompt": {
+    "positive": "16:9 medium shot, visitor reading notice board at clean room entrance, notice board with health guidelines and prohibited items list, bright overhead lighting, slightly low angle, photorealistic, highly detailed, 8K, industrial documentary style",
+    "negative": "blurry, low quality, distorted faces, wrong proportions, text artifacts, watermark, logo, extra limbs, dark lighting, cluttered background"
+  },
+  "context_refs": [
+    "assets/renders/S001/keyframes/frame_01.png"
+  ]
+}

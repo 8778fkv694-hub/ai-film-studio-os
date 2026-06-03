@@ -101,12 +101,12 @@ const allOk = [
   validateDir('fixups', 'fixup.schema.json'),
   // Validate render histories
   (() => {
-    const rendersDir = path.join(workDir, 'renders');
+    const rendersDir = path.join(workDir, 'assets', 'renders');
     if (!fs.existsSync(rendersDir)) return true;
     const shotDirs = fs.readdirSync(rendersDir).filter(d => fs.lstatSync(path.join(rendersDir, d)).isDirectory());
     let ok = true;
     for (const d of shotDirs) {
-      const historyPath = path.join('renders', d, 'history.json');
+      const historyPath = path.join('assets', 'renders', d, 'history.json');
       if (fs.existsSync(path.join(workDir, historyPath))) {
         if (!validateFile(historyPath, 'render_history.schema.json')) ok = false;
       }

@@ -55,6 +55,8 @@ export default function ShotDetailPanel({
   const [status, setStatus] = useState<{ type: 'success' | 'error'; message: string; details?: string } | null>(null);
   const [isCopied, setIsCopied] = useState<string | null>(null);
   const [optimizing, setOptimizing] = useState(false);
+  const [videoPromptMode, setVideoPromptMode] = useState<'local' | 'full'>('local');
+  const [imagePromptMode, setImagePromptMode] = useState<'local' | 'full'>('local');
 
   useEffect(() => {
     setShot(initialShot);
@@ -137,6 +139,19 @@ export default function ShotDetailPanel({
     }
   };
 
+  const handleSaveAndCompilePrompts = async () => {
+    setSaving(true);
+    try {
+      await onSave(shot);
+    } catch (err: any) {
+      showStatus('error', err.message || '保存失败');
+      setSaving(false);
+      return;
+    }
+    setSaving(false);
+    await handleCompilePrompts();
+  };
+
   const handleUploadKeyframe = async (file: File | null) => {
     if (!file) return;
     setUploadingKeyframe(true);
@@ -159,6 +174,27 @@ export default function ShotDetailPanel({
       showStatus('error', '上传图片出错');
     } finally {
       setUploadingKeyframe(false);
+    }
+  };
+
+  const handleDeleteKeyframe = async (kfUrl: string) => {
+    const name = kfUrl.split('/').pop() || '';
+    if (!name) return;
+    if (!confirm(`确定删除关键帧「${decodeURIComponent(name)}」？此操作不可撤销。`)) return;
+    try {
+      const res = await fetch(`/api/assets/keyframes/${encodeURIComponent(shot.shot_id)}/${encodeURIComponent(name)}`, {
+        method: 'DELETE'
+      });
+      if (res.ok) {
+        showStatus('success', '关键帧已删除');
+        await fetchShotDetails(shot.shot_id);
+        onReload();
+      } else {
+        const data = await res.json().catch(() => ({}));
+        showStatus('error', data.error || '删除关键帧失败');
+      }
+    } catch {
+      showStatus('error', '删除关键帧出错');
     }
   };
 
@@ -349,7 +385,7 @@ export default function ShotDetailPanel({
           { id: 'edit', label: '分镜编辑', icon: FileText },
           { id: 'assets', label: '资源与引用', icon: Link },
           { id: 'prompts', label: '编译提示词', icon: Sparkles },
-          { id: 'takes', label: 'Takes 审片', icon: Film }
+          { id: 'takes', label: '版本审片', icon: Film }
         ].map((t) => {
           const Icon = t.icon;
           return (
@@ -704,14 +740,22 @@ export default function ShotDetailPanel({
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                       {shot._keyframes.map((kf, i) => (
                         <div key={i} className="group relative bg-slate-900 border border-slate-800 rounded-lg overflow-hidden aspect-video flex items-center justify-center">
-                          <img 
-                            src={kf} 
-                            alt={`frame_${i}`} 
+                          <img
+                            src={kf}
+                            alt={`frame_${i}`}
                             className="w-full h-full object-cover"
                           />
                           <span className="absolute top-1 left-1 text-[9px] bg-black/60 text-slate-200 px-1 rounded uppercase font-mono">
                             {kf.split('/').pop()}
                           </span>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteKeyframe(kf)}
+                            title="删除此关键帧"
+                            className="absolute top-1 right-1 p-1 rounded bg-black/60 text-slate-200 opacity-0 group-hover:opacity-100 hover:bg-red-600 hover:text-white transition"
+                          >
+                            <Trash2 size={12} />
+                          </button>
                         </div>
                       ))}
                     </div>
@@ -789,12 +833,12 @@ export default function ShotDetailPanel({
 
                 <div className="flex justify-end border-b border-slate-800 pb-4">
                   <button
-                    onClick={handleSave}
-                    disabled={saving}
+                    onClick={handleSaveAndCompilePrompts}
+                    disabled={saving || compiling}
                     className="flex items-center gap-1.5 px-6 py-2.5 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white rounded-lg text-sm font-semibold transition"
                   >
-                    {saving ? <Loader2 size={16} className="animate-spin" /> : null}
-                    保存修改并应用
+                    {saving || compiling ? <Loader2 size={16} className="animate-spin" /> : null}
+                    保存并同步 Prompt
                   </button>
                 </div>
 
@@ -848,38 +892,106 @@ export default function ShotDetailPanel({
                         </div>
                       )}
 
+                      {/* Project System Prompt */}
+                      {detailData?.project_system_prompt && (
+                        <div className="bg-slate-950/40 p-4 rounded-xl border border-slate-850 space-y-2">
+                          <div className="flex justify-between items-center">
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs font-bold text-slate-300">📌 项目全局系统提示词 (Project System Prompt)</span>
+                              <span className="text-[10px] text-blue-400 bg-blue-500/10 border border-blue-500/20 px-1.5 py-0.5 rounded-full font-medium">在会话中只需输入一次</span>
+                            </div>
+                            <button
+                              onClick={() => handleCopy(detailData.project_system_prompt, 'sys')}
+                              className="flex items-center gap-1 text-[11px] text-blue-400 hover:text-blue-300 transition"
+                            >
+                              <Copy size={12} />
+                              {isCopied === 'sys' ? '已复制！' : '复制系统提示词'}
+                            </button>
+                          </div>
+                          <pre className="bg-slate-950 p-3 border border-slate-900 rounded text-slate-400 font-mono text-xs whitespace-pre-wrap select-all leading-relaxed max-h-36 overflow-y-auto">
+                            {detailData.project_system_prompt}
+                          </pre>
+                        </div>
+                      )}
+
                       {/* Video Prompt */}
                       <div className="bg-slate-950/40 p-4 rounded-xl border border-slate-850 space-y-2">
-                        <div className="flex justify-between items-center">
+                        <div className="flex justify-between items-center flex-wrap gap-2">
                           <span className="text-xs font-bold text-slate-300">🎥 视频生成提示词 (Video Prompt)</span>
-                          <button
-                            onClick={() => handleCopy(detailData.video_prompt.prompt, 'vid')}
-                            className="flex items-center gap-1 text-[11px] text-blue-400 hover:text-blue-300 transition"
-                          >
-                            <Copy size={12} />
-                            {isCopied === 'vid' ? '已复制！' : '复制提示词'}
-                          </button>
+                          <div className="flex items-center gap-3">
+                            <div className="flex bg-slate-900 p-0.5 rounded-lg border border-slate-800 text-[10px] font-bold">
+                              <button
+                                onClick={() => setVideoPromptMode('local')}
+                                className={`px-2 py-1 rounded transition-all ${videoPromptMode === 'local' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-slate-200'}`}
+                              >
+                                仅分镜提示词
+                              </button>
+                              <button
+                                onClick={() => setVideoPromptMode('full')}
+                                className={`px-2 py-1 rounded transition-all ${videoPromptMode === 'full' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-slate-200'}`}
+                              >
+                                完整提示词
+                              </button>
+                            </div>
+                            <button
+                              onClick={() => handleCopy(
+                                videoPromptMode === 'local' 
+                                  ? (detailData.video_prompt.prompt_shot_only || detailData.video_prompt.prompt)
+                                  : detailData.video_prompt.prompt, 
+                                'vid'
+                              )}
+                              className="flex items-center gap-1 text-[11px] text-blue-400 hover:text-blue-300 transition"
+                            >
+                              <Copy size={12} />
+                              {isCopied === 'vid' ? '已复制！' : '复制当前提示词'}
+                            </button>
+                          </div>
                         </div>
                         <pre className="bg-slate-950 p-3 border border-slate-900 rounded text-emerald-400 font-mono text-xs whitespace-pre-wrap select-all leading-relaxed max-h-40 overflow-y-auto">
-                          {detailData.video_prompt.prompt}
+                          {videoPromptMode === 'local' 
+                            ? (detailData.video_prompt.prompt_shot_only || detailData.video_prompt.prompt)
+                            : detailData.video_prompt.prompt}
                         </pre>
                       </div>
 
                       {/* Image Prompt */}
                       {detailData?.image_prompt && (
                         <div className="bg-slate-950/40 p-4 rounded-xl border border-slate-850 space-y-2">
-                          <div className="flex justify-between items-center">
+                          <div className="flex justify-between items-center flex-wrap gap-2">
                             <span className="text-xs font-bold text-slate-300">🖼️ 关键帧正向提示词 (Image Prompt)</span>
-                            <button
-                              onClick={() => handleCopy(detailData.image_prompt.image_prompt_final, 'img')}
-                              className="flex items-center gap-1 text-[11px] text-blue-400 hover:text-blue-300 transition"
-                            >
-                              <Copy size={12} />
-                              {isCopied === 'img' ? '已复制！' : '复制提示词'}
-                            </button>
+                            <div className="flex items-center gap-3">
+                              <div className="flex bg-slate-900 p-0.5 rounded-lg border border-slate-800 text-[10px] font-bold">
+                                <button
+                                  onClick={() => setImagePromptMode('local')}
+                                  className={`px-2 py-1 rounded transition-all ${imagePromptMode === 'local' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-slate-200'}`}
+                                >
+                                  仅分镜提示词
+                                </button>
+                                <button
+                                  onClick={() => setImagePromptMode('full')}
+                                  className={`px-2 py-1 rounded transition-all ${imagePromptMode === 'full' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-slate-200'}`}
+                                >
+                                  完整提示词
+                                </button>
+                              </div>
+                              <button
+                                onClick={() => handleCopy(
+                                  imagePromptMode === 'local'
+                                    ? (detailData.image_prompt.image_prompt_shot || detailData.image_prompt.image_prompt_final)
+                                    : detailData.image_prompt.image_prompt_final,
+                                  'img'
+                                )}
+                                className="flex items-center gap-1 text-[11px] text-blue-400 hover:text-blue-300 transition"
+                              >
+                                <Copy size={12} />
+                                {isCopied === 'img' ? '已复制！' : '复制当前提示词'}
+                              </button>
+                            </div>
                           </div>
                           <pre className="bg-slate-950 p-3 border border-slate-900 rounded text-purple-400 font-mono text-xs whitespace-pre-wrap select-all leading-relaxed max-h-40 overflow-y-auto">
-                            {detailData.image_prompt.image_prompt_final}
+                            {imagePromptMode === 'local'
+                              ? (detailData.image_prompt.image_prompt_shot || detailData.image_prompt.image_prompt_final)
+                              : detailData.image_prompt.image_prompt_final}
                           </pre>
                         </div>
                       )}
@@ -941,7 +1053,7 @@ export default function ShotDetailPanel({
                 {/* Takes versions list */}
                 <div className="space-y-3">
                   <h3 className="text-sm font-bold text-slate-200">
-                    Takes 历史版本记录 ({detailData?.history?.takes?.length || 0})
+                    版本历史 ({detailData?.history?.takes?.length || 0})
                   </h3>
 
                   {(!detailData?.history?.takes || detailData.history.takes.length === 0) ? (
@@ -983,7 +1095,7 @@ export default function ShotDetailPanel({
                               </div>
                               <div className="space-y-1 min-w-0">
                                 <div className="flex items-center gap-2">
-                                  <span className="font-mono font-bold text-xs text-slate-200">{take.take_id}</span>
+                                  <span className="font-mono font-bold text-xs text-slate-200">版本{(take.take_id.match(/\d+/)?.[0] || '').replace(/^0+/, '') || ''}</span>
                                   <span className={`text-[10px] px-1.5 py-0.5 rounded uppercase font-medium ${
                                     isApproved 
                                       ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' 

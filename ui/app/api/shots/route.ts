@@ -1,9 +1,11 @@
 import { NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
+import crypto from 'crypto';
 import { getResourcePath, getCurrentProjectPath } from '@/lib/projects';
 
 const KEYFRAME_EXTS = new Set(['.jpg', '.jpeg', '.png', '.webp']);
+const STALE_TOLERANCE_MS = 1000;
 
 function listKeyframes(shotId: string) {
   if (!/^[A-Za-z0-9_-]+$/.test(shotId)) return [];
@@ -36,6 +38,160 @@ function findUploadedVideo(shotId: string) {
   return null;
 }
 
+function readJsonFile(filePath: string): any | null {
+  try {
+    return JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+  } catch {
+    return null;
+  }
+}
+
+function fileMtime(filePath: string): number {
+  try {
+    return fs.existsSync(filePath) ? fs.statSync(filePath).mtimeMs : 0;
+  } catch {
+    return 0;
+  }
+}
+
+function maxDirMtime(dirPath: string): number {
+  if (!fs.existsSync(dirPath)) return 0;
+  let max = fileMtime(dirPath);
+  for (const entry of fs.readdirSync(dirPath, { withFileTypes: true })) {
+    const fullPath = path.join(dirPath, entry.name);
+    max = Math.max(max, entry.isDirectory() ? maxDirMtime(fullPath) : fileMtime(fullPath));
+  }
+  return max;
+}
+
+function md5Short(value: string): string {
+  return crypto.createHash('md5').update(value).digest('hex').substring(0, 8);
+}
+
+function resolveResourcePath(projectPath: string | null, projectRoot: string, relPath?: string | null): string | null {
+  if (!projectPath || !relPath || typeof relPath !== 'string') return null;
+  if (path.isAbsolute(relPath)) return relPath;
+  const projectFile = path.join(projectPath, relPath);
+  if (fs.existsSync(projectFile)) return projectFile;
+  return path.join(projectRoot, relPath);
+}
+
+function collectSourceMtime(projectPath: string | null, projectRoot: string, shotPath: string, shot: any): number {
+  if (!projectPath) return fileMtime(shotPath);
+
+  const sourcePaths = new Set<string>([
+    shotPath,
+    path.join(projectPath, 'project.json')
+  ]);
+
+  const addJsonRef = (relPath?: string | null) => {
+    const resolved = resolveResourcePath(projectPath, projectRoot, relPath);
+    if (!resolved) return null;
+    sourcePaths.add(resolved);
+    return readJsonFile(resolved);
+  };
+
+  const scene = addJsonRef(shot.scene_ref);
+  addJsonRef(shot.style_ref || scene?.style_ref);
+
+  for (const item of shot.characters || []) addJsonRef(item?.ref);
+  for (const item of shot.props || []) addJsonRef(item?.ref);
+
+  return Math.max(...Array.from(sourcePaths).map(fileMtime));
+}
+
+function promptState(promptPath: string, sourceMtime: number) {
+  const exists = fs.existsSync(promptPath);
+  const mtime = fileMtime(promptPath);
+  if (!exists) return { state: 'missing', mtime };
+  if (sourceMtime > mtime + STALE_TOLERANCE_MS) return { state: 'stale', mtime };
+  return { state: 'ok', mtime };
+}
+
+function buildSyncState(args: {
+  shot: any;
+  shotPath: string;
+  projectPath: string | null;
+  projectRoot: string;
+  promptsDir: string;
+  activeTake: any | null;
+  hasAudio: boolean;
+}) {
+  const { shot, shotPath, projectPath, projectRoot, promptsDir, activeTake, hasAudio } = args;
+  const baseSourceMtime = collectSourceMtime(projectPath, projectRoot, shotPath, shot);
+  const keyframesMtime = projectPath
+    ? maxDirMtime(path.join(projectPath, 'assets/renders', shot.shot_id, 'keyframes'))
+    : 0;
+  const promptSourceMtime = Math.max(baseSourceMtime, keyframesMtime);
+
+  const videoPromptPath = path.join(promptsDir, `${shot.shot_id}.final.json`);
+  const imagePromptPath = path.join(promptsDir, 'image', `${shot.shot_id}.image.json`);
+  const videoPrompt = promptState(videoPromptPath, promptSourceMtime);
+  const imagePrompt = promptState(imagePromptPath, promptSourceMtime);
+
+  const reasons: string[] = [];
+  const actions: string[] = [];
+
+  if (videoPrompt.state === 'missing') reasons.push('视频 Prompt 未编译');
+  if (videoPrompt.state === 'stale') reasons.push('视频 Prompt 已落后于镜头/素材修改');
+  if (imagePrompt.state === 'missing') reasons.push('图片 Prompt 未编译');
+  if (imagePrompt.state === 'stale') reasons.push('图片 Prompt 已落后于镜头/素材修改');
+  if (videoPrompt.state !== 'ok' || imagePrompt.state !== 'ok') actions.push('sync_prompts');
+
+  let currentPromptHash = '';
+  if (fs.existsSync(videoPromptPath)) {
+    try {
+      currentPromptHash = md5Short(fs.readFileSync(videoPromptPath, 'utf-8'));
+    } catch {}
+  }
+
+  let takePromptState: 'none' | 'unknown' | 'ok' | 'stale' = activeTake ? 'unknown' : 'none';
+  if (activeTake && currentPromptHash && activeTake.prompt_hash) {
+    takePromptState = activeTake.prompt_hash === currentPromptHash ? 'ok' : 'stale';
+    if (takePromptState === 'stale') {
+      reasons.push('当前视频 Take 基于旧 Prompt');
+      actions.push('accept_take_prompt_hash');
+    }
+  } else if (activeTake && !activeTake.prompt_hash) {
+    reasons.push('当前视频 Take 缺少 Prompt 版本标记');
+    actions.push('accept_take_prompt_hash');
+  }
+
+  const hasVoiceText = Boolean(shot.voiceover?.text || shot.dialogue?.text);
+  let audioState: 'none' | 'missing' | 'ok' = 'none';
+  if (hasVoiceText) {
+    audioState = hasAudio ? 'ok' : 'missing';
+    if (audioState === 'missing') {
+      reasons.push('有台词/旁白但尚未生成音频');
+      actions.push('generate_tts');
+    }
+  }
+
+  const status = reasons.length ? 'warning' : 'ok';
+  const label = videoPrompt.state !== 'ok' || imagePrompt.state !== 'ok'
+    ? '待同步'
+    : takePromptState === 'stale'
+    ? '旧视频'
+    : audioState === 'missing'
+    ? '待配音'
+    : '已同步';
+
+  return {
+    status,
+    label,
+    reasons,
+    actions: Array.from(new Set(actions)),
+    video_prompt_state: videoPrompt.state,
+    image_prompt_state: imagePrompt.state,
+    take_prompt_state: takePromptState,
+    audio_state: audioState,
+    current_prompt_hash: currentPromptHash || null,
+    source_mtime: promptSourceMtime,
+    video_prompt_mtime: videoPrompt.mtime,
+    image_prompt_mtime: imagePrompt.mtime
+  };
+}
+
 export async function GET() {
   try {
     const shotsDir = getResourcePath('shots');
@@ -43,9 +199,22 @@ export async function GET() {
       return NextResponse.json([]);
     }
     const promptsDir = getResourcePath('prompts');
+    const projectPath = getCurrentProjectPath();
+    const projectRoot = path.resolve(process.cwd(), '..');
+    const project = projectPath ? (() => {
+      try {
+        return JSON.parse(fs.readFileSync(path.join(projectPath, 'project.json'), 'utf-8'));
+      } catch {
+        return null;
+      }
+    })() : null;
+    const timelineOrder = new Map<string, number>(
+      (project?.timeline || []).map((item: any, index: number) => [item.shot_id, index])
+    );
     const files = fs.readdirSync(shotsDir).filter(f => f.endsWith('.json'));
     const shots = files.map(f => {
-      const content = fs.readFileSync(path.join(shotsDir, f), 'utf-8');
+      const shotPath = path.join(shotsDir, f);
+      const content = fs.readFileSync(shotPath, 'utf-8');
       const shot = JSON.parse(content);
       const keyframes = listKeyframes(shot.shot_id);
       
@@ -62,7 +231,6 @@ export async function GET() {
           if (history.active_take_id) {
             activeTake = takes.find((t: any) => t.take_id === history.active_take_id) || null;
             if (activeTake && activeTake.video_path) {
-              const projectPath = getCurrentProjectPath();
               const fullVideoPath = projectPath ? path.join(projectPath, activeTake.video_path) : '';
               if (fullVideoPath && fs.existsSync(fullVideoPath) && fs.statSync(fullVideoPath).size > 0) {
                 videoUrl = `/api/assets/reference/${activeTake.video_path}`;
@@ -87,6 +255,13 @@ export async function GET() {
         }
       }
 
+      // 是否已生成配音（用于行内编辑时的时长基准判定）
+      let hasAudio = false;
+      try {
+        const audioPath = path.join(getResourcePath('assets'), 'audio', `${shot.shot_id}.mp3`);
+        hasAudio = fs.existsSync(audioPath) && fs.statSync(audioPath).size > 1024;
+      } catch {}
+
       return {
         ...shot,
         _filename: f,
@@ -95,12 +270,27 @@ export async function GET() {
         _video_url: videoUrl,
         _video_prompt: videoPrompt,
         _takes: takes,
-        _active_take: activeTake
+        _active_take: activeTake,
+        _has_audio: hasAudio,
+        _sync_state: buildSyncState({
+          shot,
+          shotPath,
+          projectPath,
+          projectRoot,
+          promptsDir,
+          activeTake,
+          hasAudio
+        })
       };
     });
 
-    // Sort by shot_id
-    shots.sort((a, b) => a.shot_id.localeCompare(b.shot_id));
+    // Sort by timeline first; fall back to shot_id for orphan files.
+    shots.sort((a, b) => {
+      const ai = timelineOrder.has(a.shot_id) ? timelineOrder.get(a.shot_id)! : Number.MAX_SAFE_INTEGER;
+      const bi = timelineOrder.has(b.shot_id) ? timelineOrder.get(b.shot_id)! : Number.MAX_SAFE_INTEGER;
+      if (ai !== bi) return ai - bi;
+      return a.shot_id.localeCompare(b.shot_id);
+    });
     return NextResponse.json(shots);
   } catch (e) {
     return NextResponse.json({ error: '读取失败' }, { status: 500 });
@@ -123,6 +313,7 @@ const SHOT_WHITELIST_FIELDS = [
   'context_refs',
   'prompt',
   'parent_shot_id',
+  'parent_context',
   'segment_index',
   'segment_count',
   'split_reason'

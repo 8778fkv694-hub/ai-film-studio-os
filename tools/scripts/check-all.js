@@ -33,6 +33,12 @@ const steps = [
     cwd: projectRoot,
   },
   {
+    name: 'Build project system prompt context',
+    cmd: process.execPath,
+    args: ['tools/scripts/build-project-context.js', ...subArgs],
+    cwd: projectRoot,
+  },
+  {
     name: 'Build image prompts',
     cmd: process.execPath,
     args: ['tools/scripts/build-image-prompts.js', ...subArgs],

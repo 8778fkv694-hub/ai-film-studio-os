@@ -1,0 +1,46 @@
+{
+  "shot_id": "S001",
+  "duration_s": 11,
+  "scene_ref": "scenes/scene_assembly_workshop.json",
+  "cam_setup_ref": "comic_panel_01",
+  "characters": [
+    {
+      "ref": "characters/inspector.json"
+    }
+  ],
+  "props": [
+    {
+      "ref": "props/xr_glasses.json",
+      "state": "worn"
+    },
+    {
+      "ref": "props/assembly_station.json",
+      "state": "idle"
+    },
+    {
+      "ref": "props/xr_overlay.json",
+      "state": "blooming"
+    }
+  ],
+  "action": {
+    "beats": [
+      "宽镜头确立未来升级版滤芯装配车间：极简、洁净、几乎空旷、没有任何物理屏幕",
+      "点检员王巡检戴上极简轻量 XR 眼镜",
+      "随着她戴上眼镜，墙面的 2D 全景像贴膜般剥离、立体化、包裹住整个空间，淡蓝色全息信息开始浮现"
+    ]
+  },
+  "voiceover": {
+    "speaker": "澄",
+    "text": "戴上它的那一刻，这条NSP膜生产线，忽然在眼前讲起了自己的故事——每一层，都看得清清楚楚。",
+    "voice_id": "zh-CN-XiaoxiaoNeural"
+  },
+  "budget": {
+    "tier": "standard",
+    "max_regen": 2
+  },
+  "context_refs": [],
+  "prompt": {
+    "positive": "16:9 cinematic wide establishing shot of a modern suspended-ceiling membrane-element production cleanroom; a calm Chinese female inspector (~50, blue cleanroom suit, hair under a blue cap) stands at the membrane-element Winding Station (卷制工位) where flat membrane sheets are wound onto a white central core tube, and puts on thin lightweight near-invisible XR glasses; faint holographic blue (#4a8eff) data bloom around the winding machine, showing winding-tension and layer-count readouts; brushed stainless steel wall panels, white LED suspended ceiling; soft even shadowless light, photorealistic, 8K",
+    "negative": "physical display screens, wall monitors, control panels, bulky VR headset, cyberpunk neon, cluttered background, exposed cables, cartoon, blurry, low quality, distorted faces, wrong proportions, text artifacts, watermark, logo, extra limbs, dark lighting"
+  }
+}

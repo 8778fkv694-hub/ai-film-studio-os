@@ -1,0 +1,42 @@
+{
+  "shot_id": "S002B",
+  "duration_s": 12,
+  "scene_ref": "scenes/scene_entrance.json",
+  "parent_shot_id": "S002",
+  "segment_index": 2,
+  "segment_count": 2,
+  "split_reason": "duration_s (22s) > max_duration (12s)",
+  "cam_setup_ref": "comic_panel_02",
+  "characters": [
+    {
+      "ref": "characters/visitor_group.json"
+    }
+  ],
+  "props": [
+    {
+      "ref": "props/warning_signage.json",
+      "state": "displayed"
+    }
+  ],
+  "budget": {
+    "tier": "cheap",
+    "max_regen": 1
+  },
+  "action": {
+    "beats": [
+      "Visitor pauses at entrance, reading notice board with health and item restrictions"
+    ]
+  },
+  "voiceover": {
+    "speaker": "Narrator",
+    "text": "不建议进入洁净区域。随身物品请按要求存放，食品、饮料、纸箱、普通纸张等易产尘物品不得带入车间。",
+    "voice_id": "narrator_male_01"
+  },
+  "prompt": {
+    "positive": "16:9 medium shot, visitor reading notice board at clean room entrance, notice board with health guidelines and prohibited items list, bright overhead lighting, slightly low angle, photorealistic, highly detailed, 8K, industrial documentary style",
+    "negative": "blurry, low quality, distorted faces, wrong proportions, text artifacts, watermark, logo, extra limbs, dark lighting, cluttered background"
+  },
+  "context_refs": [
+    "assets/renders/S002A/keyframes/frame_last.jpg"
+  ]
+}

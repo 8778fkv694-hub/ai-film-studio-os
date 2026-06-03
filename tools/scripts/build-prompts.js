@@ -105,6 +105,24 @@ function propVisual(prop, shotProp) {
     : `(${prop.id})`;
 }
 
+/**
+ * Resolve full parent context for split shots.
+ * Prefers inline parent_context, falls back to reading shots_archived.
+ */
+function resolveParentContext(shot) {
+  if (!shot.parent_shot_id) return null;
+  // Prefer inline parent_context stored during split
+  if (shot.parent_context) return shot.parent_context;
+  // Fallback: read from shots_archived
+  const archived = readJson(`shots_archived/${shot.parent_shot_id}.json`);
+  if (!archived) return null;
+  return {
+    voiceover_full: archived.voiceover?.text || null,
+    dialogue_full: archived.dialogue?.text || null,
+    action_beats_full: archived.action?.beats || []
+  };
+}
+
 function collectReferences(scene, characters, props) {
   const refs = [];
   for (const anchor of scene.anchors || []) {
@@ -182,7 +200,7 @@ function csvCell(value) {
   return `"${s.replace(/"/g, '""')}"`;
 }
 
-function buildVideoContext(shot, scene, style, characters, props, contextContinuity, rulesDoc, shotIndex) {
+function buildVideoContext(shot, scene, style, characters, props, contextContinuity, rulesDoc, shotIndex, parentCtx) {
   const { positiveAppend, negativeAppend } = applyRules(rulesDoc, {
     has_context_refs: (shot.context_refs || []).length > 0,
     has_props: props.length > 0,
@@ -191,6 +209,39 @@ function buildVideoContext(shot, scene, style, characters, props, contextContinu
   });
 
   const motion = cameraMotion(shot.cam_setup_ref);
+  const isSplitShot = !!parentCtx;
+
+  // Build voiceover/dialogue/action text with parent context for split shots
+  let voiceoverText, dialogueText, actionBeatsText;
+
+  if (isSplitShot) {
+    // Full parent narration + segment-specific
+    const fullVo = parentCtx.voiceover_full
+      ? `Scene narration (full context, segment ${shot.segment_index}/${shot.segment_count}): "${parentCtx.voiceover_full}"`
+      : '';
+    const segVo = shot.voiceover?.text ? `This segment narration: "${shot.voiceover.text}"` : '';
+    voiceoverText = [fullVo, segVo].filter(Boolean).join('. ');
+
+    const fullDlg = parentCtx.dialogue_full
+      ? `Scene dialogue (full context): "${parentCtx.dialogue_full}"`
+      : '';
+    const segDlg = shot.dialogue?.text
+      ? `This segment dialogue: ${shot.dialogue.speaker || 'Character'} says: "${shot.dialogue.text}"`
+      : '';
+    dialogueText = [fullDlg, segDlg].filter(Boolean).join('. ');
+
+    const fullBeats = parentCtx.action_beats_full?.length
+      ? `Full action sequence: ${parentCtx.action_beats_full.join(', ')}`
+      : '';
+    const segBeats = shot.action?.beats?.length
+      ? `This segment action: ${shot.action.beats.join(', ')}`
+      : '';
+    actionBeatsText = [fullBeats, segBeats].filter(Boolean).join('. ');
+  } else {
+    voiceoverText = shot.voiceover?.text ? `Narration: "${shot.voiceover.text}"` : '';
+    dialogueText = shot.dialogue?.text ? `${shot.dialogue.speaker || 'Character'} says: "${shot.dialogue.text}"` : '';
+    actionBeatsText = shot.action?.beats?.length ? shot.action.beats.join(', ') : '';
+  }
 
   return {
     style_name: style?.name || '',
@@ -210,9 +261,9 @@ function buildVideoContext(shot, scene, style, characters, props, contextContinu
     props_text: props.map((p, i) => `prop ${propVisual(p, shot.props?.[i])}`).join('. '),
 
     shot_id: shot.shot_id,
-    action_beats: shot.action?.beats?.length ? shot.action.beats.join(', ') : '',
-    voiceover_text: shot.voiceover?.text ? `Narration: "${shot.voiceover.text}"` : '',
-    dialogue_text: shot.dialogue?.text ? `${shot.dialogue.speaker || 'Character'} says: "${shot.dialogue.text}"` : '',
+    action_beats: actionBeatsText,
+    voiceover_text: voiceoverText,
+    dialogue_text: dialogueText,
     camera_intent: shot.cam_setup_ref || '',
     camera_motion: motion,
     continuity_notes: formatStateNotes(shot.continuity?.state_changes),
@@ -225,25 +276,77 @@ function buildVideoContext(shot, scene, style, characters, props, contextContinu
   };
 }
 
-function buildVideoPromptLegacy(shot, scene, style, characters, props, contextContinuity) {
+function buildVideoPromptLegacy(shot, scene, style, characters, props, contextContinuity, parentCtx) {
   const styleLine = [style?.name ? `style: ${style.name}` : '', (style?.mood_keywords || []).join(', '), (style?.palette || []).join(', ')].filter(Boolean);
   const sceneLine = [`scene: ${scene.name || scene.id}`, (scene.must_keep?.set_elements || []).join(', '), scene.must_keep?.lighting ? `lighting: ${scene.must_keep.lighting}` : ''].filter(Boolean);
   const motion = cameraMotion(shot.cam_setup_ref);
+  const isSplitShot = !!parentCtx;
 
   const sentences = [
     styleLine.length > 0 ? styleLine.join(', ') : '',
     sceneLine.length > 0 ? sceneLine.join('. ') : '',
     characters.map(ch => `character ${characterVisual(ch)}`).join('. '),
     props.map((p, i) => `prop ${propVisual(p, shot.props?.[i])}`).join('. '),
-    shot.action?.beats?.length ? shot.action.beats.join(', ') : '',
-    shot.voiceover?.text ? `Narration: "${shot.voiceover.text}"` : '',
-    shot.dialogue?.text ? `${shot.dialogue.speaker || 'Character'} says: "${shot.dialogue.text}"` : '',
+    // Full parent action beats + segment beats for split shots
+    isSplitShot && parentCtx.action_beats_full?.length
+      ? `Full action sequence: ${parentCtx.action_beats_full.join(', ')}` : '',
+    shot.action?.beats?.length
+      ? (isSplitShot ? `This segment action: ${shot.action.beats.join(', ')}` : shot.action.beats.join(', '))
+      : '',
+    // Full parent voiceover + segment narration for split shots
+    isSplitShot && parentCtx.voiceover_full
+      ? `Scene narration (full context, segment ${shot.segment_index}/${shot.segment_count}): "${parentCtx.voiceover_full}"` : '',
+    shot.voiceover?.text
+      ? (isSplitShot ? `This segment narration: "${shot.voiceover.text}"` : `Narration: "${shot.voiceover.text}"`)
+      : '',
+    // Full parent dialogue + segment dialogue for split shots
+    isSplitShot && parentCtx.dialogue_full
+      ? `Scene dialogue (full context): "${parentCtx.dialogue_full}"` : '',
+    shot.dialogue?.text
+      ? (isSplitShot ? `This segment dialogue: ${shot.dialogue.speaker || 'Character'} says: "${shot.dialogue.text}"`
+                     : `${shot.dialogue.speaker || 'Character'} says: "${shot.dialogue.text}"`)
+      : '',
     `Camera motion: ${motion}`,
     formatStateNotes(shot.continuity?.state_changes),
     shot.prompt?.positive || '',
     contextContinuity,
     '16:9 aspect ratio, cinematic quality, 4K, high fidelity, stable visual consistency',
     'No face morphing, no prop mutation, no scene layout shift, no flickering.'
+  ].filter(Boolean);
+
+  return joinSentences(sentences);
+}
+
+function buildVideoPromptShotOnly(shot, parentCtx, contextContinuity) {
+  const isSplitShot = !!parentCtx;
+  const motion = cameraMotion(shot.cam_setup_ref);
+
+  const sentences = [
+    `shot ${shot.shot_id}`,
+    // Full parent action beats + segment beats for split shots
+    isSplitShot && parentCtx.action_beats_full?.length
+      ? `Full action sequence: ${parentCtx.action_beats_full.join(', ')}` : '',
+    shot.action?.beats?.length
+      ? (isSplitShot ? `This segment action: ${shot.action.beats.join(', ')}` : shot.action.beats.join(', '))
+      : '',
+    // Full parent voiceover + segment narration for split shots
+    isSplitShot && parentCtx.voiceover_full
+      ? `Scene narration (full context, segment ${shot.segment_index}/${shot.segment_count}): "${parentCtx.voiceover_full}"` : '',
+    shot.voiceover?.text
+      ? (isSplitShot ? `This segment narration: "${shot.voiceover.text}"` : `Narration: "${shot.voiceover.text}"`)
+      : '',
+    // Full parent dialogue + segment dialogue for split shots
+    isSplitShot && parentCtx.dialogue_full
+      ? `Scene dialogue (full context): "${parentCtx.dialogue_full}"` : '',
+    shot.dialogue?.text
+      ? (isSplitShot ? `This segment dialogue: ${shot.dialogue.speaker || 'Character'} says: "${shot.dialogue.text}"`
+                     : `${shot.dialogue.speaker || 'Character'} says: "${shot.dialogue.text}"`)
+      : '',
+    `Camera motion: ${motion}`,
+    formatStateNotes(shot.continuity?.state_changes),
+    shot.prompt?.positive || '',
+    contextContinuity,
+    '16:9 aspect ratio, cinematic quality, stable visual consistency'
   ].filter(Boolean);
 
   return joinSentences(sentences);
@@ -323,13 +426,17 @@ function compileVideoPrompt(shotFile, gitHash, projectDefaults, shotIndex = 0, t
   const motion = cameraMotion(shot.cam_setup_ref);
   const continuityNotes = formatStateNotes(shot.continuity?.state_changes);
 
+  // Resolve parent context for split shots
+  const parentCtx = resolveParentContext(shot);
+
   const rulesDoc = loadRules();
-  const videoContext = buildVideoContext(shot, scene, style, characters, props, contextContinuity, rulesDoc, shotIndex);
+  const videoContext = buildVideoContext(shot, scene, style, characters, props, contextContinuity, rulesDoc, shotIndex, parentCtx);
 
   const template = loadTemplate('cinematic/video');
   const rendered = template ? renderTemplate(template, videoContext) : null;
   const videoPrompt = rendered?.prompt
-    || buildVideoPromptLegacy(shot, scene, style, characters, props, contextContinuity);
+    || buildVideoPromptLegacy(shot, scene, style, characters, props, contextContinuity, parentCtx);
+  const videoPromptShotOnly = buildVideoPromptShotOnly(shot, parentCtx, contextContinuity);
 
   const negativePrompt = rendered?.negative
     || joinList([...new Set(
@@ -398,7 +505,8 @@ function compileVideoPrompt(shotFile, gitHash, projectDefaults, shotIndex = 0, t
     })),
     action_beats: shot.action?.beats || [],
     dialogue: shot.dialogue || null,
-    voiceover: shot.voiceover || null
+    voiceover: shot.voiceover || null,
+    parent_context: parentCtx || null
   };
 
   const promptSpec = {
@@ -406,8 +514,10 @@ function compileVideoPrompt(shotFile, gitHash, projectDefaults, shotIndex = 0, t
     duration_s: shot.duration_s,
     language: projectDefaults?.language || 'zh',
     task_type: 'video_generation',
+    system_prompt_ref: 'exports/project-system-prompt.txt',
 
     video_prompt: videoPrompt,
+    video_prompt_shot_only: videoPromptShotOnly,
     video_prompt_keywords: videoPromptKeywords,
     video_prompt_short: videoPrompt.length > 500 ? videoPrompt.slice(0, 497) + '...' : videoPrompt,
     negative_prompt: negativePrompt,
@@ -444,11 +554,12 @@ function compileVideoPrompt(shotFile, gitHash, projectDefaults, shotIndex = 0, t
       has_context_refs: availableContextRefs.length > 0,
       keyframe_dir: `assets/renders/${shot.shot_id}/keyframes`,
       expected_keyframes: ['frame_01.jpg', 'frame_02.jpg', 'frame_03.jpg'],
-      tool_instructions: availableContextRefs.length > 0
+      tool_instructions: (availableContextRefs.length > 0
         ? `Use video prompt + context keyframes for img2vid conditioning. Copy 'video_prompt' into your video tool. Use 'available' context_refs images as start-frame conditioning for shot-to-shot visual continuity.`
         : existingKeyframes.length > 0
         ? `Use video prompt + conditioning keyframes for img2vid generation. Copy 'video_prompt' into your video tool, attach 'conditioning_keyframes' as start/end frame conditioning.`
         : `No keyframes found yet. Generate keyframe images first using build-image-prompts, save them to ${shot.shot_id}/keyframes, then re-run this compiler for img2vid conditioning. Text-to-video is still possible with just 'video_prompt'.`
+      ) + " IMPORTANT: Before generating, load the project system prompt from 'exports/project-system-prompt.txt' as context."
     },
 
     validation: {
@@ -475,7 +586,9 @@ function compileVideoPrompt(shotFile, gitHash, projectDefaults, shotIndex = 0, t
   const finalPrompt = {
     shot_id: shot.shot_id,
     duration_s: shot.duration_s,
+    system_prompt_ref: 'exports/project-system-prompt.txt',
     prompt: videoPrompt,
+    prompt_shot_only: videoPromptShotOnly,
     negative: negativePrompt,
     motion: motion,
     condition_images: [
@@ -484,7 +597,7 @@ function compileVideoPrompt(shotFile, gitHash, projectDefaults, shotIndex = 0, t
       ...refImagePaths
     ],
     context_ref_images: availableContextRefs,
-    tool_hint: 'Copy "prompt" and "negative" into video generation tool. Upload "condition_images" for img2vid start/end frame conditioning if supported. "context_ref_images" are previous shot keyframes for visual continuity. Duration is a guideline.',
+    tool_hint: 'IMPORTANT: Load the project system prompt from "exports/project-system-prompt.txt" as context before generating. Copy "prompt" and "negative" into video generation tool. Upload "condition_images" for img2vid start/end frame conditioning if supported.',
     meta: promptSpec.meta
   };
 

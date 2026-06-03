@@ -1,0 +1,46 @@
+{
+  "shot_id": "S009B",
+  "duration_s": 9,
+  "scene_ref": "scenes/scene_interior.json",
+  "parent_shot_id": "S009",
+  "segment_index": 2,
+  "segment_count": 2,
+  "split_reason": "duration_s (15s) > max_duration (12s)",
+  "cam_setup_ref": "comic_panel_01",
+  "characters": [
+    {
+      "ref": "characters/visitor_group.json"
+    }
+  ],
+  "props": [
+    {
+      "ref": "props/running_equipment.json",
+      "state": "operating"
+    },
+    {
+      "ref": "props/warning_signage.json",
+      "state": "visible"
+    }
+  ],
+  "budget": {
+    "tier": "cheap",
+    "max_regen": 1
+  },
+  "action": {
+    "beats": [
+      "Key safety tips overlay on the screen"
+    ]
+  },
+  "voiceover": {
+    "speaker": "Narrator",
+    "text": "请大家做到：规范更衣、完成风淋、只看不摸、不越线、不拍摄。感谢配合。",
+    "voice_id": "narrator_male_01"
+  },
+  "prompt": {
+    "positive": "16:9 wide establishing shot, clean room interior with all machinery running and warning signs visible, visitors standing in a group, bright industrial overhead lighting, high angle, photorealistic, highly detailed, 8K, industrial documentary style, text overlay with safety tips",
+    "negative": "blurry, low quality, distorted faces, wrong proportions, text artifacts, watermark, logo, extra limbs, missing safety equipment, dark lighting, cluttered background"
+  },
+  "context_refs": [
+    "assets/renders/S009A/keyframes/frame_last.jpg"
+  ]
+}

@@ -1,0 +1,42 @@
+{
+  "shot_id": "S004B",
+  "duration_s": 9,
+  "scene_ref": "scenes/scene_air_shower.json",
+  "parent_shot_id": "S004",
+  "segment_index": 2,
+  "segment_count": 2,
+  "split_reason": "duration_s (15s) > max_duration (12s)",
+  "cam_setup_ref": "comic_panel_02",
+  "characters": [
+    {
+      "ref": "characters/visitor_group.json"
+    }
+  ],
+  "props": [
+    {
+      "ref": "props/no_photography_sign.json",
+      "state": "displayed"
+    }
+  ],
+  "budget": {
+    "tier": "cheap",
+    "max_regen": 1
+  },
+  "action": {
+    "beats": [
+      "Visitor enters air shower chamber, raises arms, slowly rotates as air jets blow"
+    ]
+  },
+  "voiceover": {
+    "speaker": "Narrator",
+    "text": "让气流充分吹扫衣物表面。风淋未结束前，不得强行开门或提前离开。",
+    "voice_id": "narrator_male_01"
+  },
+  "prompt": {
+    "positive": "16:9 medium shot, interior of air shower chamber with air nozzles on walls, visitor in clean suit raising arms and slowly turning, bright blue-tinted lighting, eye-level angle, photorealistic, highly detailed, 8K, industrial documentary style",
+    "negative": "blurry, low quality, distorted faces, wrong proportions, text artifacts, watermark, logo, extra limbs, dark lighting, cluttered background"
+  },
+  "context_refs": [
+    "assets/renders/S004A/keyframes/frame_last.jpg"
+  ]
+}

@@ -1,0 +1,42 @@
+{
+  "shot_id": "S006B",
+  "duration_s": 7,
+  "scene_ref": "scenes/scene_interior.json",
+  "parent_shot_id": "S006",
+  "segment_index": 2,
+  "segment_count": 2,
+  "split_reason": "duration_s (15s) > max_duration (12s)",
+  "cam_setup_ref": "comic_panel_02",
+  "characters": [
+    {
+      "ref": "characters/visitor_group.json"
+    }
+  ],
+  "props": [
+    {
+      "ref": "props/no_photography_sign.json",
+      "state": "displayed"
+    }
+  ],
+  "budget": {
+    "tier": "cheap",
+    "max_regen": 1
+  },
+  "action": {
+    "beats": [
+      "A group of visitors stands in a designated listening area, attentively facing the sign"
+    ]
+  },
+  "voiceover": {
+    "speaker": "Narrator",
+    "text": "如需交流问题，请在指定区域进行，不要影响现场人员操作。",
+    "voice_id": "narrator_male_01"
+  },
+  "prompt": {
+    "positive": "16:9 medium shot, clean room interior with a no photography sign on the wall, a group of visitors in white clean suits standing in a designated area listening, bright industrial overhead lighting, eye-level angle, photorealistic, highly detailed, 8K, industrial documentary style",
+    "negative": "blurry, low quality, distorted faces, wrong proportions, text artifacts, watermark, logo, extra limbs, missing safety equipment, dark lighting, cluttered background"
+  },
+  "context_refs": [
+    "assets/renders/S006A/keyframes/frame_last.jpg"
+  ]
+}

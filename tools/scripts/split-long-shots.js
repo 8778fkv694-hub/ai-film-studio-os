@@ -159,6 +159,13 @@ for (const timelineItem of timeline) {
       if (shot.props) childShot.props = shot.props;
       if (shot.budget) childShot.budget = shot.budget;
       
+      // Parent context — preserve full text for downstream prompt compilers
+      childShot.parent_context = {
+        voiceover_full: shot.voiceover?.text || null,
+        dialogue_full: shot.dialogue?.text || null,
+        action_beats_full: parentBeats.length > 0 ? [...parentBeats] : []
+      };
+      
       // Action beats
       childShot.action = { beats: childBeats };
       

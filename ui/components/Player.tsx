@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { Play, Pause, SkipBack, SkipForward, Settings, X, Sliders, RotateCcw } from 'lucide-react';
+import { Play, Pause, SkipBack, SkipForward, Settings, X, Sliders, RotateCcw, Camera, Scissors } from 'lucide-react';
 
 interface Shot {
   shot_id: string;
@@ -48,15 +48,25 @@ interface PlayerProps {
     stretchX: number;
     stretchY: number;
   } | null) => void;
+  onCaptured?: () => void; // 截取分镜画面后通知外层刷新
 }
 
-export default function Player({ shots, subtitleStyle, onSubtitleStyleChange, onShotLayoutChange }: PlayerProps) {
+export default function Player({ shots, subtitleStyle, onSubtitleStyleChange, onShotLayoutChange, onCaptured }: PlayerProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [audioDuration, setAudioDuration] = useState(0);
   const [currentLine, setCurrentLine] = useState('');
   const [showSettings, setShowSettings] = useState(false);
   const [videoHasError, setVideoHasError] = useState(false);
+  const [audioSource, setAudioSource] = useState<'tts' | 'video'>('tts');
+  const [videoDuration, setVideoDuration] = useState(0);
+  const [mediaDuration, setMediaDuration] = useState(0); // 视频精确时长（秒，含小数），供进度条用
+  const [currentTime, setCurrentTime] = useState(0);     // 视频当前播放时间
+  const [audioVersion, setAudioVersion] = useState(0);
+  const [regenLoading, setRegenLoading] = useState(false);
+  const [regenMsg, setRegenMsg] = useState<string | null>(null);
+  // AI 润色后的台词本地覆盖（字幕即时反映，无需整页刷新）
+  const [textOverrides, setTextOverrides] = useState<Record<string, string>>({});
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const safetyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -66,6 +76,9 @@ export default function Player({ shots, subtitleStyle, onSubtitleStyleChange, on
   const currentShot = shots[currentIndex];
   const currentImage = currentShot?._selected_keyframe || currentShot?._keyframes?.[0] || null;
   const currentVideo = currentShot?._video_url || null;
+  const hasVideo = !!currentVideo;
+  // 声音来源：默认 TTS 配音（画面静音只当画面用），可切到画面自带声音
+  const useVideoSound = audioSource === 'video' && hasVideo;
 
   const [showAdjustPanel, setShowAdjustPanel] = useState(false);
   const [shotLayouts, setShotLayouts] = useState<Record<string, {
@@ -174,7 +187,8 @@ export default function Player({ shots, subtitleStyle, onSubtitleStyleChange, on
       subtitleTimerRef.current = null;
     }
 
-    const text = currentShot?.voiceover?.text || currentShot?.dialogue?.text || '';
+    const text = textOverrides[currentShot?.shot_id || '']
+      || currentShot?.voiceover?.text || currentShot?.dialogue?.text || '';
     if (!text || !isPlaying) {
       setCurrentLine('');
       return;
@@ -200,27 +214,33 @@ export default function Player({ shots, subtitleStyle, onSubtitleStyleChange, on
         clearTimeout(subtitleTimerRef.current);
       }
     };
-  }, [currentIndex, currentShot, isPlaying]);
+  }, [currentIndex, currentShot, isPlaying, textOverrides]);
 
-  // Switch shot: load audio or video
+  // Switch shot / source change: load audio + video, sync playback
   useEffect(() => {
     setVideoHasError(false);
     advanceRequestedRef.current = false;
     clearSafetyTimer();
     setAudioDuration(0);
+    setVideoDuration(0);
+    setMediaDuration(0);
+    setCurrentTime(0);
 
     const audio = audioRef.current;
     const video = videoRef.current;
 
     if (audio) {
       audio.pause();
-      audio.src = `/api/assets/audio/${currentShot.shot_id}.mp3`;
+      // audioVersion 用于配音重新生成后强制刷新
+      audio.src = `/api/assets/audio/${currentShot.shot_id}.mp3?v=${audioVersion}`;
       audio.currentTime = 0;
       audio.load();
     }
 
     if (video) {
       video.pause();
+      // TTS 模式下画面静音，只作为画面；画面声音模式下出声
+      video.muted = !useVideoSound;
       if (currentShot._video_url) {
         video.src = currentShot._video_url;
         video.currentTime = 0;
@@ -231,25 +251,24 @@ export default function Player({ shots, subtitleStyle, onSubtitleStyleChange, on
     }
 
     if (isPlaying) {
-      if (currentShot._video_url && video) {
-        video.play().catch(() => {
-          safetyTimerRef.current = setTimeout(() => {
-            handleNext();
-          }, Math.max(1, currentShot.duration_s) * 1000);
-        });
-      } else if (audio) {
-        audio.play().catch(() => {
-          safetyTimerRef.current = setTimeout(() => {
-            handleNext();
-          }, Math.max(1, currentShot.duration_s) * 1000);
-        });
-      } else {
+      const fallbackTimer = () => {
         safetyTimerRef.current = setTimeout(() => {
           handleNext();
         }, Math.max(1, currentShot.duration_s) * 1000);
+      };
+      // 画面：有视频就播放（TTS 模式下已静音）
+      if (hasVideo && video) {
+        video.play().catch(() => { if (!useVideoSound) fallbackTimer(); });
       }
+      // 声音：TTS 模式（或无视频）播配音；画面声音模式停掉配音
+      if (!useVideoSound && audio) {
+        audio.play().catch(() => { if (!hasVideo) fallbackTimer(); });
+      } else if (audio) {
+        audio.pause();
+      }
+      if (!hasVideo && !audio) fallbackTimer();
     }
-  }, [currentIndex, isPlaying, currentShot, handleNext, clearSafetyTimer]);
+  }, [currentIndex, isPlaying, currentShot, audioVersion, useVideoSound, hasVideo, handleNext, clearSafetyTimer]);
 
   // Playback ended → advance
   const handlePlaybackEnded = useCallback(() => {
@@ -257,37 +276,215 @@ export default function Player({ shots, subtitleStyle, onSubtitleStyleChange, on
     handleNext();
   }, [clearSafetyTimer, handleNext]);
 
-  // Audio metadata loaded
+  // Audio (TTS) metadata loaded — 配音始终量时长（即使有视频）
   const handleAudioMetadata = useCallback(() => {
-    if (!audioRef.current || currentShot._video_url) return;
+    if (!audioRef.current) return;
     const dur = Number.isFinite(audioRef.current.duration)
       ? Math.ceil(audioRef.current.duration)
       : 0;
     setAudioDuration(dur);
 
-    const safetySeconds = currentShot.duration_s + 3;
-    if (isPlaying && safetySeconds > 0) {
+    // 仅当配音是主轨（TTS 模式）时由它驱动推进
+    if (isPlaying && !useVideoSound) {
+      clearSafetyTimer();
+      const safetySeconds = (dur || currentShot.duration_s) + 3;
       safetyTimerRef.current = setTimeout(() => {
         handleNext();
       }, safetySeconds * 1000);
     }
-  }, [currentShot, isPlaying, handleNext]);
+  }, [currentShot, isPlaying, useVideoSound, handleNext, clearSafetyTimer]);
 
   // Video metadata loaded
   const handleVideoMetadata = useCallback(() => {
     if (!videoRef.current) return;
-    const dur = Number.isFinite(videoRef.current.duration)
-      ? Math.ceil(videoRef.current.duration)
-      : 0;
-    setAudioDuration(dur);
+    const exact = Number.isFinite(videoRef.current.duration) ? videoRef.current.duration : 0;
+    const dur = Math.ceil(exact);
+    setVideoDuration(dur);
+    setMediaDuration(exact);
 
-    const safetySeconds = dur + 3;
-    if (isPlaying && safetySeconds > 0) {
+    // 仅当画面声音是主轨时由视频驱动推进
+    if (isPlaying && useVideoSound) {
+      clearSafetyTimer();
+      const safetySeconds = dur + 3;
       safetyTimerRef.current = setTimeout(() => {
         handleNext();
       }, safetySeconds * 1000);
     }
-  }, [isPlaying, handleNext]);
+  }, [isPlaying, useVideoSound, handleNext, clearSafetyTimer]);
+
+  // 主轨结束才推进，避免画面/配音任一先结束导致截断
+  const handleAudioEnded = useCallback(() => {
+    if (!useVideoSound) handlePlaybackEnded();
+  }, [useVideoSound, handlePlaybackEnded]);
+
+  const handleVideoEnded = useCallback(() => {
+    if (useVideoSound) handlePlaybackEnded();
+  }, [useVideoSound, handlePlaybackEnded]);
+
+  // 智能默认（视频短/配音长）：TTS 模式下，仅当“需要放慢幅度 ≤ 10%”时轻微放慢视频铺满；
+  // 超过 10% 则保持 1x —— 视频放完末帧定格、配音继续讲完（保旁白，绝不剪音频）。
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+    if (audioSource === 'tts' && hasVideo && audioDuration > 0 && videoDuration > 0 && videoDuration < audioDuration) {
+      const stretch = audioDuration / videoDuration; // >1 = 需要放慢
+      video.playbackRate = stretch <= 1.10 ? (videoDuration / audioDuration) : 1;
+    } else {
+      video.playbackRate = 1;
+    }
+  }, [audioDuration, videoDuration, audioSource, hasVideo, currentIndex]);
+
+  // 进度条拖动：定位视频到指定时间
+  const handleSeek = useCallback((time: number) => {
+    const video = videoRef.current;
+    if (!video) return;
+    const t = Math.max(0, Math.min(time, mediaDuration || video.duration || 0));
+    video.currentTime = t;
+    setCurrentTime(t);
+  }, [mediaDuration]);
+
+  const fmtTime = (s: number) => {
+    if (!Number.isFinite(s) || s < 0) s = 0;
+    const m = Math.floor(s / 60);
+    const sec = Math.floor(s % 60);
+    const ms = Math.round((s - Math.floor(s)) * 1000);
+    return `${m}:${String(sec).padStart(2, '0')}.${String(ms).padStart(3, '0')}`;
+  };
+
+  // 截取分镜画面：抓当前显示帧，文件名带秒+毫秒
+  const [captureMsg, setCaptureMsg] = useState<string | null>(null);
+  const handleCapture = useCallback(async () => {
+    const video = videoRef.current;
+    if (!video || !currentShot) return;
+    if (!video.videoWidth) { setCaptureMsg('视频未就绪'); setTimeout(() => setCaptureMsg(null), 2000); return; }
+    const t = video.currentTime || 0;
+    const sec = Math.floor(t);
+    const ms = Math.round((t - sec) * 1000);
+    const fname = `frame_${sec}s${String(ms).padStart(3, '0')}ms.jpg`;
+    try {
+      const canvas = document.createElement('canvas');
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) { setCaptureMsg('截图失败'); return; }
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      const blob: Blob | null = await new Promise(res => canvas.toBlob(b => res(b), 'image/jpeg', 0.95));
+      if (!blob) { setCaptureMsg('截图失败'); return; }
+      const fd = new FormData();
+      fd.append('file', new File([blob], fname, { type: 'image/jpeg' }));
+      fd.append('filename', fname);
+      const res = await fetch(`/api/assets/keyframes/${encodeURIComponent(currentShot.shot_id)}/upload`, { method: 'POST', body: fd });
+      if (res.ok) {
+        setCaptureMsg(`已截取 ${sec}秒${ms}毫秒 → ${fname}`);
+        onCaptured?.();
+      } else {
+        const d = await res.json().catch(() => ({}));
+        setCaptureMsg(d.error || '保存失败');
+      }
+    } catch {
+      setCaptureMsg('截图失败');
+    }
+    setTimeout(() => setCaptureMsg(null), 3000);
+  }, [currentShot, onCaptured]);
+
+  // 从当前进度位置，按 timeline 插入新的分镜头（当前帧作新镜首帧）
+  const handleSaveAsNewShot = useCallback(async () => {
+    const video = videoRef.current;
+    if (!video || !currentShot) return;
+    if (!video.videoWidth) { setCaptureMsg('视频未就绪'); setTimeout(() => setCaptureMsg(null), 2000); return; }
+    const t = video.currentTime || 0;
+    try {
+      const canvas = document.createElement('canvas');
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) { setCaptureMsg('截图失败'); return; }
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      const blob: Blob | null = await new Promise(res => canvas.toBlob(b => res(b), 'image/jpeg', 0.95));
+      const fd = new FormData();
+      if (blob) fd.append('file', new File([blob], 'frame_00.jpg', { type: 'image/jpeg' }));
+      fd.append('from_shot_id', currentShot.shot_id);
+      fd.append('time', String(t));
+      fd.append('media_duration', String(mediaDuration || video.duration || 0));
+      const res = await fetch('/api/shots/split', { method: 'POST', body: fd });
+      if (res.ok) {
+        const d = await res.json().catch(() => ({}));
+        const newId = d.new_shot_id || '新分镜';
+        const sourceId = d.source_shot_id || currentShot.shot_id;
+        const promptNote = d.prompt_rebuild?.success === false ? '，提示词重编译失败' : '，提示词已重编译';
+        setCaptureMsg(`已插入 ${newId}（${sourceId} 第 ${fmtTime(t)}${promptNote}）`);
+        onCaptured?.();
+      } else {
+        const d = await res.json().catch(() => ({}));
+        setCaptureMsg(d.error || '新建分镜失败');
+      }
+    } catch {
+      setCaptureMsg('新建分镜失败');
+    }
+    setTimeout(() => setCaptureMsg(null), 3500);
+  }, [currentShot, mediaDuration, onCaptured]);
+
+  // AI 匹配画面时长，重新生成配音
+  const handleRegenTts = useCallback(async () => {
+    if (!currentShot || !videoDuration) return;
+    setRegenLoading(true);
+    setRegenMsg(null);
+    try {
+      const res = await fetch('/api/tts/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ shot_id: currentShot.shot_id, target_duration: videoDuration })
+      });
+      if (res.ok) {
+        setAudioDuration(0);
+        setAudioVersion(v => v + 1); // 触发音频重新加载
+        setRegenMsg('已按画面时长重新生成配音');
+      } else {
+        const d = await res.json().catch(() => ({}));
+        setRegenMsg(d.error || '重新生成失败');
+      }
+    } catch {
+      setRegenMsg('重新生成失败');
+    } finally {
+      setRegenLoading(false);
+    }
+  }, [currentShot, videoDuration]);
+
+  // 档3 · AI 润色台词（更柔和；有视频不匹配时按画面时长控制字数），随后重生成配音
+  const handleOptimizeVoiceover = useCallback(async () => {
+    if (!currentShot) return;
+    const fitDuration = audioSource === 'tts' && videoDuration > 0 ? videoDuration : undefined;
+    setRegenLoading(true);
+    setRegenMsg(null);
+    try {
+      const res = await fetch('/api/ai/optimize-voiceover', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ shot_id: currentShot.shot_id, target_duration: fitDuration })
+      });
+      const d = await res.json().catch(() => ({}));
+      if (res.ok && d.text) {
+        setTextOverrides(prev => ({ ...prev, [currentShot.shot_id]: d.text }));
+        // 台词已改，按画面时长重新生成配音
+        await fetch('/api/tts/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ shot_id: currentShot.shot_id, target_duration: fitDuration })
+        });
+        setAudioDuration(0);
+        setAudioVersion(v => v + 1);
+        setRegenMsg('已润色台词并重配配音');
+      } else {
+        setRegenMsg(d.error || '台词润色失败');
+      }
+    } catch {
+      setRegenMsg('台词润色失败');
+    } finally {
+      setRegenLoading(false);
+    }
+  }, [currentShot, audioSource, videoDuration]);
+
+  const hasVoiceover = !!(currentShot?.voiceover?.text || currentShot?.dialogue?.text);
 
   // Video playback error fallback
   const handleVideoError = useCallback(() => {
@@ -337,7 +534,15 @@ export default function Player({ shots, subtitleStyle, onSubtitleStyleChange, on
 
   if (!currentShot) return <div className="text-slate-500">暂无镜头数据。</div>;
 
-  const effectiveDuration = audioDuration || currentShot.duration_s;
+  const effectiveDuration = (useVideoSound ? videoDuration : audioDuration) || currentShot.duration_s;
+  // TTS 模式 + 有视频时，比较配音与画面时长
+  const canCompare = hasVideo && audioSource === 'tts' && audioDuration > 0 && videoDuration > 0;
+  const rawFit = canCompare ? videoDuration / audioDuration : 1; // 视频需要的速度倍率
+  // 档2：±10% 以内 → 视频微调静默吸收
+  const absorbed = canCompare && Math.abs(videoDuration - audioDuration) >= 1 && rawFit >= 0.9 && rawFit <= 1.1;
+  const fitRate = Math.min(1.1, Math.max(0.9, rawFit));
+  // 差太多（超出 ±10%）→ 提示按画面时长重配 TTS（含闭环 + 可改台词）
+  const durMismatch = canCompare && (rawFit < 0.9 || rawFit > 1.1);
 
   return (
     <div className="w-full overflow-hidden rounded-lg border border-slate-800 bg-black shadow-2xl">
@@ -345,11 +550,15 @@ export default function Player({ shots, subtitleStyle, onSubtitleStyleChange, on
         <div className="absolute inset-0 flex items-center justify-center overflow-hidden">
           {currentVideo && !videoHasError ? (
             <video
+              key={currentShot.shot_id}
               ref={videoRef}
               src={currentVideo}
+              poster={currentImage || undefined}
+              preload="auto"
               onLoadedMetadata={handleVideoMetadata}
+              onTimeUpdate={() => setCurrentTime(videoRef.current?.currentTime || 0)}
               onError={handleVideoError}
-              onEnded={handlePlaybackEnded}
+              onEnded={handleVideoEnded}
               className="max-h-full max-w-full w-auto h-auto"
               style={{
                 objectFit: currentLayout.fitMode,
@@ -527,9 +736,27 @@ export default function Player({ shots, subtitleStyle, onSubtitleStyleChange, on
           ref={audioRef}
           onLoadedMetadata={handleAudioMetadata}
           onError={handleAudioError}
-          onEnded={handlePlaybackEnded}
+          onEnded={handleAudioEnded}
         />
       </div>
+
+      {/* 视频进度条：可拖动定位，便于截取任意时间点的分镜画面 */}
+      {hasVideo && mediaDuration > 0 && (
+        <div className="flex items-center gap-3 border-t border-slate-800 bg-slate-950 px-3 pt-3 sm:px-4">
+          <span className="text-[11px] font-mono text-slate-400 tabular-nums whitespace-nowrap">{fmtTime(currentTime)}</span>
+          <input
+            type="range"
+            min={0}
+            max={mediaDuration}
+            step={0.01}
+            value={Math.min(currentTime, mediaDuration)}
+            onChange={e => handleSeek(Number(e.target.value))}
+            className="flex-1 h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-blue-500"
+            title="拖动定位视频，到目标时间点后可点「截取此帧」"
+          />
+          <span className="text-[11px] font-mono text-slate-500 tabular-nums whitespace-nowrap">{fmtTime(mediaDuration)}</span>
+        </div>
+      )}
 
       <div className="flex flex-col gap-3 border-t border-slate-800 bg-slate-950 p-3 sm:flex-row sm:items-center sm:justify-between sm:p-4">
         <div className="flex items-center gap-4">
@@ -547,6 +774,30 @@ export default function Player({ shots, subtitleStyle, onSubtitleStyleChange, on
           <button onClick={handleNext} className="p-2 hover:bg-slate-800 rounded-full text-slate-400 hover:text-white transition">
             <SkipForward size={24} />
           </button>
+
+          {hasVideo && (
+            <button
+              onClick={handleCapture}
+              title="截取当前帧为分镜画面（文件名带秒+毫秒）"
+              className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm bg-blue-600/15 text-blue-300 border border-blue-500/30 hover:bg-blue-600/25 transition"
+            >
+              <Camera size={16} />
+              截取此帧
+            </button>
+          )}
+          {hasVideo && (
+            <button
+              onClick={handleSaveAsNewShot}
+              title={`从当前位置插入新分镜（按 timeline 重排 A/B/C 编号，取自 ${currentShot.shot_id}）`}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm bg-purple-600/15 text-purple-300 border border-purple-500/30 hover:bg-purple-600/25 transition"
+            >
+              <Scissors size={16} />
+              存为新分镜
+            </button>
+          )}
+          {captureMsg && (
+            <span className="text-[11px] text-emerald-300 font-mono whitespace-nowrap">{captureMsg}</span>
+          )}
 
           <div className="relative">
             <button
@@ -623,7 +874,7 @@ export default function Player({ shots, subtitleStyle, onSubtitleStyleChange, on
                       fontWeight: 600,
                       lineHeight: 1.5,
                     }}>
-                      欢迎参观滤芯洁净车间
+                      {(shots.map(s => s.voiceover?.text || s.dialogue?.text).find(Boolean) || '字幕预览示例').split(/(?<=[。，,.;；!！?？])/)[0]}
                     </div>
                   </div>
                 </div>
@@ -632,8 +883,71 @@ export default function Player({ shots, subtitleStyle, onSubtitleStyleChange, on
           </div>
         </div>
 
-        <div className="text-slate-500 font-mono text-sm">
-          镜头 {currentIndex + 1} / {shots.length} · {effectiveDuration}秒
+        <div className="flex flex-col items-stretch gap-2 sm:flex-row sm:items-center sm:gap-4">
+          {/* 声音来源切换：默认 TTS 配音，可切画面声音 */}
+          <div className="flex items-center gap-2">
+            <span className="text-[11px] text-slate-500 whitespace-nowrap">声音来源</span>
+            <div className="inline-flex rounded-lg border border-slate-700 overflow-hidden text-xs">
+              <button
+                onClick={() => setAudioSource('tts')}
+                className={`px-2.5 py-1 transition ${audioSource === 'tts' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800'}`}
+                title="使用 TTS 配音（画面静音，仅作画面）"
+              >
+                TTS 配音
+              </button>
+              <button
+                onClick={() => hasVideo && setAudioSource('video')}
+                disabled={!hasVideo}
+                className={`px-2.5 py-1 transition ${audioSource === 'video' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800'} disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent`}
+                title={hasVideo ? '使用画面自带声音' : '当前镜头无上传视频'}
+              >
+                画面声音
+              </button>
+            </div>
+          </div>
+
+          {/* AI 润色台词：更柔和自然；有视频且时长不匹配时，按画面时长控制字数后重配配音 */}
+          {hasVoiceover && (
+            <button
+              onClick={handleOptimizeVoiceover}
+              disabled={regenLoading}
+              className="px-2.5 py-1 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 hover:text-white hover:bg-slate-700 disabled:opacity-50 text-xs whitespace-nowrap transition"
+              title={durMismatch ? '按画面时长把台词改短/改长并更柔和，再重配配音' : '把台词改得更自然、柔和'}
+            >
+              {regenLoading ? '处理中…' : (durMismatch ? 'AI 润色台词配时长' : 'AI 润色台词')}
+            </button>
+          )}
+
+          {/* 档2：差一两秒，视频速度已静默吸收 */}
+          {absorbed && (
+            <span className="text-[11px] text-slate-500 whitespace-nowrap">
+              画面 {fitRate.toFixed(2)}x 贴合配音
+            </span>
+          )}
+
+          {/* 档3：差太多 → AI 匹配时长重生成（闭环，必要时改台词） */}
+          {durMismatch && (
+            <div className="flex items-center gap-2">
+              <span className="text-[11px] text-amber-400 whitespace-nowrap">
+                配音 {audioDuration}s / 画面 {videoDuration}s
+              </span>
+              <button
+                onClick={handleRegenTts}
+                disabled={regenLoading}
+                className="px-2.5 py-1 rounded-lg bg-amber-600/20 text-amber-300 border border-amber-500/30 hover:bg-amber-600/30 disabled:opacity-50 text-xs whitespace-nowrap transition"
+                title="按画面时长用 AI 调整语速重新生成配音"
+              >
+                {regenLoading ? '生成中…' : 'AI 匹配时长重生成'}
+              </button>
+            </div>
+          )}
+          {regenMsg && !durMismatch && (
+            <span className="text-[11px] text-emerald-400 whitespace-nowrap">{regenMsg}</span>
+          )}
+
+          <div className="text-slate-500 font-mono text-sm whitespace-nowrap">
+            镜头 {currentIndex + 1} / {shots.length} · {effectiveDuration}秒
+          </div>
         </div>
       </div>
     </div>

@@ -64,6 +64,19 @@ async function getAudioDuration(mp3Path) {
   }
 }
 
+// 精确时长（秒，不取整），用于闭环匹配迭代
+async function getAudioDurationPrecise(mp3Path) {
+  try {
+    const { stdout } = await execFileAsync('ffprobe', [
+      '-v', 'error', '-show_entries', 'format=duration', '-of', 'json', mp3Path
+    ]);
+    const d = parseFloat(JSON.parse(stdout).format?.duration || '0');
+    return isNaN(d) || d <= 0 ? null : d;
+  } catch {
+    return null;
+  }
+}
+
 async function updateShotDuration(shotId, newDuration) {
   const shotFile = path.join(workDir, 'shots', `${shotId}.json`);
   const shot = readJson(shotFile);
@@ -138,11 +151,62 @@ async function concatMp3(segmentFiles, outFile, shot_id = 'unknown') {
   }
 }
 
+// 把分段自带的 rate（如 -4%）与额外的语速偏移（用于匹配时长）相加，并夹到合理区间
+function combineRate(baseRate, extraPct) {
+  const base = parseInt(String(baseRate || '0').replace('%', ''), 10) || 0;
+  let total = base + (extraPct || 0);
+  total = Math.max(-45, Math.min(90, Math.round(total)));
+  return `${total >= 0 ? '+' : ''}${total}%`;
+}
+
+// 合成一个镜头的全部语音分段并拼接到 outFile；extraRatePct 为额外语速偏移
+async function renderSegments(tts, segments, shot_id, tmpDir, outFile, extraRatePct = 0) {
+  const segmentFiles = [];
+  for (let i = 0; i < segments.length; i += 1) {
+    const segment = segments[i];
+    const safeText = safeSpeechText(segment.text);
+    if (!safeText) continue;
+    const segmentFile = path.join(tmpDir, `${shot_id}_${String(i + 1).padStart(2, '0')}_${segment.role}.mp3`);
+    const rate = combineRate(segment.rate, extraRatePct);
+    console.log(`[TTS]   ${segment.role}: "${safeText}" (${segment.voice}, rate ${rate})`);
+
+    let success = false;
+    let attempts = 3;
+    while (attempts > 0 && !success) {
+      try {
+        await tts.ttsPromise(safeText, segmentFile, {
+          voice: segment.voice,
+          rate,
+          pitch: 0,
+          volume: 0
+        });
+        success = true;
+      } catch (err) {
+        attempts--;
+        console.warn(`[TTS]   Attempt failed for ${shot_id} (${segment.role}), ${attempts} attempts remaining. Error:`, err);
+        if (attempts > 0) {
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        } else {
+          throw err;
+        }
+      }
+    }
+    segmentFiles.push(segmentFile);
+  }
+
+  if (segmentFiles.length === 0) return false;
+  await concatMp3(segmentFiles, outFile, shot_id);
+  return true;
+}
+
 async function main() {
   const tts = new EdgeTTS();
   const force = process.argv.includes('--force');
   const shotArgIndex = process.argv.indexOf('--shot');
   const onlyShotId = shotArgIndex >= 0 ? process.argv[shotArgIndex + 1] : null;
+  const targetArgIndex = process.argv.indexOf('--target-duration');
+  const targetDuration = targetArgIndex >= 0 ? parseFloat(process.argv[targetArgIndex + 1]) : null;
+  const hasTarget = targetDuration && Number.isFinite(targetDuration) && targetDuration > 0;
   const shotsDir = path.join(workDir, 'shots');
   const audioDir = path.join(workDir, 'assets/audio');
   const tmpDir = path.join(workDir, '.local/tts-segments');
@@ -176,49 +240,54 @@ async function main() {
       }
 
       console.log(`[TTS] Generating audio for ${shot_id}: ${segments.length} segment(s)...`);
-      
+
       try {
-        const segmentFiles = [];
-        for (let i = 0; i < segments.length; i += 1) {
-          const segment = segments[i];
-          const safeText = safeSpeechText(segment.text);
-          if (!safeText) continue;
-          const segmentFile = path.join(tmpDir, `${shot_id}_${String(i + 1).padStart(2, '0')}_${segment.role}.mp3`);
-          console.log(`[TTS]   ${segment.role}: "${safeText}" (${segment.voice})`);
-          
-          let success = false;
-          let attempts = 3;
-          while (attempts > 0 && !success) {
-            try {
-              await tts.ttsPromise(safeText, segmentFile, {
-                voice: segment.voice,
-                rate: segment.rate,
-                pitch: 0,
-                volume: 0
-              });
-              success = true;
-            } catch (err) {
-              attempts--;
-              console.warn(`[TTS]   Attempt failed for ${shot_id} (${segment.role}), ${attempts} attempts remaining. Error:`, err);
-              if (attempts > 0) {
-                await new Promise(resolve => setTimeout(resolve, 1000));
-              } else {
-                throw err;
-              }
+        // 第一遍：自然语速合成
+        const ok = await renderSegments(tts, segments, shot_id, tmpDir, outFile, 0);
+        if (!ok) continue;
+
+        if (hasTarget) {
+          // 闭环匹配画面时长：实测 → 修正语速 → 重合成，最多 3 次，保留最接近的一版
+          const TOL = 0.35;          // 容差（秒）
+          const RATE_MIN = -45, RATE_MAX = 90; // 语速舒适/可用区间
+          const bestFile = `${outFile}.best.mp3`;
+          let extraPct = 0;
+          let best = { dur: await getAudioDurationPrecise(outFile), rate: 0 };
+          fs.copyFileSync(outFile, bestFile);
+
+          for (let attempt = 1; attempt <= 3; attempt++) {
+            const cur = await getAudioDurationPrecise(outFile);
+            if (!cur) break;
+            if (Math.abs(cur - targetDuration) <= TOL) break;
+            // 由当前语速与实测时长反推自然时长，再算命中目标所需语速
+            const naturalEst = cur * (1 + extraPct / 100);
+            let newPct = Math.round(100 * (naturalEst / targetDuration - 1));
+            newPct = Math.max(RATE_MIN, Math.min(RATE_MAX, newPct));
+            if (newPct === extraPct) break; // 语速已触顶，再调也无效 → 该改台词（档3）
+            extraPct = newPct;
+            console.log(`[TTS]   第${attempt}次匹配：实测 ${cur.toFixed(2)}s → 目标 ${targetDuration}s，语速 ${extraPct >= 0 ? '+' : ''}${extraPct}%`);
+            await renderSegments(tts, segments, shot_id, tmpDir, outFile, extraPct);
+            const dur = await getAudioDurationPrecise(outFile);
+            if (dur && (!best.dur || Math.abs(dur - targetDuration) < Math.abs(best.dur - targetDuration))) {
+              best = { dur, rate: extraPct };
+              fs.copyFileSync(outFile, bestFile);
             }
           }
-          segmentFiles.push(segmentFile);
-        }
-
-        if (segmentFiles.length === 0) continue;
-        await concatMp3(segmentFiles, outFile, shot_id);
-        console.log(`[TTS] -> Saved to assets/audio/${shot_id}.mp3`);
-        generated += 1;
-
-        // 根据实际音频时长自动调整分镜 duration_s
-        const actualDuration = await getAudioDuration(outFile);
-        if (actualDuration && actualDuration > 0) {
-          await updateShotDuration(shot_id, actualDuration);
+          fs.copyFileSync(bestFile, outFile);
+          fs.rmSync(bestFile, { force: true });
+          const gap = best.dur ? (best.dur - targetDuration) : 0;
+          console.log(`[TTS] -> Saved ${shot_id}.mp3 (目标 ${targetDuration}s，实得 ${best.dur ? best.dur.toFixed(2) : '?'}s，语速 ${best.rate >= 0 ? '+' : ''}${best.rate}%，余差 ${gap.toFixed(2)}s → 余下由视频微调吸收)`);
+          generated += 1;
+          // 配音对齐到画面：分镜时长以目标（画面）为准
+          await updateShotDuration(shot_id, Math.round(targetDuration));
+        } else {
+          console.log(`[TTS] -> Saved to assets/audio/${shot_id}.mp3`);
+          generated += 1;
+          // 根据实际音频时长自动调整分镜 duration_s
+          const actualDuration = await getAudioDuration(outFile);
+          if (actualDuration && actualDuration > 0) {
+            await updateShotDuration(shot_id, actualDuration);
+          }
         }
       } catch (e) {
         console.error(`[TTS] Failed to generate ${shot_id}:`, e);

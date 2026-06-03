@@ -1,0 +1,15 @@
+{
+  "id": "newbie",
+  "name": "新人（学徒）",
+  "must_keep": {
+    "identity": "刚入职的年轻装配学徒，约二十岁，眼神专注好奇",
+    "hair": "hair fully covered by blue cleanroom cap",
+    "outfit": "blue cleanroom suit, light face mask",
+    "accessories": [
+      "lightweight minimalist XR glasses",
+      "clean white gloves for assembly",
+      "no exposed personal items"
+    ]
+  },
+  "references": { "images": [] }
+}

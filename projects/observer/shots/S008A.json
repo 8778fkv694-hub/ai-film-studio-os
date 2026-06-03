@@ -1,0 +1,46 @@
+{
+  "shot_id": "S008A",
+  "duration_s": 11,
+  "scene_ref": "scenes/scene_exit.json",
+  "parent_shot_id": "S008",
+  "segment_index": 1,
+  "segment_count": 2,
+  "split_reason": "duration_s (17s) > max_duration (12s)",
+  "cam_setup_ref": "comic_panel_02",
+  "characters": [
+    {
+      "ref": "characters/visitor_group.json"
+    }
+  ],
+  "props": [
+    {
+      "ref": "props/recycle_bin.json",
+      "state": "available"
+    },
+    {
+      "ref": "props/running_equipment.json",
+      "state": "idle"
+    }
+  ],
+  "budget": {
+    "tier": "cheap",
+    "max_regen": 1
+  },
+  "action": {
+    "beats": [
+      "Visitors follow a designated exit route"
+    ]
+  },
+  "voiceover": {
+    "speaker": "Narrator",
+    "text": "参观结束后，请按指定路线离开洁净车间。洁净服、鞋套、口罩等按现场要求回收或放置，",
+    "voice_id": "narrator_male_01"
+  },
+  "prompt": {
+    "positive": "16:9 medium shot, clean room exit area with visitors removing and placing clean suits into a recycle bin, bright industrial overhead lighting, eye-level angle, photorealistic, highly detailed, 8K, industrial documentary style",
+    "negative": "blurry, low quality, distorted faces, wrong proportions, text artifacts, watermark, logo, extra limbs, missing safety equipment, dark lighting, cluttered background"
+  },
+  "context_refs": [
+    "assets/renders/S007/keyframes/frame_01.jpg"
+  ]
+}

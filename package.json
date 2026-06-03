@@ -1,0 +1,46 @@
+{
+  "name": "ai-film-studio-os",
+  "version": "1.0.0",
+  "description": "AI Film Studio OS - 像写代码一样做电影",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "cli",
+    "tools",
+    "ui",
+    "render"
+  ],
+  "overrides": {
+    "postcss": "8.5.10",
+    "picomatch": "2.3.2",
+    "tinyglobby": {
+      "picomatch": "4.0.4"
+    },
+    "fdir": {
+      "picomatch": "4.0.4"
+    },
+    "next": {
+      "postcss": "8.5.10"
+    }
+  },
+  "scripts": {
+    "setup": "npm install && chmod +x start.command && chmod +x cli/index.js && npm link --workspace=cli",
+    "dev": "npm run dev --workspace=ui",
+    "cli": "node cli/index.js",
+    "check": "node tools/scripts/check-all.js --quick",
+    "check:full": "node tools/scripts/check-all.js",
+    "rough-cut": "node tools/scripts/rough-cut.js",
+    "audit": "node tools/scripts/audit.js",
+    "tts": "node tools/scripts/gen-tts.js",
+    "build-prompts": "node tools/scripts/build-prompts.js",
+    "build-image-prompts": "node tools/scripts/build-image-prompts.js",
+    "build-seedance": "node tools/scripts/build-seedance-packs.js",
+    "dreamina-gen": "node tools/scripts/dreamina-generate.js",
+    "compose": "node tools/scripts/compose-video.js",
+    "preview-video": "npm run preview --workspace=render",
+    "render-video": "npm run render --workspace=render"
+  },
+  "devDependencies": {
+    "postcss": "8.5.10"
+  }
+}

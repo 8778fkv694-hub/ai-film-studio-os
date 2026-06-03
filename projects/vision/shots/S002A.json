@@ -1,0 +1,44 @@
+{
+  "shot_id": "S002A",
+  "duration_s": 8,
+  "scene_ref": "scenes/scene_assembly_workshop.json",
+  "cam_setup_ref": "comic_panel_02",
+  "characters": [
+    {
+      "ref": "characters/inspector.json"
+    }
+  ],
+  "props": [
+    {
+      "ref": "props/xr_overlay.json",
+      "state": "guide_path"
+    },
+    {
+      "ref": "props/assembly_station.json",
+      "state": "idle"
+    }
+  ],
+  "action": {
+    "beats": [
+      "点检任务清单在 XR 里化作地面一条发光引导光路，顺着真实的黄色导引带延伸",
+      "光路把王巡检引向一个滤芯装配工位",
+      "沿途浮现极简的细描边任务标记：已完成为绿色、当前项为琥珀色"
+    ]
+  },
+  "voiceover": {
+    "speaker": "澄",
+    "text": "今天先看卷制过程。脚下这条光，会一直把你带到该停下的地方——走吧。",
+    "voice_id": "zh-CN-XiaoxiaoNeural"
+  },
+  "budget": {
+    "tier": "standard",
+    "max_regen": 2
+  },
+  "context_refs": [
+    "S001"
+  ],
+  "prompt": {
+    "positive": "16:9 cinematic medium tracking shot following the same Chinese inspector walking through the membrane-element production cleanroom; an XR holographic guide path glows on the grey epoxy floor along the painted yellow lines, leading to the membrane Winding Station (卷制工位); floating thin-stroke task markers beside her, green (#22c55e) for done and amber (#f59e0b) for the current winding check; screen-free factory floor, soft even light, photorealistic, 8K",
+    "negative": "physical display screens, wall monitors, bulky VR headset, cyberpunk neon, cluttered background, cartoon, blurry, low quality, distorted faces, text artifacts, watermark, logo, extra limbs, dark lighting"
+  }
+}

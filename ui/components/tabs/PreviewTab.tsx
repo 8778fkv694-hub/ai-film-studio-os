@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from 'react';
-import { Volume2, Play, RefreshCw, CheckCircle, AlertCircle, Loader2, Image as ImageIcon, Upload, Copy, Sparkles, X, Download, Film } from 'lucide-react';
+import { Volume2, Play, RefreshCw, CheckCircle, AlertCircle, Loader2, Image as ImageIcon, Upload, Copy, Sparkles, X, Download, Film, ArrowUp, ArrowDown, Trash2 } from 'lucide-react';
 import Player, { SubtitleStyle } from '../Player';
 
 interface Shot {
@@ -17,6 +17,7 @@ interface Shot {
   _video_url?: string | null;
   _video_prompt?: {
     prompt: string;
+    prompt_shot_only?: string;
     negative: string;
     motion: string;
     condition_images?: string[];
@@ -24,6 +25,18 @@ interface Shot {
   _takes?: any[];
   _active_take?: any | null;
   _filename?: string;
+  _has_audio?: boolean;
+  _sync_state?: {
+    status: 'ok' | 'warning' | 'error';
+    label: string;
+    reasons: string[];
+    actions: string[];
+    video_prompt_state?: 'missing' | 'stale' | 'ok';
+    image_prompt_state?: 'missing' | 'stale' | 'ok';
+    take_prompt_state?: 'none' | 'unknown' | 'ok' | 'stale';
+    audio_state?: 'none' | 'missing' | 'ok';
+    current_prompt_hash?: string | null;
+  };
   layout?: {
     fitMode: 'contain' | 'cover' | 'fill';
     scale: number;
@@ -40,10 +53,18 @@ export default function PreviewTab() {
   const [uploadingKeyframe, setUploadingKeyframe] = useState<string | null>(null);
   const [uploadingVideo, setUploadingVideo] = useState<string | null>(null);
   const [exportingShot, setExportingShot] = useState<string | null>(null);
+  const [orderingShot, setOrderingShot] = useState<string | null>(null);
+  const [activeSyncShotId, setActiveSyncShotId] = useState<string | null>(null);
+  const [syncingPromptShot, setSyncingPromptShot] = useState<string | null>(null);
+  const [acceptingTakeShot, setAcceptingTakeShot] = useState<string | null>(null);
   const [exportingVideo, setExportingVideo] = useState(false);
   const [showExportDialog, setShowExportDialog] = useState(false);
   const [exportWithSubtitles, setExportWithSubtitles] = useState(true);
   const [exportPreset, setExportPreset] = useState<string>('default_1080p');
+  const [exportAudioSource, setExportAudioSource] = useState<'tts' | 'video'>('tts');
+  const [editingVO, setEditingVO] = useState<string | null>(null); // 正在行内编辑讲解的分镜 id
+  const [voDraft, setVoDraft] = useState('');
+  const [savingVO, setSavingVO] = useState(false);
   const [subtitleStyle, setSubtitleStyle] = useState<SubtitleStyle>({
     fontSize: 20,
     fontFamily: '"Microsoft YaHei", sans-serif',
@@ -58,11 +79,29 @@ export default function PreviewTab() {
   const [activeImageShot, setActiveImageShot] = useState<Shot | null>(null);
   const [isCopied, setIsCopied] = useState(false);
   const [expandedShots, setExpandedShots] = useState<Record<string, boolean>>({});
+  const [systemPrompt, setSystemPrompt] = useState<string>('');
+  const [showSystemPrompt, setShowSystemPrompt] = useState<boolean>(false);
+  const [previewVideoMode, setPreviewVideoMode] = useState<'local' | 'full'>('local');
   const layoutSaveTimeoutRef = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
 
   useEffect(() => {
     loadShots();
+    loadProjectPrompt();
   }, []);
+
+  const loadProjectPrompt = async () => {
+    try {
+      const res = await fetch('/api/project');
+      if (res.ok) {
+        const data = await res.json();
+        if (data.project_system_prompt) {
+          setSystemPrompt(data.project_system_prompt);
+        }
+      }
+    } catch (e) {
+      console.error('Failed to load project system prompt:', e);
+    }
+  };
 
   const loadShots = async () => {
     setLoading(true);
@@ -83,6 +122,34 @@ export default function PreviewTab() {
       ...prev,
       [shotId]: !prev[shotId]
     }));
+  };
+
+  const updateShotOrder = async (shotId: string, action: 'move_up' | 'move_down' | 'delete') => {
+    if (action === 'delete' && !window.confirm(`删除分镜 ${shotId}？对应画面、视频版本、配音和提示词文件也会一并删除。`)) return;
+    setOrderingShot(shotId);
+    setResult(null);
+    try {
+      const res = await fetch('/api/shots/order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ shot_id: shotId, action })
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) {
+        const renamed = data.renamed && Object.keys(data.renamed).length
+          ? `；重排编号 ${Object.entries(data.renamed).map(([a, b]) => `${a}→${b}`).join('、')}`
+          : '';
+        const promptNote = data.prompt_rebuild?.success === false ? '；提示词重编译失败，请稍后手动重编译' : '；提示词已重编译';
+        setResult({ success: data.prompt_rebuild?.success !== false, message: `时间线已更新${renamed}${promptNote}` });
+        await loadShots();
+      } else {
+        setResult({ success: false, message: data.error || '更新时间线失败' });
+      }
+    } catch {
+      setResult({ success: false, message: '更新时间线失败' });
+    } finally {
+      setOrderingShot(null);
+    }
   };
 
   const handleTakeAction = async (shotId: string, takeId: string, action: string) => {
@@ -124,6 +191,51 @@ export default function PreviewTab() {
       }
     } catch {
       setResult({ success: false, message: '保存评审失败' });
+    }
+  };
+
+  const syncShotPrompts = async (shotId: string) => {
+    setSyncingPromptShot(shotId);
+    setResult(null);
+    try {
+      const res = await fetch(`/api/shots/${encodeURIComponent(shotId)}/prompts`, { method: 'POST' });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.success) {
+        setResult({ success: true, message: `${shotId} Prompt 已同步` });
+        await loadProjectPrompt();
+        await loadShots();
+      } else {
+        const detail = data.video_prompts?.stderr || data.image_prompts?.stderr || data.error;
+        setResult({ success: false, message: detail || `${shotId} Prompt 同步失败` });
+      }
+    } catch {
+      setResult({ success: false, message: `${shotId} Prompt 同步失败` });
+    } finally {
+      setSyncingPromptShot(null);
+    }
+  };
+
+  const acceptCurrentTakePrompt = async (shot: Shot) => {
+    if (!shot._active_take?.take_id) return;
+    setAcceptingTakeShot(shot.shot_id);
+    setResult(null);
+    try {
+      const res = await fetch(`/api/takes/${encodeURIComponent(shot.shot_id)}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ take_id: shot._active_take.take_id, action: 'refresh_prompt_hash' })
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) {
+        setResult({ success: true, message: `${shot.shot_id} 已接受当前视频为新版基准` });
+        await loadShots();
+      } else {
+        setResult({ success: false, message: data.error || '更新视频基准失败' });
+      }
+    } catch {
+      setResult({ success: false, message: '更新视频基准失败' });
+    } finally {
+      setAcceptingTakeShot(null);
     }
   };
 
@@ -191,6 +303,65 @@ export default function PreviewTab() {
       setResult({ success: false, message: '上传失败' });
     } finally {
       setUploadingKeyframe(null);
+    }
+  };
+
+  const deleteKeyframe = async (shotId: string, kfUrl: string) => {
+    const name = kfUrl.split('/').pop() || '';
+    if (!name) return;
+    if (!confirm(`确定删除 ${shotId} 的关键帧「${decodeURIComponent(name)}」？此操作不可撤销。`)) return;
+    setResult(null);
+    try {
+      const res = await fetch(`/api/assets/keyframes/${encodeURIComponent(shotId)}/${encodeURIComponent(name)}`, {
+        method: 'DELETE'
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) {
+        setResult({ success: true, message: `${shotId} 关键帧已删除` });
+        await loadShots();
+      } else {
+        setResult({ success: false, message: data.error || '删除失败' });
+      }
+    } catch {
+      setResult({ success: false, message: '删除失败' });
+    }
+  };
+
+  // ===== 讲解（旁白）行内编辑 =====
+  const beginEditVO = (shot: Shot) => {
+    setEditingVO(shot.shot_id);
+    setVoDraft(shot.voiceover?.text || '');
+  };
+  const cancelEditVO = () => {
+    setEditingVO(null);
+    setVoDraft('');
+  };
+  const commitEditVO = async (shot: Shot) => {
+    if (savingVO) return;
+    const text = voDraft.trim();
+    const current = shot.voiceover?.text || '';
+    if (text === current || (!text && !shot.voiceover)) { cancelEditVO(); return; }
+    setSavingVO(true);
+    try {
+      const updated: any = { ...shot, voiceover: { ...(shot.voiceover || { speaker: '讲解' }), text } };
+      const res = await fetch('/api/shots', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updated)
+      });
+      if (res.ok) {
+        setEditingVO(null);
+        setVoDraft('');
+        setResult({ success: true, message: `${shot.shot_id} 讲解已更新（重新生成配音后即同步语音）` });
+        await loadShots();
+      } else {
+        const d = await res.json().catch(() => ({}));
+        setResult({ success: false, message: d.error || '保存失败' });
+      }
+    } catch {
+      setResult({ success: false, message: '保存失败' });
+    } finally {
+      setSavingVO(false);
     }
   };
 
@@ -364,6 +535,7 @@ export default function PreviewTab() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           preset: exportPreset,
+          audioSource: exportAudioSource,
           subtitles: withSubtitles,
           subFontSize: subtitleStyle.fontSize,
           subFontFamily: subtitleStyle.fontFamily,
@@ -394,7 +566,7 @@ export default function PreviewTab() {
     }
   };
 
-  const exportShotZip = async (shotId: string) => {
+  const exportShotHandoff = async (shotId: string) => {
     setExportingShot(shotId);
     try {
       const res = await fetch(`/api/shots/${encodeURIComponent(shotId)}/export`);
@@ -403,20 +575,32 @@ export default function PreviewTab() {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `shot_${shotId}.zip`;
+        a.download = `handoff_${shotId}.zip`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
       } else {
         const data = await res.json().catch(() => ({}));
-        setResult({ success: false, message: data.error || '导出分镜 ZIP 失败' });
+        setResult({ success: false, message: data.error || '导出交接包失败' });
       }
     } catch {
-      setResult({ success: false, message: '导出分镜 ZIP 失败' });
+      setResult({ success: false, message: '导出交接包失败' });
     } finally {
       setExportingShot(null);
     }
+  };
+
+  const syncChipClass = (shot: Shot) => {
+    const sync = shot._sync_state;
+    if (!sync) return '';
+    if (sync.video_prompt_state === 'missing' || sync.image_prompt_state === 'missing') {
+      return 'bg-red-500/10 text-red-300 border-red-500/30 hover:bg-red-500/20';
+    }
+    if (sync.take_prompt_state === 'stale') {
+      return 'bg-orange-500/10 text-orange-300 border-orange-500/30 hover:bg-orange-500/20';
+    }
+    return 'bg-amber-500/10 text-amber-300 border-amber-500/30 hover:bg-amber-500/20';
   };
 
   const shotsWithDialogue = shots.filter(s => s.dialogue);
@@ -429,56 +613,53 @@ export default function PreviewTab() {
   return (
     <div className="space-y-6 p-4 sm:p-6">
       {/* Header */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <h2 className="text-2xl font-bold flex items-center gap-2">
-            <ImageIcon className="text-emerald-400" />
-            配音分镜漫画
-          </h2>
-          <p className="text-slate-400 text-sm mt-1">
-            读取回填关键帧，配合对白音频预览静态图片漫画
-          </p>
-        </div>
-
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+      <div className="flex flex-wrap items-center justify-start gap-3 w-full">
+        <button
+          onClick={loadShots}
+          className="flex items-center justify-center gap-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white border border-transparent rounded-lg transition text-sm"
+        >
+          <RefreshCw size={16} />
+          刷新
+        </button>
+        <button
+          onClick={exportCSV}
+          className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-600/20 text-blue-300 border border-blue-500/20 hover:bg-blue-600/30 rounded-lg transition text-sm"
+        >
+          <Download size={16} />
+          导出 CSV 故事板
+        </button>
+        <button
+          onClick={exportMarkdown}
+          className="flex items-center justify-center gap-2 px-4 py-2 bg-purple-600/20 text-purple-300 border border-purple-500/20 hover:bg-purple-600/30 rounded-lg transition text-sm"
+        >
+          <Download size={16} />
+          导出 Markdown 故事板
+        </button>
+        {systemPrompt && (
           <button
-            onClick={loadShots}
-            className="flex items-center justify-center gap-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition text-sm"
+            onClick={() => setShowSystemPrompt(true)}
+            className="flex items-center justify-center gap-2 px-4 py-2 bg-indigo-600/20 text-indigo-300 border border-indigo-500/20 hover:bg-indigo-600/30 rounded-lg transition text-sm"
           >
-            <RefreshCw size={16} />
-            刷新
+            <Sparkles size={16} />
+            全局系统提示词
           </button>
-          <button
-            onClick={exportCSV}
-            className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-600/20 text-blue-300 border border-blue-500/20 hover:bg-blue-600/30 rounded-lg transition text-sm"
-          >
-            <Download size={16} />
-            导出 CSV 故事板
-          </button>
-          <button
-            onClick={exportMarkdown}
-            className="flex items-center justify-center gap-2 px-4 py-2 bg-purple-600/20 text-purple-300 border border-purple-500/20 hover:bg-purple-600/30 rounded-lg transition text-sm"
-          >
-            <Download size={16} />
-            导出 Markdown 故事板
-          </button>
-          <button
-            onClick={generateTTS}
-            disabled={generating}
-            className="flex items-center justify-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg transition text-sm disabled:opacity-50"
-          >
-            <Volume2 size={16} />
-            {generating ? '生成中...' : '生成全部 TTS'}
-          </button>
-          <button
-            onClick={() => setShowExportDialog(true)}
-            disabled={exportingVideo}
-            className="flex items-center justify-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-500 text-white rounded-lg transition text-sm disabled:opacity-50"
-          >
-            <Film size={16} />
-            {exportingVideo ? '合成中...' : '导出 MP4'}
-          </button>
-        </div>
+        )}
+        <button
+          onClick={generateTTS}
+          disabled={generating}
+          className="flex items-center justify-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white border border-transparent rounded-lg transition text-sm disabled:opacity-50"
+        >
+          <Volume2 size={16} />
+          {generating ? '生成中...' : '生成全部 TTS'}
+        </button>
+        <button
+          onClick={() => setShowExportDialog(true)}
+          disabled={exportingVideo}
+          className="flex items-center justify-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-500 text-white border border-transparent rounded-lg transition text-sm disabled:opacity-50"
+        >
+          <Film size={16} />
+          {exportingVideo ? '合成中...' : '导出 MP4'}
+        </button>
       </div>
 
       {/* Stats */}
@@ -521,20 +702,46 @@ export default function PreviewTab() {
           <Play size={18} className="text-blue-400" />
           配音漫画播放器
         </h3>
-        <Player shots={shots} subtitleStyle={subtitleStyle} onSubtitleStyleChange={setSubtitleStyle} onShotLayoutChange={handleShotLayoutChange} />
+        <Player shots={shots} subtitleStyle={subtitleStyle} onSubtitleStyleChange={setSubtitleStyle} onShotLayoutChange={handleShotLayoutChange} onCaptured={loadShots} />
       </div>
 
       {/* Shot List with TTS Status */}
       <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
         <h3 className="text-lg font-semibold mb-4 text-slate-200">镜头列表</h3>
         <div className="space-y-2">
-          {shots.map((shot) => (
+          {shots.map((shot, index) => (
             <div
               key={shot.shot_id}
               className="flex flex-col p-3 bg-slate-950 rounded-lg border border-slate-800 gap-3"
             >
               <div className="flex flex-wrap items-center gap-3 w-full">
                 <span className="font-mono font-bold text-blue-300 w-16">{shot.shot_id}</span>
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => updateShotOrder(shot.shot_id, 'move_up')}
+                    disabled={index === 0 || orderingShot === shot.shot_id}
+                    title="上移一位"
+                    className="p-1 rounded text-slate-400 hover:text-white hover:bg-slate-800 disabled:opacity-30 disabled:hover:bg-transparent"
+                  >
+                    <ArrowUp size={13} />
+                  </button>
+                  <button
+                    onClick={() => updateShotOrder(shot.shot_id, 'move_down')}
+                    disabled={index === shots.length - 1 || orderingShot === shot.shot_id}
+                    title="下移一位"
+                    className="p-1 rounded text-slate-400 hover:text-white hover:bg-slate-800 disabled:opacity-30 disabled:hover:bg-transparent"
+                  >
+                    <ArrowDown size={13} />
+                  </button>
+                  <button
+                    onClick={() => updateShotOrder(shot.shot_id, 'delete')}
+                    disabled={orderingShot === shot.shot_id}
+                    title="删除此分镜"
+                    className="p-1 rounded text-red-400/80 hover:text-red-300 hover:bg-red-500/10 disabled:opacity-30"
+                  >
+                    {orderingShot === shot.shot_id ? <Loader2 size={13} className="animate-spin" /> : <Trash2 size={13} />}
+                  </button>
+                </div>
                 <span className="text-xs bg-slate-800 px-2 py-1 rounded text-slate-400">
                   {shot.duration_s}s
                 </span>
@@ -544,22 +751,27 @@ export default function PreviewTab() {
                       setActiveImageShot(shot);
                     }
                   }}
+                  title={(shot._keyframes?.length || 0) > 0 ? `查看关键帧（${shot._keyframes?.length || 0} 张）` : '暂无关键帧'}
                   disabled={!shot._keyframes || shot._keyframes.length === 0}
-                  className={`text-xs px-2 py-1 rounded transition text-left ${
+                  className={`text-xs px-2 py-1 rounded transition text-left flex items-center gap-1 ${
                     (shot._keyframes?.length || 0) > 0
                       ? 'bg-blue-600/20 text-blue-300 hover:bg-blue-600/30 cursor-pointer'
                       : 'bg-slate-800 text-slate-500 cursor-not-allowed'
                   }`}
                 >
-                  {(shot._keyframes?.length || 0) > 0 ? `${shot._keyframes?.length} 张图 👁️` : '无图'}
+                  <ImageIcon size={12} />
+                  {(shot._keyframes?.length || 0)}
                 </button>
-                <label className="flex cursor-pointer items-center gap-1 rounded bg-blue-600/20 px-3 py-1 text-xs text-blue-300 transition hover:bg-blue-600/30">
+                <label
+                  title="上传画面"
+                  className="flex cursor-pointer items-center gap-1 rounded bg-blue-600/20 px-3 py-1 text-xs text-blue-300 transition hover:bg-blue-600/30"
+                >
                   {uploadingKeyframe === shot.shot_id ? (
                     <Loader2 size={12} className="animate-spin" />
                   ) : (
                     <Upload size={12} />
                   )}
-                  上传画面
+                  上传
                   <input
                     type="file"
                     accept="image/jpeg,image/png,image/webp"
@@ -573,10 +785,11 @@ export default function PreviewTab() {
                 </label>
                 <button
                   onClick={() => setActiveImagePromptShot(shot)}
+                  title="生成照片"
                   className="flex cursor-pointer items-center gap-1 rounded bg-purple-600/20 px-3 py-1 text-xs text-purple-300 transition hover:bg-purple-600/30"
                 >
                   <Sparkles size={12} />
-                  生成照片
+                  生成
                 </button>
                 <label className={`flex cursor-pointer items-center gap-1 rounded px-3 py-1 text-xs transition ${
                   shot._video_url 
@@ -610,7 +823,7 @@ export default function PreviewTab() {
                       : 'bg-blue-600/10 text-blue-300 border border-blue-500/20 hover:bg-blue-600/20'
                   }`}
                 >
-                  Takes ({shot._takes?.length || 0})
+                  版本 ({shot._takes?.length || 0})
                 </button>
                 {shot._active_take && (
                   <span className={`text-[10px] px-1.5 py-0.5 rounded font-mono font-medium ${
@@ -620,13 +833,94 @@ export default function PreviewTab() {
                       ? 'bg-red-500/10 text-red-400 border border-red-500/20'
                       : 'bg-blue-500/10 text-blue-400 border border-blue-500/20'
                   }`}>
-                    {shot._active_take.take_id} ({shot._active_take.status})
+                    版本{(shot._active_take.take_id.match(/\d+/)?.[0] || '').replace(/^0+/, '') || ''} ({shot._active_take.status})
                   </span>
                 )}
+                {shot._sync_state && shot._sync_state.status !== 'ok' && (
+                  <button
+                    onClick={() => setActiveSyncShotId(activeSyncShotId === shot.shot_id ? null : shot.shot_id)}
+                    title={shot._sync_state.reasons.join('\n')}
+                    className={`text-[10px] px-2 py-1 rounded border font-medium transition flex items-center gap-1 ${syncChipClass(shot)}`}
+                  >
+                    <AlertCircle size={12} />
+                    {shot._sync_state.label}
+                  </button>
+                )}
 
-                {shot.dialogue || shot.voiceover ? (
+                {editingVO === shot.shot_id ? (
                   <>
-                    <span className="min-w-0 flex-1 truncate text-sm text-slate-300">
+                    <textarea
+                      autoFocus
+                      value={voDraft}
+                      onChange={e => setVoDraft(e.target.value)}
+                      onKeyDown={e => {
+                        if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); commitEditVO(shot); }
+                        else if (e.key === 'Escape') { e.preventDefault(); cancelEditVO(); }
+                      }}
+                      onBlur={() => commitEditVO(shot)}
+                      rows={2}
+                      placeholder="输入讲解（旁白）文字 · 回车保存 · Esc 取消"
+                      className="min-w-0 flex-1 resize-none bg-slate-950 border border-blue-500/60 rounded px-2 py-1 text-sm text-slate-100 focus:outline-none"
+                    />
+                    {(() => {
+                      const draftChars = voDraft.replace(/\s/g, '').length;
+                      const baseChars = (shot.voiceover?.text || '').replace(/\s/g, '').length;
+                      const target = shot.duration_s || 0;
+                      // 基准：已生成过配音(_has_audio) → 用「该镜实测时长 ÷ 当前台词字数」得到真实字/秒，再估编辑中的台词
+                      const calibrated = shot._has_audio && baseChars > 0 && target > 0;
+                      const rate = calibrated ? baseChars / target : 4.5; // 字/秒
+                      const est = draftChars / rate;
+                      if (!calibrated) {
+                        return (
+                          <span
+                            title="该镜尚未生成配音，无法精确估时长。请先点右侧「生成」建立时长基准（之后估算才准）。"
+                            className="shrink-0 self-center text-[11px] px-2 py-1 rounded border whitespace-nowrap bg-slate-700/40 text-slate-300 border-slate-600"
+                          >
+                            未生成配音·先点生成校准（粗估 ≈{est.toFixed(1)}s）
+                          </span>
+                        );
+                      }
+                      const ratio = est / target;
+                      const tone = ratio <= 1.0 ? 'emerald' : ratio <= 1.1 ? 'amber' : 'red';
+                      const label = ratio <= 1.0 ? '塞得下' : ratio <= 1.1 ? '略超·可放慢吸收' : '超太多·需缩短';
+                      const cls: Record<string, string> = {
+                        emerald: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/40',
+                        amber: 'bg-amber-500/15 text-amber-300 border-amber-500/40',
+                        red: 'bg-red-500/15 text-red-300 border-red-500/40',
+                      };
+                      return (
+                        <span
+                          title={`基准：已生成配音 ${target}s（${baseChars}字 ≈ ${rate.toFixed(1)}字/秒）。当前草稿 ${draftChars}字 ≈ ${est.toFixed(1)}s`}
+                          className={`shrink-0 self-center text-[11px] font-mono px-2 py-1 rounded border whitespace-nowrap ${cls[tone]}`}
+                        >
+                          ≈{est.toFixed(1)}s / {target}s · {label}
+                        </span>
+                      );
+                    })()}
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => commitEditVO(shot)}
+                        disabled={savingVO}
+                        className="text-xs px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-500 transition disabled:opacity-50"
+                      >
+                        {savingVO ? '保存中' : '保存'}
+                      </button>
+                      <button
+                        onMouseDown={e => e.preventDefault()}
+                        onClick={cancelEditVO}
+                        className="text-xs px-3 py-1 bg-slate-700 text-slate-200 rounded hover:bg-slate-600 transition"
+                      >
+                        取消
+                      </button>
+                    </div>
+                  </>
+                ) : shot.dialogue || shot.voiceover ? (
+                  <>
+                    <span
+                      onClick={() => beginEditVO(shot)}
+                      title="点击编辑讲解（旁白）"
+                      className="min-w-0 flex-1 truncate text-sm text-slate-300 cursor-pointer hover:text-white hover:bg-slate-800/50 rounded px-1 -mx-1 transition"
+                    >
                       {shot.voiceover?.text ? `讲解：${shot.voiceover.text}` : ''}
                       {shot.voiceover?.text && shot.dialogue?.text ? ' / ' : ''}
                       {shot.dialogue?.text ? `台词："${shot.dialogue.text}"` : ''}
@@ -654,7 +948,7 @@ export default function PreviewTab() {
                         )}
                       </button>
                       <button
-                        onClick={() => exportShotZip(shot.shot_id)}
+                        onClick={() => exportShotHandoff(shot.shot_id)}
                         disabled={exportingShot === shot.shot_id}
                         className="text-xs px-3 py-1 bg-blue-600/20 text-blue-300 border border-blue-500/20 hover:bg-blue-600/30 rounded transition disabled:opacity-50 flex items-center gap-1"
                       >
@@ -666,7 +960,7 @@ export default function PreviewTab() {
                         ) : (
                           <>
                             <Download size={12} />
-                            导出 ZIP
+                            交接包
                           </>
                         )}
                       </button>
@@ -674,7 +968,11 @@ export default function PreviewTab() {
                   </>
                 ) : (
                   <>
-                    <span className="min-w-0 flex-1 truncate text-sm text-slate-500 italic">无对白与讲解</span>
+                    <span
+                      onClick={() => beginEditVO(shot)}
+                      title="点击添加讲解（旁白）"
+                      className="min-w-0 flex-1 truncate text-sm text-slate-500 italic cursor-pointer hover:text-slate-300 hover:bg-slate-800/50 rounded px-1 -mx-1 transition"
+                    >无对白与讲解（点击添加）</span>
                     <div className="flex gap-2">
                       <button
                         onClick={() => setActivePromptShot(shot)}
@@ -684,7 +982,7 @@ export default function PreviewTab() {
                         提示词
                       </button>
                       <button
-                        onClick={() => exportShotZip(shot.shot_id)}
+                        onClick={() => exportShotHandoff(shot.shot_id)}
                         disabled={exportingShot === shot.shot_id}
                         className="text-xs px-3 py-1 bg-blue-600/20 text-blue-300 border border-blue-500/20 hover:bg-blue-600/30 rounded transition disabled:opacity-50 flex items-center gap-1"
                       >
@@ -696,7 +994,7 @@ export default function PreviewTab() {
                         ) : (
                           <>
                             <Download size={12} />
-                            导出 ZIP
+                            交接包
                           </>
                         )}
                       </button>
@@ -704,12 +1002,63 @@ export default function PreviewTab() {
                   </>
                 )}
               </div>
+
+              {activeSyncShotId === shot.shot_id && shot._sync_state && shot._sync_state.status !== 'ok' && (
+                <div className="w-full rounded-lg border border-amber-500/25 bg-amber-500/10 px-3 py-2 text-xs text-amber-100 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                  <div className="min-w-0">
+                    <div className="font-semibold text-amber-200">{shot._sync_state.label}</div>
+                    <div className="mt-0.5 text-amber-100/80 truncate">
+                      {shot._sync_state.reasons.join('；')}
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2 shrink-0">
+                    {shot._sync_state.actions.includes('sync_prompts') && (
+                      <button
+                        onClick={() => syncShotPrompts(shot.shot_id)}
+                        disabled={syncingPromptShot === shot.shot_id}
+                        className="flex items-center gap-1 rounded bg-purple-600 px-3 py-1 text-xs font-medium text-white hover:bg-purple-500 disabled:opacity-50"
+                      >
+                        {syncingPromptShot === shot.shot_id ? <Loader2 size={12} className="animate-spin" /> : <Sparkles size={12} />}
+                        同步 Prompt
+                      </button>
+                    )}
+                    {shot._sync_state.actions.includes('generate_tts') && (
+                      <button
+                        onClick={() => generateSingleTTS(shot.shot_id)}
+                        disabled={generatingSingle === shot.shot_id}
+                        className="flex items-center gap-1 rounded bg-emerald-600 px-3 py-1 text-xs font-medium text-white hover:bg-emerald-500 disabled:opacity-50"
+                      >
+                        {generatingSingle === shot.shot_id ? <Loader2 size={12} className="animate-spin" /> : <Volume2 size={12} />}
+                        生成配音
+                      </button>
+                    )}
+                    {shot._sync_state.actions.includes('accept_take_prompt_hash') && shot._sync_state.video_prompt_state === 'ok' && (
+                      <button
+                        onClick={() => acceptCurrentTakePrompt(shot)}
+                        disabled={acceptingTakeShot === shot.shot_id}
+                        title="视频不重做，只把当前视频 Take 标记为匹配当前 Prompt"
+                        className="flex items-center gap-1 rounded bg-orange-600 px-3 py-1 text-xs font-medium text-white hover:bg-orange-500 disabled:opacity-50"
+                      >
+                        {acceptingTakeShot === shot.shot_id ? <Loader2 size={12} className="animate-spin" /> : <CheckCircle size={12} />}
+                        接受当前视频
+                      </button>
+                    )}
+                    <button
+                      onClick={() => setActiveSyncShotId(null)}
+                      className="flex items-center gap-1 rounded bg-slate-800 px-2 py-1 text-xs text-slate-300 hover:bg-slate-700"
+                    >
+                      <X size={12} />
+                      关闭
+                    </button>
+                  </div>
+                </div>
+              )}
               
               {/* Takes Expand Sub-Panel */}
               {expandedShots[shot.shot_id] && (
                 <div className="w-full p-4 bg-slate-900/50 rounded-lg border border-slate-800/80 space-y-4">
                   <h4 className="text-sm font-semibold text-slate-200 flex items-center gap-2">
-                    🎬 Takes 历史版本与审片管理 ({shot.shot_id})
+                    🎬 版本历史与审片 ({shot.shot_id})
                   </h4>
                   
                   {(!shot._takes || shot._takes.length === 0) ? (
@@ -753,7 +1102,7 @@ export default function PreviewTab() {
                               <div className="space-y-1 min-w-0">
                                 <div className="flex items-center gap-2">
                                   <span className="font-mono font-bold text-xs text-slate-200">
-                                    {take.take_id}
+                                    版本{(take.take_id.match(/\d+/)?.[0] || '').replace(/^0+/, '') || ''}
                                   </span>
                                   <span className={`text-[10px] px-1 rounded uppercase font-medium ${
                                     isApproved 
@@ -875,6 +1224,10 @@ export default function PreviewTab() {
         <ImagePreviewModal
           shot={activeImageShot}
           onClose={() => setActiveImageShot(null)}
+          onDelete={async (kfUrl) => {
+            await deleteKeyframe(activeImageShot.shot_id, kfUrl);
+            setActiveImageShot(null);
+          }}
         />
       )}
 
@@ -1029,21 +1382,42 @@ export default function PreviewTab() {
                 <>
                   {/* Prompt Text */}
                   <div className="space-y-2">
-                    <div className="flex justify-between items-center">
+                    <div className="flex justify-between items-center flex-wrap gap-2">
                       <span className="text-slate-400 font-medium">正向提示词 (Positive Prompt)</span>
-                      <button
-                        onClick={() => {
-                          navigator.clipboard.writeText(activePromptShot._video_prompt!.prompt);
-                          setIsCopied(true);
-                          setTimeout(() => setIsCopied(false), 2000);
-                        }}
-                        className="flex items-center gap-1 text-xs text-blue-400 hover:text-blue-300"
-                      >
-                        {isCopied ? '已复制！' : '复制正向'}
-                      </button>
+                      <div className="flex items-center gap-3">
+                        <div className="flex bg-slate-950 p-0.5 rounded-lg border border-slate-800 text-[10px] font-bold">
+                          <button
+                            onClick={() => setPreviewVideoMode('local')}
+                            className={`px-2 py-1 rounded transition-all ${previewVideoMode === 'local' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-slate-200'}`}
+                          >
+                            仅分镜提示词
+                          </button>
+                          <button
+                            onClick={() => setPreviewVideoMode('full')}
+                            className={`px-2 py-1 rounded transition-all ${previewVideoMode === 'full' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-slate-200'}`}
+                          >
+                            完整提示词
+                          </button>
+                        </div>
+                        <button
+                          onClick={() => {
+                            const val = previewVideoMode === 'local'
+                              ? (activePromptShot._video_prompt!.prompt_shot_only || activePromptShot._video_prompt!.prompt)
+                              : activePromptShot._video_prompt!.prompt;
+                            navigator.clipboard.writeText(val);
+                            setIsCopied(true);
+                            setTimeout(() => setIsCopied(false), 2000);
+                          }}
+                          className="flex items-center gap-1 text-xs text-blue-400 hover:text-blue-300"
+                        >
+                          {isCopied ? '已复制！' : '复制正向'}
+                        </button>
+                      </div>
                     </div>
                     <pre className="bg-slate-950 p-4 border border-slate-800 rounded-xl text-emerald-300 font-mono text-xs whitespace-pre-wrap select-all max-h-48 overflow-y-auto leading-relaxed">
-                      {activePromptShot._video_prompt.prompt}
+                      {previewVideoMode === 'local'
+                        ? (activePromptShot._video_prompt.prompt_shot_only || activePromptShot._video_prompt.prompt)
+                        : activePromptShot._video_prompt.prompt}
                     </pre>
                   </div>
 
@@ -1138,7 +1512,10 @@ export default function PreviewTab() {
               {activePromptShot._video_prompt && (
                 <button
                   onClick={() => {
-                    const fullText = `Prompt:\n${activePromptShot._video_prompt!.prompt}\n\nNegative:\n${activePromptShot._video_prompt!.negative}`;
+                    const promptVal = previewVideoMode === 'local'
+                      ? (activePromptShot._video_prompt!.prompt_shot_only || activePromptShot._video_prompt!.prompt)
+                      : activePromptShot._video_prompt!.prompt;
+                    const fullText = `Prompt:\n${promptVal}\n\nNegative:\n${activePromptShot._video_prompt!.negative}`;
                     navigator.clipboard.writeText(fullText);
                     setIsCopied(true);
                     setTimeout(() => setIsCopied(false), 2000);
@@ -1180,6 +1557,33 @@ export default function PreviewTab() {
                   <option value="square_1080">方屏 1080p (1080x1080, 1:1)</option>
                 </select>
               </div>
+              <div>
+                <label className="block text-xs font-semibold text-slate-400 mb-1.5">
+                  声音来源
+                  <span className="ml-2 font-normal text-slate-500">当前：{exportAudioSource === 'tts' ? 'TTS 配音（默认）' : '画面自带声音'}</span>
+                </label>
+                <div className="inline-flex rounded-lg border border-slate-800 overflow-hidden text-sm w-full">
+                  <button
+                    type="button"
+                    onClick={() => setExportAudioSource('tts')}
+                    className={`flex-1 px-3 py-2 transition ${exportAudioSource === 'tts' ? 'bg-blue-600 text-white' : 'bg-slate-950 text-slate-400 hover:text-white'}`}
+                  >
+                    TTS 配音 · 默认
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setExportAudioSource('video')}
+                    className={`flex-1 px-3 py-2 transition border-l border-slate-800 ${exportAudioSource === 'video' ? 'bg-blue-600 text-white' : 'bg-slate-950 text-slate-400 hover:text-white'}`}
+                  >
+                    画面自带声音
+                  </button>
+                </div>
+                <div className="text-xs text-slate-500 mt-1.5">
+                  {exportAudioSource === 'tts'
+                    ? '✓ 全程使用 TTS 配音，视频片段静音只作画面（视频自带声音不会被导出）。'
+                    : '视频片段使用其自带声音；无音轨的片段回退到 TTS 配音。'}
+                </div>
+              </div>
               <label className="flex items-center gap-3 p-3 bg-slate-800/50 rounded-lg cursor-pointer hover:bg-slate-800 transition">
                 <input
                   type="checkbox"
@@ -1206,7 +1610,7 @@ export default function PreviewTab() {
                       : 'none',
                     fontWeight: 600,
                   }}>
-                    欢迎参观滤芯洁净车间
+                    {(shots.map(s => s.voiceover?.text || s.dialogue?.text).find(Boolean) || '字幕预览示例').split(/(?<=[。，,.;；!！?？])/)[0]}
                   </div>
                 </div>
               )}
@@ -1229,6 +1633,63 @@ export default function PreviewTab() {
           </div>
         </div>
       )}
+
+      {showSystemPrompt && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-2xl w-full max-h-[85vh] flex flex-col overflow-hidden shadow-2xl">
+            {/* Header */}
+            <div className="px-6 py-4 border-b border-slate-800 flex items-center justify-between">
+              <h3 className="text-lg font-bold text-slate-200 flex items-center gap-2">
+                <Sparkles className="text-indigo-400" size={20} />
+                项目全局系统提示词 (Project System Prompt)
+              </h3>
+              <button
+                onClick={() => {
+                  setShowSystemPrompt(false);
+                  setIsCopied(false);
+                }}
+                className="p-1.5 hover:bg-slate-800 rounded-lg text-slate-500 hover:text-slate-300 transition"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="p-6 overflow-y-auto space-y-4 text-sm">
+              <p className="text-slate-400 text-xs leading-relaxed bg-indigo-950/20 border border-indigo-900/30 p-3 rounded-lg">
+                💡 <strong>使用说明</strong>：复制下方全局系统提示词，粘贴到 ChatGPT / Gemini 会话的第一轮输入中。建立会话上下文之后，你再生成每一个镜头时，只需输入分镜提示词（可选择剥离全局的独立版本），即可大幅降低画面和连续性漂移，保持全局角色与场景一致！
+              </p>
+              <pre className="bg-slate-950 p-4 border border-slate-800 rounded-xl text-slate-300 font-mono text-xs whitespace-pre-wrap select-all max-h-[45vh] overflow-y-auto leading-relaxed">
+                {systemPrompt}
+              </pre>
+            </div>
+
+            {/* Footer */}
+            <div className="px-6 py-4 bg-slate-950 border-t border-slate-800 flex justify-end gap-3">
+              <button
+                onClick={() => {
+                  setShowSystemPrompt(false);
+                  setIsCopied(false);
+                }}
+                className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-sm transition"
+              >
+                关闭
+              </button>
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(systemPrompt);
+                  setIsCopied(true);
+                  setTimeout(() => setIsCopied(false), 2000);
+                }}
+                className="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-sm font-medium transition flex items-center gap-1.5"
+              >
+                <Copy size={16} />
+                {isCopied ? '已复制！' : '一键复制系统提示词'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -1236,9 +1697,10 @@ export default function PreviewTab() {
 interface ImagePreviewModalProps {
   shot: Shot;
   onClose: () => void;
+  onDelete?: (kfUrl: string) => void | Promise<void>;
 }
 
-function ImagePreviewModal({ shot, onClose }: ImagePreviewModalProps) {
+function ImagePreviewModal({ shot, onClose, onDelete }: ImagePreviewModalProps) {
   const [currentIdx, setCurrentIdx] = useState(0);
   const [copyStatus, setCopyStatus] = useState('复制图片');
   const images = shot._keyframes || [];
@@ -1348,6 +1810,14 @@ function ImagePreviewModal({ shot, onClose }: ImagePreviewModalProps) {
             >
               关闭
             </button>
+            {onDelete && activeImg && (
+              <button
+                onClick={() => onDelete(activeImg)}
+                className="px-4 py-2 bg-red-600/20 text-red-300 border border-red-500/20 hover:bg-red-600/30 rounded-lg text-sm transition"
+              >
+                删除此图
+              </button>
+            )}
             <button
               onClick={handleCopyImage}
               className="px-4 py-2 bg-blue-600/20 text-blue-300 border border-blue-500/20 hover:bg-blue-600/30 rounded-lg text-sm transition"

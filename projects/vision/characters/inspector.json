@@ -1,0 +1,14 @@
+{
+  "id": "inspector",
+  "name": "王巡检（点检员）",
+  "must_keep": {
+    "identity": "资深点检员，沉稳，约五十岁，女性",
+    "hair": "hair fully covered by blue cleanroom cap",
+    "outfit": "blue cleanroom suit, mask under chin or light face mask",
+    "accessories": [
+      "lightweight minimalist XR glasses (thin frame, near-invisible, NOT a bulky VR headset)",
+      "no exposed personal items"
+    ]
+  },
+  "references": { "images": [] }
+}

@@ -1,0 +1,84 @@
+{
+  "id": "vision",
+  "name": "看得见的水",
+  "description": "滤芯装配车间 XR 概念预告 / 企业愿景片。把产品真实的点检·监控·学习三大功能展开成未来 XR 三场景。约 100 秒。",
+  "default_style_ref": "styles/minimal_tech_v1.json",
+  "defaults": {
+    "language": "zh",
+    "fps": 24,
+    "aspect": "16:9"
+  },
+  "inventory": {
+    "scenes": [
+      "scenes/scene_assembly_workshop.json"
+    ],
+    "characters": [
+      "characters/inspector.json",
+      "characters/analyst.json",
+      "characters/newbie.json",
+      "characters/master.json"
+    ],
+    "props": [
+      "props/xr_glasses.json",
+      "props/filter_element.json",
+      "props/assembly_station.json",
+      "props/xr_overlay.json"
+    ]
+  },
+  "timeline": [
+    {
+      "shot_id": "S001",
+      "shot_file": "shots/S001.json",
+      "tier": "standard",
+      "duration_s": 11
+    },
+    {
+      "shot_id": "S002A",
+      "shot_file": "shots/S002A.json",
+      "tier": "standard",
+      "duration_s": 8
+    },
+    {
+      "shot_id": "S002B",
+      "shot_file": "shots/S002B.json",
+      "tier": "standard",
+      "duration_s": 8
+    },
+    {
+      "shot_id": "S003A",
+      "shot_file": "shots/S003A.json",
+      "tier": "standard",
+      "duration_s": 9
+    },
+    {
+      "shot_id": "S003B",
+      "shot_file": "shots/S003B.json",
+      "tier": "standard",
+      "duration_s": 8
+    },
+    {
+      "shot_id": "S004A",
+      "shot_file": "shots/S004A.json",
+      "tier": "standard",
+      "duration_s": 9
+    },
+    {
+      "shot_id": "S004B",
+      "shot_file": "shots/S004B.json",
+      "tier": "standard",
+      "duration_s": 9
+    },
+    {
+      "shot_id": "S005",
+      "shot_file": "shots/S005.json",
+      "tier": "standard",
+      "duration_s": 10
+    },
+    {
+      "shot_id": "S006",
+      "shot_file": "shots/S006.json",
+      "tier": "cheap",
+      "duration_s": 6
+    }
+  ]
+}

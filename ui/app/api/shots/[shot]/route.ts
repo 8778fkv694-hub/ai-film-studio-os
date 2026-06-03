@@ -58,12 +58,24 @@ export async function GET(
       } catch {}
     }
 
+    // 6. Load Project System Prompt
+    let projectSystemPrompt = '';
+    try {
+      const systemPromptPath = path.join(getResourcePath('exports'), 'project-system-prompt.txt');
+      if (fs.existsSync(systemPromptPath)) {
+        projectSystemPrompt = fs.readFileSync(systemPromptPath, 'utf-8');
+      }
+    } catch (err) {
+      console.warn('Failed to load project system prompt:', err);
+    }
+
     return NextResponse.json({
       shot,
       video_prompt: videoPrompt,
       image_prompt: imagePrompt,
       history,
-      quality
+      quality,
+      project_system_prompt: projectSystemPrompt
     });
   } catch (e: any) {
     return NextResponse.json({ error: e.message || '获取分镜详情失败' }, { status: 500 });

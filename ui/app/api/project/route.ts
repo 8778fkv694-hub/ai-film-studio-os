@@ -15,7 +15,21 @@ export async function GET() {
   }
   
   const data = fs.readFileSync(projectJsonPath, 'utf-8');
-  return NextResponse.json(JSON.parse(data));
+  const project = JSON.parse(data);
+  
+  // Load Project System Prompt
+  let projectSystemPrompt = '';
+  try {
+    const systemPromptPath = path.join(projectPath, 'exports/project-system-prompt.txt');
+    if (fs.existsSync(systemPromptPath)) {
+      projectSystemPrompt = fs.readFileSync(systemPromptPath, 'utf-8');
+    }
+  } catch {}
+
+  return NextResponse.json({
+    ...project,
+    project_system_prompt: projectSystemPrompt
+  });
 }
 
 export async function POST(request: Request) {

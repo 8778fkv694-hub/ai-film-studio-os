@@ -1,0 +1,34 @@
+{
+  "shot_id": "S006",
+  "duration_s": 6,
+  "scene_ref": "scenes/scene_assembly_workshop.json",
+  "cam_setup_ref": "comic_panel_01",
+  "characters": [],
+  "props": [
+    {
+      "ref": "props/xr_overlay.json",
+      "state": "brand"
+    }
+  ],
+  "budget": {
+    "tier": "cheap",
+    "max_regen": 1
+  },
+  "action": {
+    "beats": [
+      "落版：极简洁净白背景",
+      "品牌标识，三个功能图标（点检 · 监控 · 学习）+ 膜 / 滤芯 / 净水机三个产品意象",
+      "标语浮现"
+    ]
+  },
+  "voiceover": {
+    "speaker": "Narrator",
+    "text": "点检、监控、学习——让看不见的，被看见。",
+    "voice_id": "zh-CN-XiaoxiaoNeural"
+  },
+  "prompt": {
+    "positive": "16:9 minimalist clean white brand end card, ample negative space, a refined logo lockup, three thin-stroke function icons (inspection, monitoring, learning) and three subtle product motifs (membrane, filter element, water purifier) in primary blue (#4a8eff); elegant typography space reserved; soft even lighting, photorealistic product-grade render, 8K",
+    "negative": "physical display screens, cyberpunk neon, cluttered layout, busy background, cartoon, blurry, low quality, watermark, random logos, dark lighting"
+  },
+  "context_refs": []
+}

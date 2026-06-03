@@ -1,0 +1,48 @@
+{
+  "shot_id": "S005",
+  "duration_s": 10,
+  "scene_ref": "scenes/scene_assembly_workshop.json",
+  "cam_setup_ref": "comic_panel_04",
+  "characters": [
+    {
+      "ref": "characters/newbie.json"
+    }
+  ],
+  "props": [
+    {
+      "ref": "props/filter_element.json",
+      "state": "assembled"
+    },
+    {
+      "ref": "props/assembly_station.json",
+      "state": "finishing"
+    },
+    {
+      "ref": "props/xr_overlay.json",
+      "state": "fading"
+    }
+  ],
+  "action": {
+    "beats": [
+      "细节插入近景：新人戴白手套的双手在淡淡 XR 标注引导下，亲手装配完成一片滤芯",
+      "成品滤芯内部，水由浑浊缓缓转清，化作流动的光",
+      "XR 信息层渐渐褪去，物理车间回到安静明亮"
+    ]
+  },
+  "voiceover": {
+    "speaker": "澄",
+    "text": "装上它，通水。你看——起初是浑的水，就这样，一点一点变清了，你的成品性能合格了。",
+    "voice_id": "zh-CN-XiaoxiaoNeural"
+  },
+  "budget": {
+    "tier": "standard",
+    "max_regen": 2
+  },
+  "context_refs": [
+    "S004B"
+  ],
+  "prompt": {
+    "positive": "16:9 cinematic detail insert macro shot; the Chinese apprentice white-gloved hands install a high-end spiral-wound RO membrane element (blue protective wrap, white central core tube) into a cylindrical test housing at the Flux Testing (通量测试) workbench, guided by faint thin-stroke XR annotation; inside the transparent test pipe water flows through the membrane turning from cloudy to crystal clear as gentle flowing light; the XR layer softly fades; warm hopeful tone, photorealistic, 8K",
+    "negative": "physical display screens, wall monitors, cyberpunk neon, cluttered background, cartoon, blurry, low quality, distorted hands, extra fingers, text artifacts, watermark, logo, dark lighting"
+  }
+}

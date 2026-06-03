@@ -1,0 +1,44 @@
+{
+  "shot_id": "S005A",
+  "duration_s": 8,
+  "scene_ref": "scenes/scene_interior.json",
+  "parent_shot_id": "S005",
+  "segment_index": 1,
+  "segment_count": 2,
+  "split_reason": "duration_s (19s) > max_duration (12s)",
+  "cam_setup_ref": "comic_panel_01",
+  "characters": [
+    {
+      "ref": "characters/visitor_group.json"
+    }
+  ],
+  "props": [
+    {
+      "ref": "props/running_equipment.json",
+      "state": "active"
+    },
+    {
+      "ref": "props/warning_signage.json",
+      "state": "displayed"
+    }
+  ],
+  "budget": {
+    "tier": "cheap",
+    "max_regen": 1
+  },
+  "action": {
+    "beats": []
+  },
+  "voiceover": {
+    "speaker": "Narrator",
+    "text": "进入车间后，请按指定路线参观。参观过程中，不得脱帽、摘口罩，",
+    "voice_id": "narrator_male_01"
+  },
+  "prompt": {
+    "positive": "16:9 cinematic wide shot, clean room interior with running machinery and yellow warning lines on floor, group of visitors in clean suits walking along designated path, bright industrial overhead lighting, eye-level angle, photorealistic, highly detailed, 8K, industrial documentary style",
+    "negative": "blurry, low quality, distorted faces, wrong proportions, text artifacts, watermark, logo, extra limbs, missing safety equipment, dark lighting, cluttered background"
+  },
+  "context_refs": [
+    "assets/renders/S004/keyframes/frame_01.png"
+  ]
+}

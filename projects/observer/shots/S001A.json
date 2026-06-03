@@ -1,0 +1,38 @@
+{
+  "shot_id": "S001A",
+  "duration_s": 10,
+  "scene_ref": "scenes/scene_entrance.json",
+  "parent_shot_id": "S001",
+  "segment_index": 1,
+  "segment_count": 2,
+  "split_reason": "duration_s (19s) > max_duration (12s)",
+  "cam_setup_ref": "comic_panel_01",
+  "characters": [
+    {
+      "ref": "characters/visitor_group.json"
+    }
+  ],
+  "props": [
+    {
+      "ref": "props/warning_signage.json",
+      "state": "displayed"
+    }
+  ],
+  "budget": {
+    "tier": "cheap",
+    "max_regen": 1
+  },
+  "action": {
+    "beats": []
+  },
+  "voiceover": {
+    "speaker": "Narrator",
+    "text": "欢迎欢迎参观净水工厂滤芯车间。本车间为洁净管控区域，进入前请先了解以下注意事项。",
+    "voice_id": "narrator_male_01"
+  },
+  "prompt": {
+    "positive": "16:9 cinematic wide shot, clean room entrance with door access panel and warning signage, group of visitors in casual clothes standing and reading, bright industrial lighting, eye-level angle, photorealistic, highly detailed, 8K, industrial documentary style",
+    "negative": "blurry, low quality, distorted faces, wrong proportions, text artifacts, watermark, logo, extra limbs, dark lighting, cluttered background"
+  },
+  "context_refs": []
+}

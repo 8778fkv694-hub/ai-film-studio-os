@@ -6,7 +6,7 @@
   "properties": {
     "id": {"type": "string"},
     "name": {"type": "string"},
-    "must_keep": {"type": "boolean"},
+    "must_keep": {"type": ["boolean", "string"]},
     "references": {
       "type": "object",
       "properties": {

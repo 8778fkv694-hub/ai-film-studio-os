@@ -1,0 +1,24 @@
+{
+  "id": "minimal_tech_v1",
+  "name": "Minimalist Tech Realism v1",
+  "type": "cinematic live-action",
+  "mood_keywords": [
+    "serene",
+    "precise",
+    "warm undertone",
+    "high-end industrial future",
+    "minimalist"
+  ],
+  "palette": [
+    "near-monochrome physical world (cool grey + clean white)",
+    "color only inside XR layer: primary blue #4a8eff, normal green #22c55e, warning amber #f59e0b, alarm red #ef4444"
+  ],
+  "lighting": "soft even ambient light, no harsh highlights, near shadowless cleanroom, restrained self-illumination",
+  "principles": [
+    "physical space is minimalist and almost empty — no physical display screens or monitors",
+    "all information lives only in the XR layer (holographic, anchored in space)",
+    "negative space is the luxury; do not over-decorate with glow effects",
+    "recognizably the real filter-element assembly workshop, but its upgraded near-future version",
+    "no cyberpunk neon"
+  ]
+}

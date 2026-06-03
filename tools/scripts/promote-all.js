@@ -1,17 +1,22 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { parseArgs } from './shared/dirs.js';
 
-const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../');
+const { workDir } = parseArgs();
 
 function promoteAll() {
-  const draftsDir = path.join(ROOT, 'shots_draft');
-  const shotsDir = path.join(ROOT, 'shots');
-  const projectPath = path.join(ROOT, 'project.json');
+  const draftsDir = path.join(workDir, 'shots_draft');
+  const shotsDir = path.join(workDir, 'shots');
+  const projectPath = path.join(workDir, 'project.json');
+
+  if (!fs.existsSync(projectPath)) {
+    console.error(`project.json does not exist: ${projectPath}`);
+    process.exit(1);
+  }
 
   if (!fs.existsSync(draftsDir)) {
-    console.error('shots_draft/ does not exist!');
-    return;
+    console.error(`shots_draft/ does not exist: ${draftsDir}`);
+    process.exit(1);
   }
   if (!fs.existsSync(shotsDir)) {
     fs.mkdirSync(shotsDir, { recursive: true });
@@ -35,7 +40,8 @@ function promoteAll() {
     project.timeline.push({
       shot_id: shot.shot_id,
       shot_file: `shots/${file}`,
-      tier: shot.budget?.tier || 'cheap'
+      tier: shot.budget?.tier || 'cheap',
+      duration_s: shot.duration_s || 5
     });
   });
 

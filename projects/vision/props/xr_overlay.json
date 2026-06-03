@@ -1,0 +1,6 @@
+{
+  "id": "xr_overlay",
+  "name": "XR 信息层（HUD 设计语言）",
+  "must_keep": "holographic XR information layer using the product's design tokens: primary blue #4a8eff, normal green #22c55e, warning amber #f59e0b, alarm red #ef4444; thin-stroke Lucide-style line icons; monospaced numerals for data; floating data rings, a glowing guide path on the floor, ROI highlight frames; clean, restrained, minimal — color and data appear ONLY in this layer, never as physical screens",
+  "references": { "images": [] }
+}

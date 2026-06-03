@@ -1,0 +1,44 @@
+{
+  "shot_id": "S002B",
+  "duration_s": 8,
+  "scene_ref": "scenes/scene_assembly_workshop.json",
+  "cam_setup_ref": "comic_panel_03",
+  "characters": [
+    {
+      "ref": "characters/inspector.json"
+    }
+  ],
+  "props": [
+    {
+      "ref": "props/assembly_station.json",
+      "state": "inspected"
+    },
+    {
+      "ref": "props/xr_overlay.json",
+      "state": "data_ring"
+    }
+  ],
+  "action": {
+    "beats": [
+      "近景：装配工位前浮起一圈全息数据环，等宽字体显示装配参数——压装力、同心度、密封",
+      "一条历史趋势条亮起琥珀色，某项参数连日缓慢上行",
+      "王巡检抬手轻点，确认通过此项，AI 记下一笔"
+    ]
+  },
+  "voiceover": {
+    "speaker": "澄",
+    "text": "卷绕张力，这几天悄悄紧了一点。我替你记下了——别的都稳，一项一项过。",
+    "voice_id": "zh-CN-XiaoxiaoNeural"
+  },
+  "budget": {
+    "tier": "standard",
+    "max_regen": 2
+  },
+  "context_refs": [
+    "S002A"
+  ],
+  "prompt": {
+    "positive": "16:9 cinematic close-up with shallow depth of field; a floating holographic data ring at the membrane Winding Station (卷制工位), monospaced numerals for winding tension, adhesive bead and concentricity in primary blue (#4a8eff); one amber (#f59e0b) history trend bar for winding tension creeping upward over days; the inspector blue-suited hand taps to confirm; screen-free, soft even light, photorealistic, 8K",
+    "negative": "physical display screens, wall monitors, cyberpunk neon, bulky VR headset, cluttered background, cartoon, blurry, low quality, distorted faces, text artifacts, watermark, logo, extra limbs, dark lighting"
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "shot_id": "S003A",
+  "duration_s": 9,
+  "scene_ref": "scenes/scene_assembly_workshop.json",
+  "cam_setup_ref": "comic_panel_07",
+  "characters": [],
+  "props": [
+    {
+      "ref": "props/xr_overlay.json",
+      "state": "monitor_grid"
+    },
+    {
+      "ref": "props/assembly_station.json",
+      "state": "running"
+    }
+  ],
+  "action": {
+    "beats": [
+      "高角度俯视：切到监控视角，整间车间被空间锚定的实时数据节点点亮",
+      "各工位旁浮起小幅摄像头画面窗口（对应 monitorVideo）与实时数据（对应 monitorData）",
+      "整体平稳的绿色，物理空间依旧安静极简"
+    ]
+  },
+  "voiceover": {
+    "speaker": "澄",
+    "text": "抬起头——收卷、组装、通量，整条线此刻都在眼前轻轻跳动，无比清晰。",
+    "voice_id": "zh-CN-XiaoxiaoNeural"
+  },
+  "budget": {
+    "tier": "standard",
+    "max_regen": 2
+  },
+  "context_refs": [
+    "S002B"
+  ],
+  "prompt": {
+    "positive": "16:9 cinematic high-angle downward shot of the whole membrane-element production workshop overlaid with spatially-anchored XR real-time data nodes and small floating camera-feed windows at each station (Winding, Assembly and potting, Flux testing); calm green (#22c55e) status, monospaced data, thin-stroke icons; serene physical room with white pillars, yellow floor lines, stainless machinery, soft even light, photorealistic, 8K",
+    "negative": "physical display screens, wall monitors, video wall, cyberpunk neon, cluttered background, cartoon, blurry, low quality, text artifacts, watermark, logo, dark lighting, oversaturated"
+  }
+}

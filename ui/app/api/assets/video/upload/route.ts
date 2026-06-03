@@ -86,15 +86,18 @@ export async function POST(request: Request) {
     const relativeVideoPath = `assets/renders/${shotId}/takes/${takeId}/video${ext}`;
     const videoUrl = `/api/assets/reference/renders/${encodeURIComponent(shotId)}/takes/${encodeURIComponent(takeId)}/video${ext}`;
 
-    // Extract last frame using ffmpeg
-    const framePath = path.join(takeDir, 'keyframe.jpg');
-    const ffmpegArgs = ['-y', '-sseof', '-1', '-i', videoPath, '-update', '1', '-q:v', '1', framePath];
+    // 截取首帧与末帧作为分镜画面（首帧用于预览 poster，与视频开头一致，避免闪图）
+    const firstFramePath = path.join(takeDir, 'keyframe_first.jpg');
+    const framePath = path.join(takeDir, 'keyframe.jpg'); // 末帧
 
     let ffmpegSuccess = false;
     let ffmpegError = '';
 
     try {
-      await runFFmpeg(ffmpegArgs);
+      // 首帧
+      await runFFmpeg(['-y', '-i', videoPath, '-frames:v', '1', '-q:v', '1', firstFramePath]);
+      // 末帧
+      await runFFmpeg(['-y', '-sseof', '-1', '-i', videoPath, '-update', '1', '-q:v', '1', framePath]);
       ffmpegSuccess = true;
     } catch (err: any) {
       console.warn('FFmpeg execution failed, extraction skipped:', err);
@@ -117,7 +120,8 @@ export async function POST(request: Request) {
       status: 'imported',
       prompt_hash: promptHash,
       video_path: relativeVideoPath,
-      keyframe_path: ffmpegSuccess ? `assets/renders/${shotId}/takes/${takeId}/keyframe.jpg` : '',
+      keyframe_path: ffmpegSuccess ? `assets/renders/${shotId}/takes/${takeId}/keyframe_first.jpg` : '',
+      keyframe_last_path: ffmpegSuccess ? `assets/renders/${shotId}/takes/${takeId}/keyframe.jpg` : '',
       duration_s: durationS,
       source: 'manual_external',
       platform: 'manual',
@@ -136,10 +140,12 @@ export async function POST(request: Request) {
     if (!history.active_take_id) {
       history.active_take_id = takeId;
       
-      // Copy keyframe to global keyframes directory for player compatibility
+      // 把首帧/末帧放进全局 keyframes，供播放器与列表显示。
+      // 命名让首帧排在最前（frame_00），使预览 currentImage = 视频首帧、poster 与视频一致、不再闪。
       if (ffmpegSuccess) {
         const globalKeyframesDir = path.join(getResourcePath('assets'), 'renders', shotId, 'keyframes');
         fs.mkdirSync(globalKeyframesDir, { recursive: true });
+        fs.copyFileSync(firstFramePath, path.join(globalKeyframesDir, 'frame_00.jpg'));
         fs.copyFileSync(framePath, path.join(globalKeyframesDir, 'frame_last.jpg'));
       }
     }
