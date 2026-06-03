@@ -20,6 +20,11 @@ projects/*/exports/*.webm
 .local/
 *.local.json
 
+# local databases / scratch outputs (avoid accidental commits)
+*.db
+mydatabase.db
+outputs/
+
 # OS
 .DS_Store
 

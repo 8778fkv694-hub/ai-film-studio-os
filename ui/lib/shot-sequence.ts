@@ -1,6 +1,7 @@
 import { execFile } from 'child_process';
 import fs from 'fs';
 import path from 'path';
+import { writeJsonAtomic } from './fs-atomic';
 
 export const SHOT_ID_RE = /^[A-Za-z0-9_-]+$/;
 const IMAGE_EXTS = new Set(['.jpg', '.jpeg', '.png', '.webp']);
@@ -15,8 +16,8 @@ export function readJson(filePath: string): any | null {
 }
 
 export function writeJson(filePath: string, value: any): void {
-  fs.mkdirSync(path.dirname(filePath), { recursive: true });
-  fs.writeFileSync(filePath, JSON.stringify(value, null, 2) + '\n', 'utf-8');
+  // 原子写：避免 order/split 多文件变更或并发请求写坏 project.json / 镜头 JSON
+  writeJsonAtomic(filePath, value);
 }
 
 export function parseShotSequenceId(shotId: string): { base: string; suffix: string } {

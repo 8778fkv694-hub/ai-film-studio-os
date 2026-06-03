@@ -3,6 +3,7 @@ import path from 'path';
 import crypto from 'crypto';
 import { NextResponse } from 'next/server';
 import { getResourcePath } from '@/lib/projects';
+import { writeJsonAtomic } from '@/lib/fs-atomic';
 
 function currentPromptHash(shotId: string): string {
   const promptPath = path.join(getResourcePath('prompts'), `${shotId}.final.json`);
@@ -88,7 +89,7 @@ export async function POST(
       return NextResponse.json({ error: `未知 action: ${action}` }, { status: 400 });
     }
 
-    fs.writeFileSync(historyFile, JSON.stringify(history, null, 2));
+    writeJsonAtomic(historyFile, history);
     return NextResponse.json({ success: true, history });
   } catch (e: any) {
     return NextResponse.json({ error: e.message || '操作失败' }, { status: 500 });

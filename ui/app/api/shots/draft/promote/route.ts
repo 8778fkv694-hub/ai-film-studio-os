@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
 import { getResourcePath, getProjectJsonPath } from '@/lib/projects';
+import { writeJsonAtomic } from '@/lib/fs-atomic';
 
 export async function POST(request: Request) {
   try {
@@ -18,11 +19,7 @@ export async function POST(request: Request) {
 
     // Write to final shots directory
     const finalFilename = `${shot.shot_id}.json`;
-    fs.writeFileSync(
-      path.join(shotsDir, finalFilename),
-      JSON.stringify(shot, null, 2),
-      'utf-8'
-    );
+    writeJsonAtomic(path.join(shotsDir, finalFilename), shot);
 
     // Remove from drafts directory
     const draftPath = path.join(getResourcePath('shots_draft'), draftFilename);
@@ -54,7 +51,7 @@ export async function POST(request: Request) {
             return a.shot_id.localeCompare(b.shot_id);
           });
 
-          fs.writeFileSync(projectPath, JSON.stringify(project, null, 2), 'utf-8');
+          writeJsonAtomic(projectPath, project);
           console.log(`[Promote] Added and sorted ${shot.shot_id} in project.json timeline.`);
         }
       } catch (err) {

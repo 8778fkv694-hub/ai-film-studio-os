@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import { writeJsonAtomic } from './fs-atomic';
 
 export interface AiSettings {
   aiEnabled: boolean;
@@ -136,5 +137,5 @@ export function sanitizeAiSettings(body: any, current: AiSettings): AiSettings {
 
 export function saveAiSettings(settings: AiSettings) {
   ensureSettingsDir();
-  fs.writeFileSync(SETTINGS_PATH, JSON.stringify(settings, null, 2));
+  writeJsonAtomic(SETTINGS_PATH, settings);
 }

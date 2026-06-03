@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { NextResponse } from 'next/server';
 import { getCurrentProjectPath } from '@/lib/projects';
+import { writeJsonAtomic } from '@/lib/fs-atomic';
 
 export async function GET() {
   const projectPath = getCurrentProjectPath();
@@ -43,7 +44,7 @@ export async function POST(request: Request) {
     const projectJsonPath = path.join(projectPath, 'project.json');
     
     // Basic validation could go here
-    fs.writeFileSync(projectJsonPath, JSON.stringify(body, null, 2));
+    writeJsonAtomic(projectJsonPath, body);
     return NextResponse.json({ success: true });
   } catch (e) {
     return new NextResponse('Failed to save project', { status: 500 });

@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { spawn, execSync } from 'node:child_process';
+import { spawn, execSync, execFileSync } from 'node:child_process';
 import { parseArgs } from './shared/dirs.js';
 
 const { workDir, projectRoot } = parseArgs();
@@ -252,7 +252,8 @@ async function main() {
       '--notes', `Automated Dreamina generation (submit_id: ${submitId})`,
       '--project-dir', workDir
     ];
-    execSync(`node ${importArgs.join(' ')}`, { stdio: 'inherit' });
+    // 用数组传参，避免把 shotId/路径/submitId 等拼进 shell 造成命令注入
+    execFileSync('node', importArgs, { stdio: 'inherit' });
     console.log(`🎉 [DreaminaGen] Done! Video imported successfully for ${shotId}.`);
   } catch (err) {
     console.error(`❌ [DreaminaGen] Failed to automatically import video:`, err.message);

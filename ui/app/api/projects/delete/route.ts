@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { NextResponse } from 'next/server';
+import { writeJsonAtomic } from '@/lib/fs-atomic';
 
 const PROJECTS_DIR = path.resolve(process.cwd(), '../projects');
 const PROJECTS_FILE = path.resolve(process.cwd(), '../projects.json');
@@ -53,7 +54,7 @@ export async function POST(request: Request) {
         : null;
     }
 
-    fs.writeFileSync(PROJECTS_FILE, JSON.stringify(projectsData, null, 2));
+    writeJsonAtomic(PROJECTS_FILE, projectsData);
 
     return NextResponse.json({ 
       success: true, 

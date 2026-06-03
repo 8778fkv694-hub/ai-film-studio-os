@@ -4,6 +4,7 @@ import crypto from 'crypto';
 import { execFile } from 'child_process';
 import { NextResponse } from 'next/server';
 import { getResourcePath } from '@/lib/projects';
+import { writeJsonAtomic } from '@/lib/fs-atomic';
 
 const ALLOWED_EXTS = new Set(['.mp4', '.mov', '.webm', '.avi']);
 
@@ -151,8 +152,7 @@ export async function POST(request: Request) {
     }
 
     // Save History
-    fs.mkdirSync(path.dirname(historyFile), { recursive: true });
-    fs.writeFileSync(historyFile, JSON.stringify(history, null, 2));
+    writeJsonAtomic(historyFile, history);
 
     return NextResponse.json({
       success: true,

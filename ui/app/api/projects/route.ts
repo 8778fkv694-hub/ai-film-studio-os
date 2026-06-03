@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { NextResponse } from 'next/server';
+import { writeJsonAtomic } from '@/lib/fs-atomic';
 
 const PROJECTS_DIR = path.resolve(process.cwd(), '../projects');
 const PROJECTS_FILE = path.resolve(process.cwd(), '../projects.json');
@@ -88,7 +89,7 @@ function migrateLegacyProject(projectsData: ProjectsData): ProjectsData {
       projectsData.activeProjectId = projectId;
     }
 
-    fs.writeFileSync(PROJECTS_FILE, JSON.stringify(projectsData, null, 2));
+    writeJsonAtomic(PROJECTS_FILE, projectsData);
     
     // 迁移完成后重命名旧文件，防止重复迁移
     fs.renameSync(legacyProjectPath, legacyProjectPath + '.migrated');
@@ -149,7 +150,7 @@ export async function GET() {
     // 更新项目列表（移除无效项目）
     if (projectsWithDetails.length !== projectsData.projects.length) {
       projectsData.projects = projectsWithDetails;
-      fs.writeFileSync(PROJECTS_FILE, JSON.stringify(projectsData, null, 2));
+      writeJsonAtomic(PROJECTS_FILE, projectsData);
     }
 
     return NextResponse.json({
@@ -249,7 +250,7 @@ export async function POST(request: Request) {
       projectsData.activeProjectId = id;
     }
 
-    fs.writeFileSync(PROJECTS_FILE, JSON.stringify(projectsData, null, 2));
+    writeJsonAtomic(PROJECTS_FILE, projectsData);
 
     return NextResponse.json({ 
       success: true, 

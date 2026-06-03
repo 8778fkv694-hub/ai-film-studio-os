@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import { writeJsonAtomic } from './fs-atomic';
 
 const PROJECTS_DIR = path.resolve(process.cwd(), '../projects');
 const PROJECTS_FILE = path.resolve(process.cwd(), '../projects.json');
@@ -28,7 +29,7 @@ export function getProjectsData(): ProjectsData {
 
 // 保存项目列表数据
 export function saveProjectsData(data: ProjectsData): void {
-  fs.writeFileSync(PROJECTS_FILE, JSON.stringify(data, null, 2));
+  writeJsonAtomic(PROJECTS_FILE, data);
 }
 
 // 获取活动项目ID
@@ -81,8 +82,8 @@ export function getProjectConfig(projectId: string): any | null {
 export function saveProjectConfig(projectId: string, config: any): void {
   const projectDir = getProjectPath(projectId);
   const configPath = path.join(projectDir, 'project.json');
-  
-  fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+
+  writeJsonAtomic(configPath, config);
 }
 
 // 获取项目资源路径
