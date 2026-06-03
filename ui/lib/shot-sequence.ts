@@ -1,4 +1,5 @@
 import { execFile } from 'child_process';
+import crypto from 'crypto';
 import fs from 'fs';
 import path from 'path';
 import { writeJsonAtomic } from './fs-atomic';
@@ -205,6 +206,101 @@ export function relinkContextRefs(projectPath: string, timeline: any[], shotIds:
       shot.context_refs = ref ? [ref] : [];
     }
     writeJson(shotPath, shot);
+  }
+}
+
+/**
+ * 事务包裹 order/split 这类多文件结构变更（重命名磁盘资源 + 深改 JSON + 删除）。
+ * order/split 会跨 shots/prompts/states/renders 改动，且 renameShotResources 自身的
+ * 回滚无法覆盖“重命名成功之后、写 project.json 失败”这类半完成状态。
+ *
+ * 策略：操作前按受影响的 base 组快照——整份 shots/prompts/states + project.json（都很小），
+ * 以及这些 base 下的 assets/renders/<id> 与 assets/audio/<id>.*（仅相关镜头的媒体）。
+ * fn 抛错则把这些范围整体还原（删除当前的旧/新 id 产物，再从快照拷回），可同时撤销
+ * 重命名、深改与删除；成功则删除快照。派生且非致命的 rebuildPromptPackages 应放在事务外。
+ */
+export async function withShotTransaction<T>(
+  projectPath: string,
+  affectedBases: Set<string>,
+  fn: () => Promise<T> | T
+): Promise<T> {
+  const baseOf = (id: string) => parseShotSequenceId(id).base;
+  const inScope = (id: string) => affectedBases.has(baseOf(id));
+  const textDirs = ['shots', 'prompts', 'states'];
+  const rendersDir = path.join(projectPath, 'assets', 'renders');
+  const audioDir = path.join(projectPath, 'assets', 'audio');
+  const projJson = path.join(projectPath, 'project.json');
+
+  const backupDir = path.join(projectPath, '.local', `tx-${crypto.randomUUID()}`);
+  const backupRenders = path.join(backupDir, 'assets', 'renders');
+  const backupAudio = path.join(backupDir, 'assets', 'audio');
+  fs.mkdirSync(backupDir, { recursive: true });
+
+  // 快照：小文本树整份 + project.json
+  for (const d of textDirs) {
+    const src = path.join(projectPath, d);
+    if (fs.existsSync(src)) fs.cpSync(src, path.join(backupDir, d), { recursive: true });
+  }
+  if (fs.existsSync(projJson)) fs.copyFileSync(projJson, path.join(backupDir, 'project.json'));
+
+  // 快照：受影响 base 组的媒体（renders 目录 + audio 文件）
+  if (fs.existsSync(rendersDir)) {
+    for (const id of fs.readdirSync(rendersDir)) {
+      if (!inScope(id)) continue;
+      fs.mkdirSync(backupRenders, { recursive: true });
+      fs.cpSync(path.join(rendersDir, id), path.join(backupRenders, id), { recursive: true });
+    }
+  }
+  if (fs.existsSync(audioDir)) {
+    for (const f of fs.readdirSync(audioDir)) {
+      if (!inScope(f.replace(/\.[^.]+$/, ''))) continue;
+      fs.mkdirSync(backupAudio, { recursive: true });
+      fs.copyFileSync(path.join(audioDir, f), path.join(backupAudio, f));
+    }
+  }
+
+  try {
+    const result = await fn();
+    fs.rmSync(backupDir, { recursive: true, force: true });
+    return result;
+  } catch (err) {
+    try {
+      // 还原文本树：清空后拷回快照（撤销重命名/新建/深改/删除）
+      for (const d of textDirs) {
+        const cur = path.join(projectPath, d);
+        fs.rmSync(cur, { recursive: true, force: true });
+        const bak = path.join(backupDir, d);
+        if (fs.existsSync(bak)) fs.cpSync(bak, cur, { recursive: true });
+      }
+      const bakProj = path.join(backupDir, 'project.json');
+      if (fs.existsSync(bakProj)) fs.copyFileSync(bakProj, projJson);
+
+      // 还原媒体：先删掉范围内所有（含重命名后的新 id）产物，再拷回快照里的原件
+      if (fs.existsSync(rendersDir)) {
+        for (const id of fs.readdirSync(rendersDir)) {
+          if (inScope(id)) fs.rmSync(path.join(rendersDir, id), { recursive: true, force: true });
+        }
+      }
+      if (fs.existsSync(backupRenders)) {
+        for (const id of fs.readdirSync(backupRenders)) {
+          fs.cpSync(path.join(backupRenders, id), path.join(rendersDir, id), { recursive: true });
+        }
+      }
+      if (fs.existsSync(audioDir)) {
+        for (const f of fs.readdirSync(audioDir)) {
+          if (inScope(f.replace(/\.[^.]+$/, ''))) fs.rmSync(path.join(audioDir, f), { force: true });
+        }
+      }
+      if (fs.existsSync(backupAudio)) {
+        fs.mkdirSync(audioDir, { recursive: true });
+        for (const f of fs.readdirSync(backupAudio)) {
+          fs.copyFileSync(path.join(backupAudio, f), path.join(audioDir, f));
+        }
+      }
+    } finally {
+      fs.rmSync(backupDir, { recursive: true, force: true });
+    }
+    throw err;
   }
 }
 

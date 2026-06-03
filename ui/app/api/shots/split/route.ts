@@ -12,6 +12,7 @@ import {
   replaceShotIdsDeep,
   suffixFromIndex,
   updateRenamedJsonContent,
+  withShotTransaction,
   writeJson
 } from '@/lib/shot-sequence';
 
@@ -119,7 +120,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'No active project found' }, { status: 404 });
   }
 
-  const createdFiles: string[] = [];
   try {
     const formData = await request.formData();
     const fromShotId = String(formData.get('from_shot_id') || '');
@@ -178,52 +178,55 @@ export async function POST(request: Request) {
       }
     }
 
-    renameShotResources(projectPath, idMap);
-    updateRenamedJsonContent(projectPath, idMap);
-
     const actualSourceId = idMap.get(fromShotId) || fromShotId;
     const newShotId = finalIdByTimelineIndex.get(sourceIndex + 1)!;
-    const affectedIds = new Set<string>();
 
-    for (const { item, index } of groupEntries as any[]) {
-      const finalId = finalIdByTimelineIndex.get(index)!;
-      item.shot_id = finalId;
-      item.shot_file = `shots/${finalId}.json`;
-      affectedIds.add(finalId);
-    }
+    // 整段结构变更（重命名/深改/写 JSON/写关键帧/relink）包进事务，失败则整体回滚
+    await withShotTransaction(projectPath, new Set([base]), async () => {
+      renameShotResources(projectPath, idMap);
+      updateRenamedJsonContent(projectPath, idMap);
 
-    const groupCount = groupEntries.length;
-    for (const { item, index } of groupEntries as any[]) {
-      const shotId = item.shot_id;
-      const shotPath = path.join(shotsDir, `${shotId}.json`);
-      let shot = readJson(shotPath) || {};
-      if (shotId === actualSourceId) shot = before;
-      if (shotId === newShotId) shot = after;
-      shot = replaceShotIdsDeep(shot, idMap);
-      shot.shot_id = shotId;
-      shot.parent_shot_id = base;
-      shot.segment_index = (groupEntries as any[]).findIndex(entry => entry.item.shot_id === shotId) + 1;
-      shot.segment_count = groupCount;
-      item.duration_s = shot.duration_s || item.duration_s || 5;
-      writeJson(shotPath, shot);
-    }
+      const affectedIds = new Set<string>();
+      for (const { item, index } of groupEntries as any[]) {
+        const finalId = finalIdByTimelineIndex.get(index)!;
+        item.shot_id = finalId;
+        item.shot_file = `shots/${finalId}.json`;
+        affectedIds.add(finalId);
+      }
 
-    const nextAfterGroup = nextTimeline[groupEntries[groupEntries.length - 1].index + 1]?.shot_id;
-    if (nextAfterGroup) affectedIds.add(nextAfterGroup);
+      const groupCount = groupEntries.length;
+      for (const { item, index } of groupEntries as any[]) {
+        const shotId = item.shot_id;
+        const shotPath = path.join(shotsDir, `${shotId}.json`);
+        let shot = readJson(shotPath) || {};
+        if (shotId === actualSourceId) shot = before;
+        if (shotId === newShotId) shot = after;
+        shot = replaceShotIdsDeep(shot, idMap);
+        shot.shot_id = shotId;
+        shot.parent_shot_id = base;
+        shot.segment_index = (groupEntries as any[]).findIndex(entry => entry.item.shot_id === shotId) + 1;
+        shot.segment_count = groupCount;
+        item.duration_s = shot.duration_s || item.duration_s || 5;
+        writeJson(shotPath, shot);
+      }
 
-    project.timeline = nextTimeline;
-    writeJson(projectJsonPath, project);
+      const nextAfterGroup = nextTimeline[groupEntries[groupEntries.length - 1].index + 1]?.shot_id;
+      if (nextAfterGroup) affectedIds.add(nextAfterGroup);
 
-    if (file instanceof File) {
-      const kfDir = path.join(projectPath, 'assets', 'renders', newShotId, 'keyframes');
-      fs.mkdirSync(kfDir, { recursive: true });
-      const framePath = path.join(kfDir, 'frame_00.jpg');
-      const bytes = Buffer.from(await file.arrayBuffer());
-      fs.writeFileSync(framePath, bytes);
-      createdFiles.push(framePath);
-    }
+      project.timeline = nextTimeline;
+      writeJson(projectJsonPath, project);
 
-    relinkContextRefs(projectPath, project.timeline, affectedIds);
+      if (file instanceof File) {
+        const kfDir = path.join(projectPath, 'assets', 'renders', newShotId, 'keyframes');
+        fs.mkdirSync(kfDir, { recursive: true });
+        const framePath = path.join(kfDir, 'frame_00.jpg');
+        const bytes = Buffer.from(await file.arrayBuffer());
+        fs.writeFileSync(framePath, bytes);
+      }
+
+      relinkContextRefs(projectPath, project.timeline, affectedIds);
+    });
+
     const promptResults = await rebuildPromptPackages(projectPath);
     const promptFailed = promptResults.find(result => result.code !== 0);
 
@@ -243,9 +246,7 @@ export async function POST(request: Request) {
       }
     });
   } catch (e: any) {
-    for (const file of createdFiles) {
-      try { if (fs.existsSync(file)) fs.rmSync(file, { force: true }); } catch {}
-    }
+    // 结构变更已由 withShotTransaction 自动回滚
     return NextResponse.json({ error: e.message || '拆分镜头失败' }, { status: 500 });
   }
 }

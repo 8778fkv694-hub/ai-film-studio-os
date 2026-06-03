@@ -12,6 +12,7 @@ import {
   replaceShotIdsDeep,
   suffixFromIndex,
   updateRenamedJsonContent,
+  withShotTransaction,
   writeJson
 } from '@/lib/shot-sequence';
 
@@ -84,44 +85,56 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: `镜头不在 timeline 中: ${shotId}` }, { status: 404 });
     }
 
-    let renamed: Record<string, string> = {};
-    let affected = affectedWindow(project.timeline, idx);
-
+    // 预判受影响的 base 组（供事务快照范围用）：移动涉及当前与目标位置的 base，删除涉及自身 base
+    const affectedBases = new Set<string>([parseShotSequenceId(shotId).base]);
     if (action === 'move_up' || action === 'move_down') {
-      const target = action === 'move_up' ? idx - 1 : idx + 1;
-      if (target < 0 || target >= project.timeline.length) {
+      const t = action === 'move_up' ? idx - 1 : idx + 1;
+      if (t < 0 || t >= project.timeline.length) {
         return NextResponse.json({ error: '已经到边界，不能继续移动' }, { status: 400 });
       }
-      const currentBase = parseShotSequenceId(project.timeline[idx].shot_id).base;
-      const targetBase = parseShotSequenceId(project.timeline[target].shot_id).base;
-      const tmp = project.timeline[idx];
-      project.timeline[idx] = project.timeline[target];
-      project.timeline[target] = tmp;
-      affected = new Set([
-        ...Array.from(affectedWindow(project.timeline, idx)),
-        ...Array.from(affectedWindow(project.timeline, target))
-      ]);
-      if (currentBase === targetBase) {
-        const result = renumberGroup(projectPath, project, currentBase);
-        renamed = result.renamed;
-        affected = new Set([...Array.from(affected), ...Array.from(result.affected)]);
-      }
-    } else if (action === 'delete') {
-      const deletedBase = parseShotSequenceId(shotId).base;
-      project.timeline.splice(idx, 1);
-      removeShotResources(projectPath, shotId);
-      const result = renumberGroup(projectPath, project, deletedBase);
-      renamed = result.renamed;
-      affected = new Set([
-        ...Array.from(result.affected),
-        ...Array.from(affectedWindow(project.timeline, Math.max(0, idx - 1)))
-      ]);
-    } else {
+      affectedBases.add(parseShotSequenceId(project.timeline[t].shot_id).base);
+    } else if (action !== 'delete') {
       return NextResponse.json({ error: '未知排序操作' }, { status: 400 });
     }
 
-    writeJson(projectJsonPath, project);
-    relinkContextRefs(projectPath, project.timeline, affected);
+    let renamed: Record<string, string> = {};
+
+    // 整段结构变更包进事务：中途失败则回滚磁盘重命名/JSON 深改/删除，避免 timeline 与磁盘错位
+    await withShotTransaction(projectPath, affectedBases, () => {
+      let affected = affectedWindow(project.timeline, idx);
+
+      if (action === 'move_up' || action === 'move_down') {
+        const target = action === 'move_up' ? idx - 1 : idx + 1;
+        const currentBase = parseShotSequenceId(project.timeline[idx].shot_id).base;
+        const targetBase = parseShotSequenceId(project.timeline[target].shot_id).base;
+        const tmp = project.timeline[idx];
+        project.timeline[idx] = project.timeline[target];
+        project.timeline[target] = tmp;
+        affected = new Set([
+          ...Array.from(affectedWindow(project.timeline, idx)),
+          ...Array.from(affectedWindow(project.timeline, target))
+        ]);
+        if (currentBase === targetBase) {
+          const result = renumberGroup(projectPath, project, currentBase);
+          renamed = result.renamed;
+          affected = new Set([...Array.from(affected), ...Array.from(result.affected)]);
+        }
+      } else {
+        const deletedBase = parseShotSequenceId(shotId).base;
+        project.timeline.splice(idx, 1);
+        removeShotResources(projectPath, shotId);
+        const result = renumberGroup(projectPath, project, deletedBase);
+        renamed = result.renamed;
+        affected = new Set([
+          ...Array.from(result.affected),
+          ...Array.from(affectedWindow(project.timeline, Math.max(0, idx - 1)))
+        ]);
+      }
+
+      writeJson(projectJsonPath, project);
+      relinkContextRefs(projectPath, project.timeline, affected);
+    });
+
     const promptResults = await rebuildPromptPackages(projectPath);
     const promptFailed = promptResults.find(result => result.code !== 0);
 
