@@ -190,6 +190,26 @@ export default function PreviewTab() {
     }
   };
 
+  const deleteTake = async (shotId: string, takeId: string) => {
+    if (!window.confirm(`删除该视频版本（${takeId}）？此操作不可撤销。若删除的是当前版本，会自动切换到最新的剩余版本。`)) return;
+    try {
+      const res = await fetch(`/api/takes/${encodeURIComponent(shotId)}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ take_id: takeId, action: 'delete' })
+      });
+      if (res.ok) {
+        setResult({ success: true, message: `已删除视频版本 ${takeId}` });
+        await loadShots();
+      } else {
+        const data = await res.json().catch(() => ({}));
+        setResult({ success: false, message: data.error || '删除视频版本失败' });
+      }
+    } catch {
+      setResult({ success: false, message: '删除视频版本失败' });
+    }
+  };
+
   const handleUpdateReview = async (shotId: string, takeId: string, rating?: number, notes?: string) => {
     try {
       const res = await fetch(`/api/takes/${encodeURIComponent(shotId)}`, {
@@ -704,6 +724,13 @@ export default function PreviewTab() {
                       }`}
                     >
                       Reject
+                    </button>
+                    <button
+                      onClick={() => deleteTake(shot.shot_id, take.take_id)}
+                      title="删除该视频版本（含文件）"
+                      className="px-2.5 py-1 rounded text-xs font-medium bg-red-600/15 text-red-300 border border-red-500/30 hover:bg-red-600/30 transition"
+                    >
+                      删除
                     </button>
                   </div>
                 </div>

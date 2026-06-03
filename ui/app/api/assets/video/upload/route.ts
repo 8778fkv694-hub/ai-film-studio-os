@@ -137,18 +137,17 @@ export async function POST(request: Request) {
     history.takes = history.takes || [];
     history.takes.push(newTake);
 
-    // Set as active if none exists
-    if (!history.active_take_id) {
-      history.active_take_id = takeId;
-      
-      // 把首帧/末帧放进全局 keyframes，供播放器与列表显示。
-      // 命名让首帧排在最前（frame_00），使预览 currentImage = 视频首帧、poster 与视频一致、不再闪。
-      if (ffmpegSuccess) {
-        const globalKeyframesDir = path.join(getResourcePath('assets'), 'renders', shotId, 'keyframes');
-        fs.mkdirSync(globalKeyframesDir, { recursive: true });
-        fs.copyFileSync(firstFramePath, path.join(globalKeyframesDir, 'frame_00.jpg'));
-        fs.copyFileSync(framePath, path.join(globalKeyframesDir, 'frame_last.jpg'));
-      }
+    // 新上传的视频自动成为当前活动版本（覆盖上一个），与图片一致；
+    // 如需回退到旧版本，可在版本面板里对旧 take “设为活动”。
+    history.active_take_id = takeId;
+
+    // 把首帧/末帧刷进全局 keyframes，供播放器与列表显示。
+    // 命名让首帧排在最前（frame_00），使预览 currentImage = 当前视频首帧、poster 与视频一致、不再闪。
+    if (ffmpegSuccess) {
+      const globalKeyframesDir = path.join(getResourcePath('assets'), 'renders', shotId, 'keyframes');
+      fs.mkdirSync(globalKeyframesDir, { recursive: true });
+      fs.copyFileSync(firstFramePath, path.join(globalKeyframesDir, 'frame_00.jpg'));
+      fs.copyFileSync(framePath, path.join(globalKeyframesDir, 'frame_last.jpg'));
     }
 
     // Save History
