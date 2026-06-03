@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect, useRef } from 'react';
-import { Volume2, Play, RefreshCw, CheckCircle, AlertCircle, Loader2, Image as ImageIcon, Upload, Copy, Sparkles, X, Download, Film, ArrowUp, ArrowDown, Trash2 } from 'lucide-react';
+import { useState, useEffect, useRef, Fragment } from 'react';
+import { Volume2, Play, RefreshCw, CheckCircle, AlertCircle, Loader2, Image as ImageIcon, Upload, Copy, Sparkles, X, Download, Film, ArrowUp, ArrowDown, Trash2, Grid, List, Check } from 'lucide-react';
 import Player, { SubtitleStyle } from '../Player';
 
 interface Shot {
@@ -81,6 +81,11 @@ export default function PreviewTab() {
   const [expandedShots, setExpandedShots] = useState<Record<string, boolean>>({});
   const [systemPrompt, setSystemPrompt] = useState<string>('');
   const [showSystemPrompt, setShowSystemPrompt] = useState<boolean>(false);
+  const [viewMode, setViewMode] = useState<'card' | 'table'>('card');
+  const [selectedShotIds, setSelectedShotIds] = useState<string[]>([]);
+  const [editingDuration, setEditingDuration] = useState<string | null>(null);
+  const [durationDraft, setDurationDraft] = useState('');
+  const [savingDuration, setSavingDuration] = useState(false);
   const [previewVideoMode, setPreviewVideoMode] = useState<'local' | 'full'>('local');
   const layoutSaveTimeoutRef = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
 
@@ -115,6 +120,20 @@ export default function PreviewTab() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const isAllSelected = shots.length > 0 && selectedShotIds.length === shots.length;
+  const toggleSelectAll = () => {
+    if (isAllSelected) {
+      setSelectedShotIds([]);
+    } else {
+      setSelectedShotIds(shots.map(s => s.shot_id));
+    }
+  };
+  const toggleSelectShot = (shotId: string) => {
+    setSelectedShotIds(prev =>
+      prev.includes(shotId) ? prev.filter(id => id !== shotId) : [...prev, shotId]
+    );
   };
 
   const toggleExpandShot = (shotId: string) => {
@@ -363,6 +382,1081 @@ export default function PreviewTab() {
     } finally {
       setSavingVO(false);
     }
+  };
+
+  // ===== 时长行内编辑 =====
+  const beginEditDuration = (shot: Shot) => {
+    setEditingDuration(shot.shot_id);
+    setDurationDraft(shot.duration_s.toString());
+  };
+  const cancelEditDuration = () => {
+    setEditingDuration(null);
+    setDurationDraft('');
+  };
+  const commitEditDuration = async (shot: Shot) => {
+    if (savingDuration) return;
+    const val = parseFloat(durationDraft);
+    if (isNaN(val) || val <= 0) {
+      setResult({ success: false, message: '请输入有效的时长值（大于 0 的数字）' });
+      cancelEditDuration();
+      return;
+    }
+    if (val === shot.duration_s) {
+      cancelEditDuration();
+      return;
+    }
+    setSavingDuration(true);
+    try {
+      const updated: any = { ...shot, duration_s: val };
+      const res = await fetch('/api/shots', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updated)
+      });
+      if (res.ok) {
+        setEditingDuration(null);
+        setDurationDraft('');
+        setResult({ success: true, message: `${shot.shot_id} 时长已更新为 ${val}s` });
+        await loadShots();
+      } else {
+        const d = await res.json().catch(() => ({}));
+        setResult({ success: false, message: d.error || '保存时长失败' });
+      }
+    } catch {
+      setResult({ success: false, message: '保存时长失败' });
+    } finally {
+      setSavingDuration(false);
+    }
+  };
+
+  // ===== 批量操作处理器 =====
+  const bulkSyncPrompts = async () => {
+    if (selectedShotIds.length === 0) return;
+    setResult(null);
+    let successCount = 0;
+    let failCount = 0;
+    for (const shotId of selectedShotIds) {
+      try {
+        const res = await fetch(`/api/shots/${encodeURIComponent(shotId)}/prompts`, { method: 'POST' });
+        const data = await res.json().catch(() => ({}));
+        if (res.ok && data.success) {
+          successCount++;
+        } else {
+          failCount++;
+        }
+      } catch {
+        failCount++;
+      }
+    }
+    setResult({
+      success: failCount === 0,
+      message: `批量同步 Prompt 完成：成功 ${successCount} 个` + (failCount > 0 ? `，失败 ${failCount} 个` : '')
+    });
+    await loadProjectPrompt();
+    await loadShots();
+    setSelectedShotIds([]);
+  };
+
+  const bulkGenerateTTS = async () => {
+    if (selectedShotIds.length === 0) return;
+    setResult(null);
+    let successCount = 0;
+    let failCount = 0;
+    for (const shotId of selectedShotIds) {
+      try {
+        const res = await fetch('/api/tts/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ shot_id: shotId })
+        });
+        if (res.ok) {
+          successCount++;
+        } else {
+          failCount++;
+        }
+      } catch {
+        failCount++;
+      }
+    }
+    setResult({
+      success: failCount === 0,
+      message: `批量生成配音完成：成功 ${successCount} 个` + (failCount > 0 ? `，失败 ${failCount} 个` : '')
+    });
+    await loadShots();
+    setSelectedShotIds([]);
+  };
+
+  const bulkExportHandoff = async () => {
+    if (selectedShotIds.length === 0) return;
+    setResult(null);
+    let successCount = 0;
+    let failCount = 0;
+    for (const shotId of selectedShotIds) {
+      try {
+        const res = await fetch(`/api/shots/${encodeURIComponent(shotId)}/export`);
+        if (res.ok) {
+          const blob = await res.blob();
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `handoff_${shotId}.zip`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+          successCount++;
+          await new Promise(r => setTimeout(r, 300));
+        } else {
+          failCount++;
+        }
+      } catch {
+        failCount++;
+      }
+    }
+    setResult({
+      success: failCount === 0,
+      message: `批量导出交接包完成：成功 ${successCount} 个` + (failCount > 0 ? `，失败 ${failCount} 个` : '')
+    });
+    setSelectedShotIds([]);
+  };
+
+  const bulkDeleteShots = async () => {
+    if (selectedShotIds.length === 0) return;
+    if (!window.confirm(`确认批量删除选中的 ${selectedShotIds.length} 个分镜？对应画面、视频版本、配音和提示词文件也会一并删除。`)) return;
+    
+    setResult(null);
+    const sortedIds = [...selectedShotIds].sort((a, b) => {
+      const indexA = shots.findIndex(s => s.shot_id === a);
+      const indexB = shots.findIndex(s => s.shot_id === b);
+      return indexB - indexA;
+    });
+
+    let successCount = 0;
+    let failCount = 0;
+    for (const shotId of sortedIds) {
+      try {
+        const res = await fetch('/api/shots/order', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ shot_id: shotId, action: 'delete' })
+        });
+        if (res.ok) {
+          successCount++;
+        } else {
+          failCount++;
+        }
+      } catch {
+        failCount++;
+      }
+    }
+    
+    setResult({
+      success: failCount === 0,
+      message: `批量删除分镜完成：成功 ${successCount} 个` + (failCount > 0 ? `，失败 ${failCount} 个` : '')
+    });
+    await loadShots();
+    setSelectedShotIds([]);
+  };
+
+  const renderTakesPanel = (shot: Shot) => {
+    if (!expandedShots[shot.shot_id]) return null;
+    return (
+      <div className="w-full p-4 bg-slate-900/50 rounded-lg border border-slate-850 space-y-4 my-2 text-left">
+        <h4 className="text-sm font-semibold text-slate-200 flex items-center gap-2">
+          🎬 版本历史与审片 ({shot.shot_id})
+        </h4>
+        
+        {(!shot._takes || shot._takes.length === 0) ? (
+          <div className="text-xs text-slate-500 py-2">
+            暂无 Take 记录。请在上方“上传视频”或通过工具脚本录入新 Take。
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 gap-3">
+            {shot._takes.map((take: any) => {
+              const isActive = shot._active_take?.take_id === take.take_id;
+              const isApproved = take.review?.approved;
+              const isRejected = take.status === 'rejected';
+              
+              return (
+                <div 
+                  key={take.take_id} 
+                  className={`p-3 rounded-lg border flex flex-col md:flex-row gap-4 items-start md:items-center justify-between transition ${
+                    isActive 
+                      ? 'bg-blue-950/20 border-blue-500/50 shadow-md shadow-blue-500/5' 
+                      : 'bg-slate-950/40 border-slate-850 hover:border-slate-800'
+                  }`}
+                >
+                  {/* Metadata */}
+                  <div className="flex gap-3 items-start">
+                    <div className="w-24 h-16 bg-slate-900 border border-slate-800 rounded relative overflow-hidden flex items-center justify-center flex-shrink-0">
+                      {take.keyframe_path ? (
+                        <img 
+                          src={`/api/assets/reference/${take.keyframe_path}`} 
+                          alt={take.take_id} 
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <ImageIcon size={20} className="text-slate-600" />
+                      )}
+                      {isActive && (
+                        <span className="absolute bottom-1 right-1 text-[8px] bg-blue-500 text-white px-1 rounded uppercase font-bold">
+                          Active
+                        </span>
+                      )}
+                    </div>
+                    <div className="space-y-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono font-bold text-xs text-slate-200">
+                          版本{(take.take_id.match(/\d+/)?.[0] || '').replace(/^0+/, '') || ''}
+                        </span>
+                        <span className={`text-[10px] px-1 rounded uppercase font-medium ${
+                          isApproved 
+                            ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' 
+                            : isRejected 
+                            ? 'bg-red-500/10 text-red-400 border border-red-500/20'
+                            : 'bg-slate-800 text-slate-400'
+                        }`}>
+                          {take.status}
+                        </span>
+                      </div>
+                      <div className="text-[10px] text-slate-500 space-y-0.5">
+                        <div>时间: {new Date(take.timestamp).toLocaleString()}</div>
+                        <div>平台: {take.platform || 'manual'} | 来源: {take.source || 'manual'}</div>
+                        {take.prompt_hash && <div>Prompt Hash: <span className="font-mono">{take.prompt_hash}</span></div>}
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Review notes and rating */}
+                  <div className="flex-1 w-full md:w-auto max-w-md space-y-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[11px] text-slate-400">评分:</span>
+                      <div className="flex gap-0.5">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <button
+                            key={star}
+                            onClick={() => handleUpdateReview(shot.shot_id, take.take_id, star, take.review?.notes)}
+                            className={`text-sm transition hover:scale-110 ${
+                              star <= (take.review?.rating || 0) ? 'text-amber-400' : 'text-slate-700 hover:text-slate-500'
+                            }`}
+                          >
+                            ★
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        placeholder="备注说明 (如: 画面崩坏/运镜极佳)..."
+                        defaultValue={take.review?.notes || ''}
+                        onBlur={(e) => {
+                          if (e.target.value !== (take.review?.notes || '')) {
+                            handleUpdateReview(shot.shot_id, take.take_id, take.review?.rating, e.target.value);
+                          }
+                        }}
+                        className="w-full bg-slate-900 border border-slate-800 rounded px-2 py-1 text-xs text-slate-300 placeholder-slate-600 focus:outline-none focus:border-blue-500 transition"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex gap-2 w-full md:w-auto justify-end">
+                    {take.video_path && (
+                      <button
+                        onClick={() => window.open(`/api/assets/reference/${take.video_path}`)}
+                        className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded text-xs transition"
+                      >
+                        播放
+                      </button>
+                    )}
+                    <button
+                      onClick={() => handleTakeAction(shot.shot_id, take.take_id, 'set_active')}
+                      disabled={isActive}
+                      className={`px-2.5 py-1 rounded text-xs font-medium transition ${
+                        isActive
+                          ? 'bg-blue-600/10 text-blue-400 border border-blue-500/20 cursor-default'
+                          : 'bg-blue-600 hover:bg-blue-500 text-white'
+                      }`}
+                    >
+                      {isActive ? '当前活动' : '设为活动'}
+                    </button>
+                    <button
+                      onClick={() => handleTakeAction(shot.shot_id, take.take_id, 'approve')}
+                      disabled={isApproved}
+                      className={`px-2.5 py-1 rounded text-xs font-medium transition ${
+                        isApproved
+                          ? 'bg-emerald-600/10 text-emerald-400 border border-emerald-500/20 cursor-default'
+                          : 'bg-emerald-600 hover:bg-emerald-500 text-white'
+                      }`}
+                    >
+                      Approve
+                    </button>
+                    <button
+                      onClick={() => handleTakeAction(shot.shot_id, take.take_id, 'reject')}
+                      disabled={isRejected}
+                      className={`px-2.5 py-1 rounded text-xs font-medium transition ${
+                        isRejected
+                          ? 'bg-red-600/10 text-red-400 border border-red-500/20 cursor-default'
+                          : 'bg-slate-800 hover:bg-slate-750 text-slate-300'
+                      }`}
+                    >
+                      Reject
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  const renderSyncPanel = (shot: Shot) => {
+    if (activeSyncShotId !== shot.shot_id || !shot._sync_state || shot._sync_state.status === 'ok') return null;
+    return (
+      <div className="w-full rounded-lg border border-amber-500/25 bg-amber-500/10 px-3 py-2 text-xs text-amber-100 flex flex-col gap-2 md:flex-row md:items-center md:justify-between my-2 text-left">
+        <div className="min-w-0">
+          <div className="font-semibold text-amber-200">{shot._sync_state.label}</div>
+          <div className="mt-0.5 text-amber-100/80 truncate">
+            {shot._sync_state.reasons.join('；')}
+          </div>
+        </div>
+        <div className="flex flex-wrap items-center gap-2 shrink-0">
+          {shot._sync_state.actions.includes('sync_prompts') && (
+            <button
+              onClick={() => syncShotPrompts(shot.shot_id)}
+              disabled={syncingPromptShot === shot.shot_id}
+              className="flex items-center gap-1 rounded bg-purple-600 px-3 py-1 text-xs font-medium text-white hover:bg-purple-500 disabled:opacity-50"
+            >
+              {syncingPromptShot === shot.shot_id ? <Loader2 size={12} className="animate-spin" /> : <Sparkles size={12} />}
+              同步 Prompt
+            </button>
+          )}
+          {shot._sync_state.actions.includes('generate_tts') && (
+            <button
+              onClick={() => generateSingleTTS(shot.shot_id)}
+              disabled={generatingSingle === shot.shot_id}
+              className="flex items-center gap-1 rounded bg-emerald-600 px-3 py-1 text-xs font-medium text-white hover:bg-emerald-500 disabled:opacity-50"
+            >
+              {generatingSingle === shot.shot_id ? <Loader2 size={12} className="animate-spin" /> : <Volume2 size={12} />}
+              生成配音
+            </button>
+          )}
+          {shot._sync_state.actions.includes('accept_take_prompt_hash') && shot._sync_state.video_prompt_state === 'ok' && (
+            <button
+              onClick={() => acceptCurrentTakePrompt(shot)}
+              disabled={acceptingTakeShot === shot.shot_id}
+              title="视频不重做，只把当前视频 Take 标记为匹配当前 Prompt"
+              className="flex items-center gap-1 rounded bg-orange-600 px-3 py-1 text-xs font-medium text-white hover:bg-orange-500 disabled:opacity-50"
+            >
+              {acceptingTakeShot === shot.shot_id ? <Loader2 size={12} className="animate-spin" /> : <CheckCircle size={12} />}
+              接受当前视频
+            </button>
+          )}
+          <button
+            onClick={() => setActiveSyncShotId(null)}
+            className="flex items-center gap-1 rounded bg-slate-800 px-2 py-1 text-xs text-slate-300 hover:bg-slate-700"
+          >
+            <X size={12} />
+            关闭
+          </button>
+        </div>
+      </div>
+    );
+  };
+
+  const renderCardView = () => {
+    return (
+      <div className="space-y-4">
+        {shots.map((shot, index) => {
+          const isSelected = selectedShotIds.includes(shot.shot_id);
+          const isEditingVO = editingVO === shot.shot_id;
+          const isEditingDuration = editingDuration === shot.shot_id;
+          
+          return (
+            <div
+              key={shot.shot_id}
+              className={`flex flex-col p-4 bg-slate-950 rounded-xl border transition text-left ${
+                isSelected 
+                  ? 'border-blue-500/50 bg-blue-950/5 shadow-md shadow-blue-500/5' 
+                  : 'border-slate-800 hover:border-slate-700 hover:bg-slate-950/80 shadow-sm'
+              }`}
+            >
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
+                
+                {/* Left Column: Metadata & Selection (span 2) */}
+                <div className="lg:col-span-2 flex flex-row lg:flex-col items-center lg:items-start justify-between lg:justify-start gap-3 border-b lg:border-b-0 border-slate-850 pb-3 lg:pb-0 h-full">
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={isSelected}
+                      onChange={() => toggleSelectShot(shot.shot_id)}
+                      className="rounded border-slate-800 bg-slate-900 text-blue-600 focus:ring-blue-500 focus:ring-offset-0 cursor-pointer"
+                    />
+                    <span className="font-mono font-bold text-base text-blue-300 select-none">{shot.shot_id}</span>
+                  </div>
+                  
+                  <div className="flex items-center gap-1.5 lg:mt-2">
+                    <button
+                      onClick={() => updateShotOrder(shot.shot_id, 'move_up')}
+                      disabled={index === 0 || orderingShot === shot.shot_id}
+                      title="上移"
+                      className="p-1 rounded text-slate-500 hover:text-slate-200 hover:bg-slate-800 disabled:opacity-30 transition"
+                    >
+                      <ArrowUp size={14} />
+                    </button>
+                    <button
+                      onClick={() => updateShotOrder(shot.shot_id, 'move_down')}
+                      disabled={index === shots.length - 1 || orderingShot === shot.shot_id}
+                      title="下移"
+                      className="p-1 rounded text-slate-500 hover:text-slate-200 hover:bg-slate-800 disabled:opacity-30 transition"
+                    >
+                      <ArrowDown size={14} />
+                    </button>
+                  </div>
+                  
+                  <div className="lg:mt-3">
+                    {isEditingDuration ? (
+                      <div className="flex items-center gap-1" onClick={e => e.stopPropagation()}>
+                        <input
+                          autoFocus
+                          type="text"
+                          value={durationDraft}
+                          onChange={e => setDurationDraft(e.target.value)}
+                          onBlur={() => commitEditDuration(shot)}
+                          onKeyDown={e => {
+                            if (e.key === 'Enter') commitEditDuration(shot);
+                            else if (e.key === 'Escape') cancelEditDuration();
+                          }}
+                          className="w-16 bg-slate-900 border border-blue-500 rounded px-1.5 py-0.5 text-center text-xs font-semibold text-slate-100 focus:outline-none"
+                        />
+                        <span className="text-slate-500 text-xs font-mono">s</span>
+                      </div>
+                    ) : (
+                      <div 
+                        onClick={() => beginEditDuration(shot)}
+                        className="group cursor-pointer bg-slate-900/60 hover:bg-slate-850 border border-slate-800/80 hover:border-slate-600 px-2.5 py-1 rounded-md text-slate-300 font-mono text-xs flex items-center gap-1.5 transition"
+                        title="点击编辑分镜时长"
+                      >
+                        <span>时长: <strong className="text-slate-100">{shot.duration_s}s</strong></span>
+                        <span className="opacity-0 group-hover:opacity-100 text-[10px] text-blue-400 font-sans transition">修改</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                
+                {/* Middle Column: Expanded Content & Subtitles Editing (span 6) */}
+                <div className="lg:col-span-6 space-y-2">
+                  {isEditingVO ? (
+                    <div className="space-y-3 bg-slate-900/40 p-3 rounded-lg border border-blue-500/30">
+                      <textarea
+                        autoFocus
+                        value={voDraft}
+                        onChange={e => setVoDraft(e.target.value)}
+                        onKeyDown={e => {
+                          if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); commitEditVO(shot); }
+                          else if (e.key === 'Escape') { e.preventDefault(); cancelEditVO(); }
+                        }}
+                        rows={3}
+                        placeholder="输入讲解（旁白）文字 · Shift+Enter换行 · 回车保存"
+                        className="w-full resize-y bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-xs text-slate-100 focus:outline-none focus:border-blue-500/80 transition"
+                      />
+                      
+                      <div className="flex flex-wrap items-center justify-between gap-2 border-t border-slate-800/50 pt-2">
+                        {(() => {
+                          const draftChars = voDraft.replace(/\s/g, '').length;
+                          const baseChars = (shot.voiceover?.text || '').replace(/\s/g, '').length;
+                          const target = shot.duration_s || 0;
+                          const calibrated = shot._has_audio && baseChars > 0 && target > 0;
+                          const rate = calibrated ? baseChars / target : 4.5;
+                          const est = draftChars / rate;
+                          
+                          if (!calibrated) {
+                            return (
+                              <span
+                                title="该镜尚未生成配音，无法精确估时长。请先点右侧「生成」建立时长基准（之后估算才准）。"
+                                className="text-[10px] px-2 py-0.5 rounded border bg-slate-800/50 text-slate-400 border-slate-700/80"
+                              >
+                                未校准（估 ≈{est.toFixed(1)}s）
+                              </span>
+                            );
+                          }
+                          
+                          const ratio = est / target;
+                          const tone = ratio <= 1.0 ? 'emerald' : ratio <= 1.1 ? 'amber' : 'red';
+                          const label = ratio <= 1.0 ? '塞得下' : ratio <= 1.1 ? '略超·可放慢' : '超太多·需缩短';
+                          const cls: Record<string, string> = {
+                              emerald: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
+                              amber: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
+                              red: 'bg-red-500/10 text-red-400 border-red-500/20',
+                          };
+                          return (
+                            <span
+                              title={`已生成配音 ${target}s（${baseChars}字 ≈ ${rate.toFixed(1)}字/秒）。草稿 ${draftChars}字 ≈ ${est.toFixed(1)}s`}
+                              className={`text-[10px] font-mono px-2 py-0.5 rounded border ${cls[tone]}`}
+                            >
+                              ≈{est.toFixed(1)}s / {target}s · {label}
+                            </span>
+                          );
+                        })()}
+                        
+                        <div className="flex gap-2">
+                          <button
+                            onClick={cancelEditVO}
+                            className="text-[11px] px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-slate-200 rounded transition"
+                          >
+                            取消
+                          </button>
+                          <button
+                            onClick={() => commitEditVO(shot)}
+                            disabled={savingVO}
+                            className="text-[11px] px-2.5 py-1 bg-blue-600 hover:bg-blue-500 text-white rounded font-medium transition disabled:opacity-50"
+                          >
+                            保存
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div
+                      onClick={() => beginEditVO(shot)}
+                      className="group cursor-pointer hover:bg-slate-900/60 p-3 rounded-lg border border-dashed border-slate-850 hover:border-slate-700 text-left min-h-[64px] transition"
+                      title="点击修改讲解/台词"
+                    >
+                      {shot.voiceover?.text || shot.dialogue?.text ? (
+                        <div className="space-y-1.5">
+                          {shot.voiceover?.text && (
+                            <div className="text-xs text-slate-300 leading-relaxed">
+                              <span className="text-[10px] bg-blue-500/10 text-blue-400 border border-blue-500/20 px-1 py-0.5 rounded mr-1.5 select-none font-medium">讲解</span>
+                              {shot.voiceover.text}
+                            </div>
+                          )}
+                          {shot.dialogue?.text && (
+                            <div className="text-xs text-slate-400 leading-relaxed font-sans">
+                              <span className="text-[10px] bg-purple-500/10 text-purple-400 border border-purple-500/20 px-1 py-0.5 rounded mr-1.5 select-none font-medium">{shot.dialogue.speaker || '角色'}</span>
+                              "{shot.dialogue.text}"
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <span className="text-slate-650 italic text-xs flex items-center justify-center h-10">无旁白与对白台词（点击添加）</span>
+                      )}
+                      <div className="opacity-0 group-hover:opacity-100 text-[10px] text-blue-500 mt-2 text-right transition">点击编辑文本</div>
+                    </div>
+                  )}
+                </div>
+                
+                {/* Right Column: Assets, Versions & Creative Buttons (span 4) */}
+                <div className="lg:col-span-4 flex flex-col gap-2.5">
+                  {/* Upper row: Thumbnail and upload status */}
+                  <div className="flex items-center justify-between gap-3 bg-slate-900/30 p-2 rounded-lg border border-slate-850/50">
+                    {/* Image Thumbnail */}
+                    <div className="flex items-center gap-2">
+                      <div className="relative w-16 h-10 rounded bg-slate-950 border border-slate-800 overflow-hidden flex items-center justify-center flex-shrink-0 group/thumb">
+                        {shot._selected_keyframe ? (
+                          <>
+                            <img
+                              src={`/api/assets/reference/${shot._selected_keyframe}`}
+                              alt="keyframe"
+                              className="w-full h-full object-cover cursor-pointer"
+                              onClick={() => setActiveImageShot(shot)}
+                            />
+                            <div className="absolute inset-0 bg-black/50 opacity-0 group-hover/thumb:opacity-100 flex items-center justify-center transition cursor-pointer" onClick={() => setActiveImageShot(shot)}>
+                              <Play size={10} className="text-white" />
+                            </div>
+                          </>
+                        ) : (
+                          <ImageIcon size={16} className="text-slate-700" />
+                        )}
+                      </div>
+                      
+                      <div className="text-[10px] text-slate-400">
+                        <div>画面: <span className="font-mono text-slate-200">{shot._keyframes?.length || 0} 张</span></div>
+                        {shot._sync_state && (
+                          <div
+                            onClick={() => setActiveSyncShotId(activeSyncShotId === shot.shot_id ? null : shot.shot_id)}
+                            className={`cursor-pointer font-semibold underline ${
+                              shot._sync_state.status === 'ok' ? 'text-emerald-500' :
+                              shot._sync_state.status === 'warning' ? 'text-amber-500' : 'text-red-500'
+                            }`}
+                            title={shot._sync_state.reasons.join('\n')}
+                          >
+                            {shot._sync_state.label}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    
+                    {/* Sync details or upload actions */}
+                    <div className="flex items-center gap-1">
+                      <label className="cursor-pointer px-2 py-1 bg-slate-800 hover:bg-slate-750 hover:text-slate-100 text-slate-400 rounded text-[10px] transition font-medium flex items-center gap-1">
+                        {uploadingKeyframe === shot.shot_id ? <Loader2 size={10} className="animate-spin" /> : <Upload size={10} />}
+                        上传图
+                        <input
+                          type="file"
+                          accept="image/jpeg,image/png,image/webp"
+                          className="hidden"
+                          disabled={uploadingKeyframe === shot.shot_id}
+                          onChange={e => {
+                            if (e.target.files && e.target.files[0]) {
+                              uploadKeyframe(shot.shot_id, e.target.files[0]);
+                            }
+                            e.currentTarget.value = '';
+                          }}
+                        />
+                      </label>
+                      
+                      <label className="cursor-pointer px-2 py-1 bg-slate-800 hover:bg-slate-750 hover:text-slate-100 text-slate-400 rounded text-[10px] transition font-medium flex items-center gap-1">
+                        {uploadingVideo === shot.shot_id ? <Loader2 size={10} className="animate-spin" /> : <Upload size={10} />}
+                        {shot._video_url ? '视频已传 ✓' : '上传视频'}
+                        <input
+                          type="file"
+                          accept="video/mp4,video/quicktime,video/webm,video/x-msvideo"
+                          className="hidden"
+                          disabled={uploadingVideo === shot.shot_id}
+                          onChange={e => {
+                            if (e.target.files && e.target.files[0]) {
+                              uploadVideo(shot.shot_id, e.target.files[0]);
+                            }
+                            e.currentTarget.value = '';
+                          }}
+                        />
+                      </label>
+                    </div>
+                  </div>
+                  
+                  {/* Action buttons list */}
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    {/* Versions Pill */}
+                    <button
+                      onClick={() => toggleExpandShot(shot.shot_id)}
+                      className={`px-2 py-1 rounded text-[10px] font-medium border transition ${
+                        expandedShots[shot.shot_id]
+                          ? 'bg-blue-500/10 border-blue-500/40 text-blue-400'
+                          : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-slate-200'
+                      }`}
+                    >
+                      版本 ({shot._takes?.length || 0})
+                    </button>
+                    
+                    {/* Single TTS */}
+                    <button
+                      onClick={() => generateSingleTTS(shot.shot_id)}
+                      disabled={generatingSingle === shot.shot_id}
+                      className="px-2 py-1 bg-slate-900 border border-slate-805 text-slate-400 hover:text-slate-200 hover:border-slate-700 disabled:opacity-50 rounded text-[10px] font-medium flex items-center gap-1 transition"
+                    >
+                      {generatingSingle === shot.shot_id ? <Loader2 size={10} className="animate-spin" /> : <Volume2 size={10} />}
+                      生成配音
+                    </button>
+                    
+                    {/* Image Generator */}
+                    <button
+                      onClick={() => setActiveImagePromptShot(shot)}
+                      className="px-2 py-1 bg-slate-900 border border-slate-805 text-slate-400 hover:text-slate-200 hover:border-slate-700 rounded text-[10px] font-medium flex items-center gap-1 transition"
+                    >
+                      <Sparkles size={10} />
+                      生成照片
+                    </button>
+                    
+                    {/* Prompt */}
+                    <button
+                      onClick={() => setActivePromptShot(shot)}
+                      className="px-2 py-1 bg-slate-900 border border-slate-805 text-slate-400 hover:text-slate-200 hover:border-slate-700 rounded text-[10px] font-medium flex items-center gap-1 transition"
+                    >
+                      <Sparkles size={10} />
+                      提示词
+                    </button>
+                    
+                    {/* Handoff export */}
+                    <button
+                      onClick={() => exportShotHandoff(shot.shot_id)}
+                      disabled={exportingShot === shot.shot_id}
+                      className="px-2 py-1 bg-slate-900 border border-slate-805 text-slate-400 hover:text-slate-200 hover:border-slate-700 disabled:opacity-50 rounded text-[10px] font-medium flex items-center gap-1 transition"
+                    >
+                      {exportingShot === shot.shot_id ? <Loader2 size={10} className="animate-spin" /> : <Download size={10} />}
+                      交接包
+                    </button>
+                    
+                    {/* Delete */}
+                    <button
+                      onClick={() => updateShotOrder(shot.shot_id, 'delete')}
+                      disabled={orderingShot === shot.shot_id}
+                      className="ml-auto p-1.5 text-red-500/70 hover:text-red-400 hover:bg-red-500/10 rounded transition"
+                      title="删除镜头"
+                    >
+                      <Trash2 size={12} />
+                    </button>
+                  </div>
+                </div>
+                
+              </div>
+              
+              {/* Render Takes panel if expanded */}
+              {renderTakesPanel(shot)}
+              
+              {/* Render Sync panel if active */}
+              {renderSyncPanel(shot)}
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
+
+  const renderTableView = () => {
+    return (
+      <div className="overflow-x-auto rounded-xl border border-slate-800 bg-slate-950/40">
+        <table className="w-full text-left border-collapse">
+          <thead>
+            <tr className="border-b border-slate-800 bg-slate-900/50 text-[11px] text-slate-400 font-medium select-none">
+              <th className="p-3 w-10 text-center">
+                <input
+                  type="checkbox"
+                  checked={isAllSelected}
+                  onChange={toggleSelectAll}
+                  className="rounded border-slate-800 bg-slate-900 text-blue-600 focus:ring-blue-500 focus:ring-offset-0 cursor-pointer"
+                />
+              </th>
+              <th className="p-3 w-16">分镜ID</th>
+              <th className="p-3 w-20">排序</th>
+              <th className="p-3 w-24">时长</th>
+              <th className="p-3">旁白台词 / 讲解词</th>
+              <th className="p-3 w-32">画面资产</th>
+              <th className="p-3 w-32">视频状态</th>
+              <th className="p-3 w-40 text-right">操作</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-850/60 text-xs">
+            {shots.map((shot, index) => {
+              const isSelected = selectedShotIds.includes(shot.shot_id);
+              const isEditingVO = editingVO === shot.shot_id;
+              const isEditingDuration = editingDuration === shot.shot_id;
+              
+              return (
+                <Fragment key={shot.shot_id}>
+                  <tr 
+                    className={`hover:bg-slate-900/30 transition ${
+                      isSelected ? 'bg-blue-950/10' : ''
+                    }`}
+                  >
+                    {/* Checkbox */}
+                    <td className="p-3 text-center">
+                      <input
+                        type="checkbox"
+                        checked={isSelected}
+                        onChange={() => toggleSelectShot(shot.shot_id)}
+                        className="rounded border-slate-800 bg-slate-900 text-blue-600 focus:ring-blue-500 focus:ring-offset-0 cursor-pointer"
+                      />
+                    </td>
+                    
+                    {/* Shot ID */}
+                    <td className="p-3 font-mono font-bold text-slate-200">
+                      {shot.shot_id}
+                    </td>
+                    
+                    {/* Order buttons */}
+                    <td className="p-3">
+                      <div className="flex items-center gap-0.5">
+                        <button
+                          onClick={() => updateShotOrder(shot.shot_id, 'move_up')}
+                          disabled={index === 0 || orderingShot === shot.shot_id}
+                          className="p-1 rounded text-slate-500 hover:text-slate-200 hover:bg-slate-800 disabled:opacity-30 transition"
+                        >
+                          <ArrowUp size={12} />
+                        </button>
+                        <button
+                          onClick={() => updateShotOrder(shot.shot_id, 'move_down')}
+                          disabled={index === shots.length - 1 || orderingShot === shot.shot_id}
+                          className="p-1 rounded text-slate-500 hover:text-slate-200 hover:bg-slate-800 disabled:opacity-30 transition"
+                        >
+                          <ArrowDown size={12} />
+                        </button>
+                      </div>
+                    </td>
+                    
+                    {/* Duration Edit Inline */}
+                    <td className="p-3">
+                      {isEditingDuration ? (
+                        <div className="flex items-center gap-1" onClick={e => e.stopPropagation()}>
+                          <input
+                            autoFocus
+                            type="text"
+                            value={durationDraft}
+                            onChange={e => setDurationDraft(e.target.value)}
+                            onBlur={() => commitEditDuration(shot)}
+                            onKeyDown={e => {
+                              if (e.key === 'Enter') commitEditDuration(shot);
+                              else if (e.key === 'Escape') cancelEditDuration();
+                            }}
+                            className="w-12 bg-slate-900 border border-blue-500 rounded px-1.5 py-0.5 text-center text-xs text-slate-100 focus:outline-none"
+                          />
+                          <span className="text-slate-500 text-[10px]">s</span>
+                        </div>
+                      ) : (
+                        <span
+                          onClick={() => beginEditDuration(shot)}
+                          className="cursor-pointer hover:bg-slate-800 px-2 py-0.5 rounded border border-slate-800 text-slate-300 font-mono inline-block min-w-[40px] text-center transition"
+                          title="点击修改时长"
+                        >
+                          {shot.duration_s}s
+                        </span>
+                      )}
+                    </td>
+                    
+                    {/* Voiceover / Dialogue Text */}
+                    <td className="p-3 max-w-md">
+                      {isEditingVO ? (
+                        <div className="flex items-center gap-2" onClick={e => e.stopPropagation()}>
+                          <textarea
+                            autoFocus
+                            value={voDraft}
+                            onChange={e => setVoDraft(e.target.value)}
+                            onKeyDown={e => {
+                              if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); commitEditVO(shot); }
+                              else if (e.key === 'Escape') { e.preventDefault(); cancelEditVO(); }
+                            }}
+                            onBlur={() => commitEditVO(shot)}
+                            rows={1}
+                            placeholder="输入讲解文字，回车保存"
+                            className="flex-1 bg-slate-900 border border-blue-500 rounded px-2 py-1 text-xs text-slate-100 focus:outline-none"
+                          />
+                        </div>
+                      ) : (
+                        <div
+                          onClick={() => beginEditVO(shot)}
+                          className="cursor-pointer hover:bg-slate-900 p-1.5 rounded truncate max-w-lg text-slate-300 text-left transition"
+                          title="点击修改文本"
+                        >
+                          {shot.voiceover?.text || shot.dialogue?.text ? (
+                            <span>
+                              {shot.voiceover?.text ? `[讲解] ${shot.voiceover.text}` : ''}
+                              {shot.voiceover?.text && shot.dialogue?.text ? ' | ' : ''}
+                              {shot.dialogue?.text ? `[${shot.dialogue.speaker}] "${shot.dialogue.text}"` : ''}
+                            </span>
+                          ) : (
+                            <span className="text-slate-650 italic">[双击/点击添加旁白与对白台词]</span>
+                          )}
+                        </div>
+                      )}
+                    </td>
+                    
+                    {/* Image assets */}
+                    <td className="p-3">
+                      <div className="flex items-center gap-2">
+                        <div className="relative w-8 h-6 bg-slate-950 border border-slate-800 rounded overflow-hidden flex items-center justify-center flex-shrink-0">
+                          {shot._selected_keyframe ? (
+                            <img
+                              src={`/api/assets/reference/${shot._selected_keyframe}`}
+                              alt="thumb"
+                              className="w-full h-full object-cover cursor-pointer"
+                              onClick={() => setActiveImageShot(shot)}
+                            />
+                          ) : (
+                            <ImageIcon size={12} className="text-slate-700" />
+                          )}
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-[10px] text-slate-400 font-mono">
+                            {shot._keyframes?.length || 0}P
+                          </span>
+                          <label className="cursor-pointer text-[9px] text-blue-400 hover:underline">
+                            {uploadingKeyframe === shot.shot_id ? '中...' : '上传'}
+                            <input
+                              type="file"
+                              accept="image/jpeg,image/png,image/webp"
+                              className="hidden"
+                              disabled={uploadingKeyframe === shot.shot_id}
+                              onChange={e => {
+                                if (e.target.files && e.target.files[0]) {
+                                  uploadKeyframe(shot.shot_id, e.target.files[0]);
+                                }
+                                e.currentTarget.value = '';
+                              }}
+                            />
+                          </label>
+                        </div>
+                      </div>
+                    </td>
+                    
+                    {/* Video takes and status */}
+                    <td className="p-3">
+                      <div className="flex flex-col gap-0.5">
+                        <div className="flex items-center gap-1.5">
+                          {shot._sync_state && (
+                            <span 
+                              onClick={() => setActiveSyncShotId(activeSyncShotId === shot.shot_id ? null : shot.shot_id)}
+                              className={`cursor-pointer text-[9px] px-1 py-0.5 rounded font-medium border underline ${
+                                shot._sync_state.status === 'ok' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
+                                shot._sync_state.status === 'warning' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' :
+                                'bg-red-500/10 text-red-400 border-red-500/20'
+                              }`}
+                              title={shot._sync_state.reasons.join('\n')}
+                            >
+                              {shot._sync_state.label}
+                            </span>
+                          )}
+                          {shot._active_take && (
+                            <span className="text-[9px] bg-slate-800 text-slate-300 px-1 py-0.5 rounded font-mono">
+                              V{(shot._active_take.take_id.match(/\d+/)?.[0] || '').replace(/^0+/, '') || '1'}
+                            </span>
+                          )}
+                        </div>
+                        <label className="cursor-pointer text-[9px] text-blue-400 hover:underline">
+                          {uploadingVideo === shot.shot_id ? '中...' : shot._video_url ? '重新上传' : '上传视频'}
+                          <input
+                            type="file"
+                            accept="video/mp4,video/quicktime,video/webm,video/x-msvideo"
+                            className="hidden"
+                            disabled={uploadingVideo === shot.shot_id}
+                            onChange={e => {
+                              if (e.target.files && e.target.files[0]) {
+                                uploadVideo(shot.shot_id, e.target.files[0]);
+                              }
+                              e.currentTarget.value = '';
+                            }}
+                          />
+                        </label>
+                      </div>
+                    </td>
+                    
+                    {/* Actions */}
+                    <td className="p-3 text-right">
+                      <div className="flex items-center justify-end gap-1.5" onClick={e => e.stopPropagation()}>
+                        <button
+                          onClick={() => toggleExpandShot(shot.shot_id)}
+                          className={`px-2 py-0.5 rounded text-[10px] border transition ${
+                            expandedShots[shot.shot_id]
+                              ? 'bg-blue-500/10 border-blue-500/40 text-blue-400'
+                              : 'bg-slate-900 border-slate-805 text-slate-400 hover:text-slate-200'
+                          }`}
+                        >
+                          版本 ({shot._takes?.length || 0})
+                        </button>
+                        
+                        <button
+                          onClick={() => generateSingleTTS(shot.shot_id)}
+                          disabled={generatingSingle === shot.shot_id}
+                          className="p-1 text-slate-400 hover:text-slate-200 bg-slate-900 border border-slate-800 rounded hover:border-slate-700 transition"
+                          title="生成配音"
+                        >
+                          {generatingSingle === shot.shot_id ? <Loader2 size={12} className="animate-spin" /> : <Volume2 size={12} />}
+                        </button>
+                        
+                        <button
+                          onClick={() => setActiveImagePromptShot(shot)}
+                          className="p-1 text-slate-400 hover:text-slate-200 bg-slate-900 border border-slate-800 rounded hover:border-slate-700 transition"
+                          title="生成照片"
+                        >
+                          <Sparkles size={12} />
+                        </button>
+                        
+                        <button
+                          onClick={() => setActivePromptShot(shot)}
+                          className="p-1 text-slate-400 hover:text-slate-200 bg-slate-900 border border-slate-800 rounded hover:border-slate-700 transition"
+                          title="编辑提示词"
+                        >
+                          <Sparkles size={12} />
+                        </button>
+                        
+                        <button
+                          onClick={() => exportShotHandoff(shot.shot_id)}
+                          className="p-1 text-slate-400 hover:text-slate-200 bg-slate-900 border border-slate-800 rounded hover:border-slate-700 transition"
+                          title="导出交接包"
+                        >
+                          <Download size={12} />
+                        </button>
+                        
+                        <button
+                          onClick={() => updateShotOrder(shot.shot_id, 'delete')}
+                          className="p-1 text-red-500/70 hover:text-red-400 hover:bg-red-500/10 rounded transition"
+                          title="删除镜头"
+                        >
+                          <Trash2 size={12} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                  
+                  {/* Takes Sub-panel row for Table View */}
+                  {expandedShots[shot.shot_id] && (
+                    <tr className="bg-slate-900/20" key={`takes-${shot.shot_id}`}>
+                      <td colSpan={8} className="p-3">
+                        {renderTakesPanel(shot)}
+                      </td>
+                    </tr>
+                  )}
+                  
+                  {/* Sync Sub-panel row for Table View */}
+                  {activeSyncShotId === shot.shot_id && shot._sync_state && shot._sync_state.status !== 'ok' && (
+                    <tr className="bg-amber-950/10" key={`sync-${shot.shot_id}`}>
+                      <td colSpan={8} className="p-3">
+                        {renderSyncPanel(shot)}
+                      </td>
+                    </tr>
+                  )}
+                </Fragment>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    );
+  };
+
+  const renderBulkActionsBar = () => {
+    if (selectedShotIds.length === 0) return null;
+    return (
+      <div className="sticky bottom-4 left-0 right-0 z-50 bg-slate-900/95 backdrop-blur-md border border-blue-500/30 rounded-xl p-4 shadow-xl shadow-blue-500/5 flex flex-col sm:flex-row items-center justify-between gap-4 animate-in fade-in slide-in-from-bottom-4 duration-200">
+        <div className="flex items-center gap-3">
+          <span className="flex items-center justify-center w-5 h-5 bg-blue-600 rounded-full text-[10px] font-bold text-white font-mono">
+            {selectedShotIds.length}
+          </span>
+          <span className="text-sm font-medium text-slate-200">已选中分镜</span>
+          <button
+            onClick={() => setSelectedShotIds([])}
+            className="text-xs text-slate-400 hover:text-slate-200 hover:underline"
+          >
+            取消选择
+          </button>
+        </div>
+        
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            onClick={bulkSyncPrompts}
+            className="px-3 py-1.5 bg-slate-800 hover:bg-slate-750 text-slate-200 hover:text-white rounded-lg text-xs font-medium flex items-center gap-1.5 transition"
+          >
+            <Sparkles size={13} />
+            批量同步 Prompt
+          </button>
+          
+          <button
+            onClick={bulkGenerateTTS}
+            className="px-3 py-1.5 bg-slate-800 hover:bg-slate-755 text-slate-200 hover:text-white rounded-lg text-xs font-medium flex items-center gap-1.5 transition"
+          >
+            <Volume2 size={13} />
+            批量生成配音
+          </button>
+          
+          <button
+            onClick={bulkExportHandoff}
+            className="px-3 py-1.5 bg-slate-800 hover:bg-slate-750 text-slate-200 hover:text-white rounded-lg text-xs font-medium flex items-center gap-1.5 transition"
+          >
+            <Download size={13} />
+            批量导出交接包
+          </button>
+          
+          <button
+            onClick={bulkDeleteShots}
+            className="px-3 py-1.5 bg-red-950/45 border border-red-500/20 hover:bg-red-900/30 text-red-400 hover:text-red-300 rounded-lg text-xs font-medium flex items-center gap-1.5 transition"
+          >
+            <Trash2 size={13} />
+            批量删除
+          </button>
+        </div>
+      </div>
+    );
   };
 
   const uploadVideo = async (shotId: string, file: File | null) => {
