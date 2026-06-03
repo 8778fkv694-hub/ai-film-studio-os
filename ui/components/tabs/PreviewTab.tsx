@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, Fragment } from 'react';
-import { Volume2, Play, RefreshCw, CheckCircle, AlertCircle, Loader2, Image as ImageIcon, Upload, Copy, Sparkles, X, Download, Film, ArrowUp, ArrowDown, Trash2, Grid, List, Check } from 'lucide-react';
+import { Volume2, Play, RefreshCw, CheckCircle, AlertCircle, Loader2, Image as ImageIcon, Upload, Copy, Sparkles, X, Download, Film, ArrowUp, ArrowDown, Trash2, Grid, List } from 'lucide-react';
 import Player, { SubtitleStyle } from '../Player';
 
 interface Shot {
@@ -561,7 +561,7 @@ export default function PreviewTab() {
   const renderTakesPanel = (shot: Shot) => {
     if (!expandedShots[shot.shot_id]) return null;
     return (
-      <div className="w-full p-4 bg-slate-900/50 rounded-lg border border-slate-850 space-y-4 my-2 text-left">
+      <div className="w-full p-4 bg-slate-900/50 rounded-lg border border-slate-800 space-y-4 my-2 text-left">
         <h4 className="text-sm font-semibold text-slate-200 flex items-center gap-2">
           🎬 版本历史与审片 ({shot.shot_id})
         </h4>
@@ -583,13 +583,13 @@ export default function PreviewTab() {
                   className={`p-3 rounded-lg border flex flex-col md:flex-row gap-4 items-start md:items-center justify-between transition ${
                     isActive 
                       ? 'bg-blue-950/20 border-blue-500/50 shadow-md shadow-blue-500/5' 
-                      : 'bg-slate-950/40 border-slate-850 hover:border-slate-800'
+                      : 'bg-slate-950/40 border-slate-800 hover:border-slate-700'
                   }`}
                 >
                   {/* Metadata */}
                   <div className="flex gap-3 items-start">
                     <div className="w-24 h-16 bg-slate-900 border border-slate-800 rounded relative overflow-hidden flex items-center justify-center flex-shrink-0">
-                      <ImageIcon size={20} className="text-slate-650 absolute" />
+                      <ImageIcon size={20} className="text-slate-600 absolute" />
                       {take.keyframe_path && (
                         <img 
                           src={`/api/assets/reference/${take.keyframe_path}`} 
@@ -700,7 +700,7 @@ export default function PreviewTab() {
                       className={`px-2.5 py-1 rounded text-xs font-medium transition ${
                         isRejected
                           ? 'bg-red-600/10 text-red-400 border border-red-500/20 cursor-default'
-                          : 'bg-slate-800 hover:bg-slate-750 text-slate-300'
+                          : 'bg-slate-800 hover:bg-slate-700 text-slate-300'
                       }`}
                     >
                       Reject
@@ -789,7 +789,7 @@ export default function PreviewTab() {
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
                 
                 {/* Left Column: Metadata & Selection (span 2) */}
-                <div className="lg:col-span-2 flex flex-row lg:flex-col items-center lg:items-start justify-between lg:justify-start gap-3 border-b lg:border-b-0 border-slate-850 pb-3 lg:pb-0 h-full">
+                <div className="lg:col-span-2 flex flex-row lg:flex-col items-center lg:items-start justify-between lg:justify-start gap-3 border-b lg:border-b-0 border-slate-800 pb-3 lg:pb-0 h-full">
                   <div className="flex items-center gap-2">
                     <input
                       type="checkbox"
@@ -839,7 +839,7 @@ export default function PreviewTab() {
                     ) : (
                       <div 
                         onClick={() => beginEditDuration(shot)}
-                        className="group cursor-pointer bg-slate-900/60 hover:bg-slate-850 border border-slate-800/80 hover:border-slate-600 px-2.5 py-1 rounded-md text-slate-300 font-mono text-xs flex items-center gap-1.5 transition"
+                        className="group cursor-pointer bg-slate-900/60 hover:bg-slate-800 border border-slate-800/80 hover:border-slate-600 px-2.5 py-1 rounded-md text-slate-300 font-mono text-xs flex items-center gap-1.5 transition"
                         title="点击编辑分镜时长"
                       >
                         <span>时长: <strong className="text-slate-100">{shot.duration_s}s</strong></span>
@@ -924,7 +924,7 @@ export default function PreviewTab() {
                   ) : (
                     <div
                       onClick={() => beginEditVO(shot)}
-                      className="group cursor-pointer hover:bg-slate-900/60 p-3 rounded-lg border border-dashed border-slate-850 hover:border-slate-700 text-left min-h-[64px] transition"
+                      className="group cursor-pointer hover:bg-slate-900/60 p-3 rounded-lg border border-dashed border-slate-800 hover:border-slate-700 text-left min-h-[64px] transition"
                       title="点击修改讲解/台词"
                     >
                       {shot.voiceover?.text || shot.dialogue?.text ? (
@@ -943,7 +943,7 @@ export default function PreviewTab() {
                           )}
                         </div>
                       ) : (
-                        <span className="text-slate-650 italic text-xs flex items-center justify-center h-10">无旁白与对白台词（点击添加）</span>
+                        <span className="text-slate-600 italic text-xs flex items-center justify-center h-10">无旁白与对白台词（点击添加）</span>
                       )}
                       <div className="opacity-0 group-hover:opacity-100 text-[10px] text-blue-500 mt-2 text-right transition">点击编辑文本</div>
                     </div>
@@ -953,7 +953,7 @@ export default function PreviewTab() {
                 {/* Right Column: Assets, Versions & Creative Buttons (span 4) */}
                 <div className="lg:col-span-4 flex flex-col gap-2.5">
                   {/* Upper row: Thumbnail and upload status */}
-                  <div className="flex items-center justify-between gap-3 bg-slate-900/30 p-2 rounded-lg border border-slate-850/50">
+                  <div className="flex items-center justify-between gap-3 bg-slate-900/30 p-2 rounded-lg border border-slate-800/50">
                     {/* Image Thumbnail */}
                     <div className="flex items-center gap-2">
                       <div className="relative w-16 h-10 rounded bg-slate-950 border border-slate-800 overflow-hidden flex items-center justify-center flex-shrink-0 group/thumb">
@@ -995,7 +995,7 @@ export default function PreviewTab() {
                     
                     {/* Sync details or upload actions */}
                     <div className="flex items-center gap-1">
-                      <label className="cursor-pointer px-2 py-1 bg-slate-800 hover:bg-slate-750 hover:text-slate-100 text-slate-400 rounded text-[10px] transition font-medium flex items-center gap-1">
+                      <label className="cursor-pointer px-2 py-1 bg-slate-800 hover:bg-slate-700 hover:text-slate-100 text-slate-400 rounded text-[10px] transition font-medium flex items-center gap-1">
                         {uploadingKeyframe === shot.shot_id ? <Loader2 size={10} className="animate-spin" /> : <Upload size={10} />}
                         上传图
                         <input
@@ -1012,7 +1012,7 @@ export default function PreviewTab() {
                         />
                       </label>
                       
-                      <label className="cursor-pointer px-2 py-1 bg-slate-800 hover:bg-slate-750 hover:text-slate-100 text-slate-400 rounded text-[10px] transition font-medium flex items-center gap-1">
+                      <label className="cursor-pointer px-2 py-1 bg-slate-800 hover:bg-slate-700 hover:text-slate-100 text-slate-400 rounded text-[10px] transition font-medium flex items-center gap-1">
                         {uploadingVideo === shot.shot_id ? <Loader2 size={10} className="animate-spin" /> : <Upload size={10} />}
                         {shot._video_url ? '视频已传 ✓' : '上传视频'}
                         <input
@@ -1049,7 +1049,7 @@ export default function PreviewTab() {
                     <button
                       onClick={() => generateSingleTTS(shot.shot_id)}
                       disabled={generatingSingle === shot.shot_id}
-                      className="px-2 py-1 bg-slate-900 border border-slate-805 text-slate-400 hover:text-slate-200 hover:border-slate-700 disabled:opacity-50 rounded text-[10px] font-medium flex items-center gap-1 transition"
+                      className="px-2 py-1 bg-slate-900 border border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-700 disabled:opacity-50 rounded text-[10px] font-medium flex items-center gap-1 transition"
                     >
                       {generatingSingle === shot.shot_id ? <Loader2 size={10} className="animate-spin" /> : <Volume2 size={10} />}
                       生成配音
@@ -1058,7 +1058,7 @@ export default function PreviewTab() {
                     {/* Image Generator */}
                     <button
                       onClick={() => setActiveImagePromptShot(shot)}
-                      className="px-2 py-1 bg-slate-900 border border-slate-805 text-slate-400 hover:text-slate-200 hover:border-slate-700 rounded text-[10px] font-medium flex items-center gap-1 transition"
+                      className="px-2 py-1 bg-slate-900 border border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-700 rounded text-[10px] font-medium flex items-center gap-1 transition"
                     >
                       <Sparkles size={10} />
                       生成照片
@@ -1067,7 +1067,7 @@ export default function PreviewTab() {
                     {/* Prompt */}
                     <button
                       onClick={() => setActivePromptShot(shot)}
-                      className="px-2 py-1 bg-slate-900 border border-slate-805 text-slate-400 hover:text-slate-200 hover:border-slate-700 rounded text-[10px] font-medium flex items-center gap-1 transition"
+                      className="px-2 py-1 bg-slate-900 border border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-700 rounded text-[10px] font-medium flex items-center gap-1 transition"
                     >
                       <Sparkles size={10} />
                       提示词
@@ -1077,7 +1077,7 @@ export default function PreviewTab() {
                     <button
                       onClick={() => exportShotHandoff(shot.shot_id)}
                       disabled={exportingShot === shot.shot_id}
-                      className="px-2 py-1 bg-slate-900 border border-slate-805 text-slate-400 hover:text-slate-200 hover:border-slate-700 disabled:opacity-50 rounded text-[10px] font-medium flex items-center gap-1 transition"
+                      className="px-2 py-1 bg-slate-900 border border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-700 disabled:opacity-50 rounded text-[10px] font-medium flex items-center gap-1 transition"
                     >
                       {exportingShot === shot.shot_id ? <Loader2 size={10} className="animate-spin" /> : <Download size={10} />}
                       交接包
@@ -1132,7 +1132,7 @@ export default function PreviewTab() {
               <th className="p-3 w-40 text-right">操作</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-850/60 text-xs">
+          <tbody className="divide-y divide-slate-800/60 text-xs">
             {shots.map((shot, index) => {
               const isSelected = selectedShotIds.includes(shot.shot_id);
               const isEditingVO = editingVO === shot.shot_id;
@@ -1240,7 +1240,7 @@ export default function PreviewTab() {
                               {shot.dialogue?.text ? `[${shot.dialogue.speaker}] "${shot.dialogue.text}"` : ''}
                             </span>
                           ) : (
-                            <span className="text-slate-650 italic">[双击/点击添加旁白与对白台词]</span>
+                            <span className="text-slate-600 italic">[双击/点击添加旁白与对白台词]</span>
                           )}
                         </div>
                       )}
@@ -1335,7 +1335,7 @@ export default function PreviewTab() {
                           className={`px-2 py-0.5 rounded text-[10px] border transition ${
                             expandedShots[shot.shot_id]
                               ? 'bg-blue-500/10 border-blue-500/40 text-blue-400'
-                              : 'bg-slate-900 border-slate-805 text-slate-400 hover:text-slate-200'
+                              : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-slate-200'
                           }`}
                         >
                           版本 ({shot._takes?.length || 0})
@@ -1414,7 +1414,7 @@ export default function PreviewTab() {
   const renderBulkActionsBar = () => {
     if (selectedShotIds.length === 0) return null;
     return (
-      <div className="sticky bottom-4 left-0 right-0 z-50 bg-slate-900/95 backdrop-blur-md border border-blue-500/30 rounded-xl p-4 shadow-xl shadow-blue-500/5 flex flex-col sm:flex-row items-center justify-between gap-4 animate-in fade-in slide-in-from-bottom-4 duration-200">
+      <div className="sticky bottom-4 left-0 right-0 z-50 bg-slate-900/95 backdrop-blur-md border border-blue-500/30 rounded-xl p-4 shadow-xl shadow-blue-500/5 flex flex-col sm:flex-row items-center justify-between gap-4 transition-all">
         <div className="flex items-center gap-3">
           <span className="flex items-center justify-center w-5 h-5 bg-blue-600 rounded-full text-[10px] font-bold text-white font-mono">
             {selectedShotIds.length}
@@ -1431,7 +1431,7 @@ export default function PreviewTab() {
         <div className="flex flex-wrap items-center gap-2">
           <button
             onClick={bulkSyncPrompts}
-            className="px-3 py-1.5 bg-slate-800 hover:bg-slate-750 text-slate-200 hover:text-white rounded-lg text-xs font-medium flex items-center gap-1.5 transition"
+            className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white rounded-lg text-xs font-medium flex items-center gap-1.5 transition"
           >
             <Sparkles size={13} />
             批量同步 Prompt
@@ -1439,7 +1439,7 @@ export default function PreviewTab() {
           
           <button
             onClick={bulkGenerateTTS}
-            className="px-3 py-1.5 bg-slate-800 hover:bg-slate-755 text-slate-200 hover:text-white rounded-lg text-xs font-medium flex items-center gap-1.5 transition"
+            className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white rounded-lg text-xs font-medium flex items-center gap-1.5 transition"
           >
             <Volume2 size={13} />
             批量生成配音
@@ -1447,7 +1447,7 @@ export default function PreviewTab() {
           
           <button
             onClick={bulkExportHandoff}
-            className="px-3 py-1.5 bg-slate-800 hover:bg-slate-750 text-slate-200 hover:text-white rounded-lg text-xs font-medium flex items-center gap-1.5 transition"
+            className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white rounded-lg text-xs font-medium flex items-center gap-1.5 transition"
           >
             <Download size={13} />
             批量导出交接包
@@ -1807,10 +1807,10 @@ export default function PreviewTab() {
 
       {/* Shot List with Switchable Views */}
       <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 border-b border-slate-805 pb-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 border-b border-slate-800 pb-4">
           <div className="flex items-center gap-3">
             <h3 className="text-lg font-semibold text-slate-200">镜头列表</h3>
-            <span className="text-xs bg-slate-950 border border-slate-850 px-2 py-0.5 rounded-full text-slate-400 font-mono">
+            <span className="text-xs bg-slate-950 border border-slate-800 px-2 py-0.5 rounded-full text-slate-400 font-mono">
               {shots.length} 个镜头
             </span>
           </div>
@@ -1820,7 +1820,7 @@ export default function PreviewTab() {
             {viewMode === 'card' && (
               <button
                 onClick={toggleSelectAll}
-                className="px-2.5 py-1 text-xs text-slate-400 hover:text-slate-250 bg-slate-950 border border-slate-800 rounded-lg hover:border-slate-700 transition"
+                className="px-2.5 py-1 text-xs text-slate-400 hover:text-slate-200 bg-slate-950 border border-slate-800 rounded-lg hover:border-slate-700 transition"
               >
                 {isAllSelected ? '取消全选' : '全选'}
               </button>
@@ -1830,7 +1830,7 @@ export default function PreviewTab() {
             <div className="flex items-center rounded-lg border border-slate-800 bg-slate-950 p-0.5">
               <button
                 onClick={() => setViewMode('card')}
-                className={`flex items-center gap-1.5 px-3 py-1.2 rounded-md text-xs font-medium transition ${
+                className={`flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-medium transition ${
                   viewMode === 'card'
                     ? 'bg-blue-600 text-white shadow-sm'
                     : 'text-slate-400 hover:text-slate-200'
@@ -1842,7 +1842,7 @@ export default function PreviewTab() {
               </button>
               <button
                 onClick={() => setViewMode('table')}
-                className={`flex items-center gap-1.5 px-3 py-1.2 rounded-md text-xs font-medium transition ${
+                className={`flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-medium transition ${
                   viewMode === 'table'
                     ? 'bg-blue-600 text-white shadow-sm'
                     : 'text-slate-400 hover:text-slate-200'
