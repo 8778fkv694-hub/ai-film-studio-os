@@ -1,6 +1,6 @@
 {
   "shot_id": "S004A",
-  "duration_s": 9,
+  "duration_s": 11,
   "scene_ref": "scenes/scene_assembly_workshop.json",
   "cam_setup_ref": "comic_panel_05",
   "characters": [
@@ -34,7 +34,7 @@
   },
   "voiceover": {
     "speaker": "讲解",
-    "text": "来，封装这一手最见功夫。看着亮起来的地方，跟着老师傅的手，把各个元件封装成组件。",
+    "text": "封装这一手最见功夫。看着亮起来的地方，跟着老师傅的手，把各个元件封装成组件，也能得心应手。",
     "voice_id": "zh-CN-XiaoyiNeural"
   },
   "budget": {

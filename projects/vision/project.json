@@ -60,7 +60,7 @@
       "shot_id": "S004A",
       "shot_file": "shots/S004A.json",
       "tier": "standard",
-      "duration_s": 9
+      "duration_s": 11
     },
     {
       "shot_id": "S004B",
@@ -78,7 +78,7 @@
       "shot_id": "S006",
       "shot_file": "shots/S006.json",
       "tier": "cheap",
-      "duration_s": 6
+      "duration_s": 7
     }
   ]
 }

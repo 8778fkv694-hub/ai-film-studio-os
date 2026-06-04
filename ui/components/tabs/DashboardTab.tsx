@@ -74,6 +74,16 @@ export default function DashboardTab({ onNavigate }: DashboardTabProps) {
     localStorage.removeItem('afsos_ignored_issues');
   };
 
+  // 一键忽略当前所有可见问题
+  const handleIgnoreAll = (visible: any[]) => {
+    const merged = Array.from(new Set([
+      ...ignoredKeys,
+      ...visible.map((issue: any) => `${issue.where}:${issue.msg}`)
+    ]));
+    setIgnoredKeys(merged);
+    localStorage.setItem('afsos_ignored_issues', JSON.stringify(merged));
+  };
+
   const loadStats = async () => {
     setLoading(true);
     try {
@@ -289,14 +299,24 @@ export default function DashboardTab({ onNavigate }: DashboardTabProps) {
               <XCircle size={20} />
               待处理问题 ({visibleIssues.length} / {issues.length})
             </h3>
-            {ignoredKeys.length > 0 && (
-              <button
-                onClick={handleResetIgnored}
-                className="text-xs px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded transition"
-              >
-                🔄 恢复已忽略 ({ignoredKeys.length})
-              </button>
-            )}
+            <div className="flex items-center gap-2">
+              {visibleIssues.length > 0 && (
+                <button
+                  onClick={() => handleIgnoreAll(visibleIssues)}
+                  className="text-xs px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded transition"
+                >
+                  🔕 一键忽略全部 ({visibleIssues.length})
+                </button>
+              )}
+              {ignoredKeys.length > 0 && (
+                <button
+                  onClick={handleResetIgnored}
+                  className="text-xs px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded transition"
+                >
+                  🔄 恢复已忽略 ({ignoredKeys.length})
+                </button>
+              )}
+            </div>
           </div>
           {visibleIssues.length === 0 ? (
             <div className="text-slate-400 text-sm py-2">所有问题已忽略或已解决。</div>

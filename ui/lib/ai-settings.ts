@@ -11,6 +11,10 @@ export interface AiSettings {
   multimodalEnabled: boolean;
   visionModel: string;
   promptOptimization: boolean;
+  // 按任务分档的「创意 vs 精准」：precise(低温少发挥) | balanced | creative(高温更丰富)
+  creativitySplit: string;      // 剧本拆分分镜
+  creativityImage: string;      // 画面/提示词优化
+  creativityVoiceover: string;  // 台词润色
   imageWorkflow: string;
   imageModel: string;
   notes: string;
@@ -37,6 +41,10 @@ export const DEFAULT_AI_SETTINGS: AiSettings = {
   multimodalEnabled: false,
   visionModel: '',
   promptOptimization: true,
+  // 默认贴近原有写死温度：拆分/画面偏精准、台词偏自然
+  creativitySplit: 'precise',
+  creativityImage: 'precise',
+  creativityVoiceover: 'creative',
   imageWorkflow: 'upload_first',
   imageModel: '',
   notes: '',
@@ -51,6 +59,24 @@ export const DEFAULT_AI_SETTINGS: AiSettings = {
   comfyHeight: 720,
   comfyTimeoutSec: 300
 };
+
+// 创意档位 → 采样温度。精准=低温少发挥(抗幻觉)，创意=高温画面更丰富。
+export const CREATIVITY_LEVELS = ['precise', 'balanced', 'creative'] as const;
+export type CreativityLevel = typeof CREATIVITY_LEVELS[number];
+
+export function creativityTemperature(level: unknown): number {
+  switch (String(level)) {
+    case 'creative': return 0.8;
+    case 'balanced': return 0.45;
+    case 'precise':
+    default: return 0.2;
+  }
+}
+
+function levelSetting(value: unknown, fallback: string): string {
+  const v = String(value || '').trim();
+  return (CREATIVITY_LEVELS as readonly string[]).includes(v) ? v : fallback;
+}
 
 function ensureSettingsDir() {
   fs.mkdirSync(path.dirname(SETTINGS_PATH), { recursive: true });
@@ -111,6 +137,9 @@ export function sanitizeAiSettings(body: any, current: AiSettings): AiSettings {
     multimodalEnabled: Boolean(body.multimodalEnabled),
     visionModel: stringSetting(body.visionModel, current.visionModel),
     promptOptimization: Boolean(body.promptOptimization),
+    creativitySplit: levelSetting(body.creativitySplit, current.creativitySplit),
+    creativityImage: levelSetting(body.creativityImage, current.creativityImage),
+    creativityVoiceover: levelSetting(body.creativityVoiceover, current.creativityVoiceover),
     imageWorkflow: stringSetting(body.imageWorkflow, current.imageWorkflow),
     imageModel: stringSetting(body.imageModel, ''),
     notes: stringSetting(body.notes, ''),

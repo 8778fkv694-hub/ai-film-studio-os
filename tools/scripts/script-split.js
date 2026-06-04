@@ -34,10 +34,71 @@ function loadInventory(type) {
     : [];
 }
 
+// 把一个引用（可能是 file 路径 / id / 文件名 / 裸名）解析为库存里的规范 file；解析不到返回 null。
+function resolveInventoryFile(ref, inventory) {
+  if (!ref || typeof ref !== 'string') return null;
+  const r = ref.trim();
+  if (!r) return null;
+  let hit = inventory.find(x => x.file === r);            // 精确 file
+  if (hit) return hit.file;
+  hit = inventory.find(x => x.id === r);                  // 按 id
+  if (hit) return hit.file;
+  const base = r.replace(/^.*\//, '').replace(/\.json$/i, ''); // 裸名/文件名
+  hit = inventory.find(x => x.id === base || x.file.endsWith(`/${base}.json`) || x.file === `${base}.json`);
+  return hit ? hit.file : null;
+}
+
+// 白名单校验：AI/正则产出的 characters/props/scene_ref 必须落在库存内，非法的丢弃/回退默认，杜绝幻觉引用。
+function sanitizeShotRefs(shot, defaultSceneRef) {
+  shot.characters = Array.isArray(shot.characters)
+    ? shot.characters.map(c => {
+        const file = resolveInventoryFile(c && c.ref, characters);
+        return file ? { ...c, ref: file } : null;
+      }).filter(Boolean)
+    : [];
+  shot.props = Array.isArray(shot.props)
+    ? shot.props.map(p => {
+        const file = resolveInventoryFile(p && p.ref, props);
+        return file ? { ...p, ref: file } : null;
+      }).filter(Boolean)
+    : [];
+  const sceneFile = resolveInventoryFile(shot.scene_ref, scenes);
+  shot.scene_ref = sceneFile || resolveInventoryFile(defaultSceneRef, scenes) || defaultSceneRef;
+  return shot;
+}
+
+// 创意档位 → 采样温度（与 ui/lib/ai-settings.ts 保持一致）
+function splitTemperature(settings) {
+  switch (String(settings?.creativitySplit)) {
+    case 'creative': return 0.8;
+    case 'balanced': return 0.45;
+    case 'precise':
+    default: return 0.2;
+  }
+}
+
 // 2. AI Chunked Script Splitter via DeepSeek
 async function parseChunkWithAI(chunkText, settings, currentSceneRef) {
   const baseUrl = String(settings.apiBaseUrl || 'https://api.deepseek.com').replace(/\/+$/, '');
   const model = String(settings.textModel || 'deepseek-chat');
+
+  // 喂入规范属性做锚定：角色长相/服装、场景光线/必留元素/禁止项、道具规范
+  const charInv = characters.map(c => ({
+    ref: c.file, id: c.id, name: c.name,
+    identity: c.must_keep?.identity || '',
+    hair: c.must_keep?.hair || '',
+    outfit: c.must_keep?.outfit || ''
+  }));
+  const propInv = props.map(p => ({
+    ref: p.file, id: p.id, name: p.name,
+    must_keep: typeof p.must_keep === 'string' ? p.must_keep : (p.must_keep || '')
+  }));
+  const sceneInv = scenes.map(s => ({
+    ref: s.file, id: s.id, name: s.name,
+    lighting: s.must_keep?.lighting || '',
+    set_elements: s.must_keep?.set_elements || [],
+    forbidden: s.forbidden || []
+  }));
 
   const response = await fetch(`${baseUrl}/chat/completions`, {
     method: 'POST',
@@ -54,31 +115,35 @@ async function parseChunkWithAI(chunkText, settings, currentSceneRef) {
 Analyze the provided screenplay text chunk and break it down into sequential storyboard shots.
 Comply strictly with the shot schema and output a valid JSON array of shot objects.
 
-Characters Inventory: ${JSON.stringify(characters.map(c => ({ id: c.id, name: c.name, file: c.file })))}
-Props Inventory: ${JSON.stringify(props.map(p => ({ id: p.id, name: p.name, file: p.file })))}
-Scenes Inventory: ${JSON.stringify(scenes.map(s => ({ id: s.id, name: s.name, file: s.file })))}
-
+=== ASSET INVENTORY (the ONLY allowed references) ===
+Characters: ${JSON.stringify(charInv)}
+Props: ${JSON.stringify(propInv)}
+Scenes: ${JSON.stringify(sceneInv)}
 Default scene_ref: "${currentSceneRef}"
+
+=== HARD CONSTRAINTS (anti-hallucination) ===
+1. For characters[].ref, props[].ref and scene_ref you MUST copy a "ref" value verbatim from the inventory above. NEVER invent a file path or id that is not listed.
+2. If no inventory character/prop matches what the text mentions, use an empty array [] — do NOT fabricate one.
+3. If no scene matches, use the Default scene_ref verbatim.
+4. Do NOT invent characters, props, locations, wardrobe, lighting, weather, time of day, or any story facts that are not present in the screenplay text or the inventory.
+5. Ground the image prompt in the inventory: describe each referenced character using its identity/hair/outfit, and the scene using its lighting/set_elements, and AVOID anything in the scene's forbidden list. Do not contradict these canonical attributes.
+6. If a detail is unknown, omit it rather than guessing.
 
 For each shot, output an object with exactly these fields:
 - shot_id: e.g., "S001", "S002", etc.
 - duration_s: duration in seconds (usually 3 to 12).
-- scene_ref: path to scene from the scenes inventory. Match semantically or fallback to default scene_ref!
-- cam_setup_ref: e.g. "comic_panel_01" (wide establishing), "comic_panel_02" (medium), "comic_panel_03" (close-up), "comic_panel_08" (extreme closeup).
-- characters: array of { ref: string } matching character paths. Match names (e.g. "林澈" -> "characters/charA_v1.json") semantically!
-- props: array of { ref: string, state: string } matching prop paths and their states (e.g. "mug_red_v1.json" for "红杯" or "杯子").
-- action: { beats: string[] } list of action descriptions.
-- dialogue: { speaker: string, text: string, voice_id: string } or null if no dialogue.
-- voiceover: { speaker: string, text: string, voice_id: string } or null if no voiceover.
+- scene_ref: a scene "ref" from inventory (verbatim) or the Default scene_ref.
+- cam_setup_ref: "comic_panel_01" (wide establishing), "comic_panel_02" (medium), "comic_panel_03" (close-up), or "comic_panel_08" (extreme closeup).
+- characters: array of { ref } using ONLY refs from the Characters inventory.
+- props: array of { ref, state } using ONLY refs from the Props inventory.
+- action: { beats: string[] } list of action descriptions grounded in the text.
+- dialogue: { speaker, text, voice_id } or null if no dialogue.
+- voiceover: { speaker, text, voice_id } or null if no voiceover.
 - budget: { tier: 'cheap', max_regen: 1 }
-- prompt: { positive: string, negative: string } 
-  IMPORTANT - This is a KEYFRAME IMAGE generation prompt. Must be detailed and production-ready:
-  positive string format: "[aspect ratio] [shot type], [subject/action description with characters+props+scene elements], [lighting], [camera angle/framing], [quality keywords], [style/atmosphere]"
-  Example positive: "16:9 cinematic wide shot, clean room interior with running machinery and yellow warning lines, two workers in white clean suits walking along designated path, bright industrial overhead lighting, eye-level angle, photorealistic, highly detailed, 8K, industrial documentary style"
-  negative string format: Comma-separated list of things to AVOID in the generated image.
-  Example negative: "blurry, low quality, distorted faces, wrong proportions, text artifacts, watermark, logo, extra limbs, missing safety equipment, dark lighting, cluttered background"
-  Always include aspect ratio (16:9), quality keywords (photorealistic, highly detailed, 8K), and style reference.
-- context_refs: array of strings. For shot N (N > 1), put "assets/renders/S(N-1)/keyframes/frame_01.jpg" for shot-to-shot continuity.
+- prompt: { positive, negative } — KEYFRAME IMAGE prompt, production-ready:
+  positive format: "[16:9] [shot type], [subject/action with referenced characters' outfit + props + scene set_elements], [scene lighting], [camera angle], [photorealistic, highly detailed, 8K], [style/atmosphere]". Use the canonical outfit/lighting from inventory; do not invent new wardrobe or lighting.
+  negative format: comma-separated things to AVOID, including the scene's forbidden items. Always include: blurry, low quality, distorted faces, wrong proportions, text artifacts, watermark, logo, extra limbs.
+- context_refs: array (will be overwritten by the pipeline; you may output []).
 
 Return ONLY the raw JSON array. Do not wrap in markdown code blocks or quotes. Do not include extra text.`
         },
@@ -87,7 +152,7 @@ Return ONLY the raw JSON array. Do not wrap in markdown code blocks or quotes. D
           content: chunkText
         }
       ],
-      temperature: 0.2
+      temperature: splitTemperature(settings)
     })
   });
 
@@ -221,22 +286,16 @@ class ScriptExtractor {
 
       const fullText = [voiceoverText, dialogueText, ...actionBeats].join(' ');
 
-      const charRefs = [];
-      if (fullText.includes('林澈') || fullText.includes('林') || fullText.toLowerCase().includes('protagonist')) {
-        const char = characters.find(c => c.id === 'charA_v1');
-        if (char) charRefs.push({ ref: char.file });
-      }
-
-      const propRefs = [];
-      if (fullText.includes('红杯') || fullText.includes('杯') || fullText.toLowerCase().includes('mug')) {
-        const prop = props.find(p => p.id === 'mug_red_v1');
-        if (prop) {
-          propRefs.push({
-            ref: prop.file,
-            state: fullText.includes('碎') ? 'broken' : 'story_clue'
-          });
-        }
-      }
+      // 通用匹配：仅当库存里某角色/道具的名字出现在文本中才引用，不再写死 demo 的 charA_v1/mug_red_v1
+      const charRefs = characters
+        .filter(c => c.name && fullText.includes(c.name))
+        .map(c => ({ ref: c.file }));
+      const propRefs = props
+        .filter(p => p.name && fullText.includes(p.name))
+        .map(p => ({ ref: p.file, state: 'present' }));
+      const primarySpeaker = charRefs.length
+        ? (characters.find(c => c.file === charRefs[0].ref)?.name || '角色')
+        : '角色';
 
       let camSetupRef = 'comic_panel_02';
       if (fullText.includes('午夜') || fullText.includes('雨') || fullText.includes('城市') || fullText.includes('公寓') || fullText.includes('走廊')) {
@@ -275,7 +334,7 @@ class ScriptExtractor {
         props: propRefs,
         action: { beats: actionBeats },
         dialogue: dialogueText ? {
-          speaker: '林澈',
+          speaker: primarySpeaker,
           text: dialogueText,
           voice_id: 'zh-CN-YunxiNeural'
         } : null,
@@ -286,22 +345,7 @@ class ScriptExtractor {
         } : null,
         continuity: {
           state_in_ref: currentIdNum > 1 ? `states/S${String(currentIdNum - 1).padStart(3, '0')}_OUT.json` : 'states/S000_INIT.json',
-          state_changes: {
-            characters: charRefs.length ? {
-              [characters.find(c => c.id === 'charA_v1')?.id || 'charA_v1']: {
-                location: fullText.includes('地下室') ? 'basement' : (fullText.includes('走廊') ? 'hallway' : 'kitchen'),
-                pose: dialogueText ? 'talking' : 'exploring'
-              }
-            } : {},
-            props: propRefs.length ? {
-              [props.find(p => p.id === 'mug_red_v1')?.id || 'mug_red_v1']: {
-                state: fullText.includes('碎') ? 'broken' : 'story_clue'
-              }
-            } : {},
-            scene: {
-              lighting: fullText.includes('亮') ? 'warm lamp' : 'blue shadow'
-            }
-          },
+          state_changes: {},   // 不再凭空捏造位置/姿态/光线，待真实连续性流程或人工填充
           handoff_to_next: [`S${String(currentIdNum).padStart(3, '0')} finished`]
         },
         context_refs: contextRefs,
@@ -397,43 +441,44 @@ async function main() {
     conflicts: []
   };
 
+  const defaultSceneRef = scenes.length ? scenes[0].file : 'TODO: match scene manually';
+  const idOf = (ref) => String(ref || '').replace(/^.*\//, '').replace(/\.json$/i, '');
+
   drafts.forEach(draft => {
     // Basic formatting safety
     draft.budget = draft.budget || { tier: 'cheap', max_regen: 1 };
     draft.prompt = draft.prompt || { positive: '', negative: '' };
-    
+
+    // 白名单校验：丢弃幻觉的角色/道具引用，scene_ref 回退到合法值
+    sanitizeShotRefs(draft, defaultSceneRef);
+
     if (draft._draft_meta?.warnings?.length > 0) {
       report.conflicts.push({ shot: draft.shot_id, warnings: draft._draft_meta.warnings });
     }
-    
+
     fs.writeFileSync(
       path.join(WORK_DIR, `shots_draft/${draft.shot_id}.json`),
       JSON.stringify(draft, null, 2)
     );
-    
-    // Write output state file states/SXXX_OUT.json
+
+    // 输出状态文件：由本镜实际引用的角色/道具派生，不再写死 demo 的 charA_v1/夜雨/午夜等
+    const stateChars = {};
+    for (const c of draft.characters || []) {
+      const id = idOf(c.ref);
+      if (id) stateChars[id] = {};
+    }
+    const stateProps = {};
+    for (const p of draft.props || []) {
+      const id = idOf(p.ref);
+      if (id) stateProps[id] = p.state ? { state: p.state } : {};
+    }
     const stateOut = {
       shot_id: draft.shot_id,
-      characters: draft.characters?.length ? {
-        'charA_v1': {
-          location: draft.dialogue?.text ? 'apartment' : 'unknown',
-          pose: draft.dialogue?.text ? 'speaking' : 'silent',
-          outfit: 'white hoodie, dark pants'
-        }
-      } : {},
-      props: draft.props?.length ? {
-        'mug_red_v1': {
-          location: 'near Lin Che',
-          state: draft.props[0]?.state || 'warm'
-        }
-      } : {},
-      scene: {
-        lighting: 'night rain',
-        weather: 'rain',
-        time: 'midnight'
-      }
+      characters: stateChars,
+      props: stateProps,
+      scene: {}
     };
-    
+
     fs.writeFileSync(
       path.join(WORK_DIR, `states/${draft.shot_id}_OUT.json`),
       JSON.stringify(stateOut, null, 2)

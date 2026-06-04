@@ -74,7 +74,11 @@ function fileExistsWithImageExtFallback(relPath) {
 }
 
 function isPendingTimelineContextRef(relPath) {
-  const match = String(relPath).match(/^assets\/renders\/([A-Za-z0-9_-]+)\/keyframes\//);
+  const ref = String(relPath).trim();
+  // 裸镜头号：指向时间线内某镜（通常是前一镜）做连续性衔接，关键帧尚未生成——属正常待生成状态，非错误
+  if (timelineShotIds.has(ref)) return true;
+  // 路径形式 assets/renders/<id>/keyframes/...：同样当 <id> 在时间线内时视为待生成
+  const match = ref.match(/^assets\/renders\/([A-Za-z0-9_-]+)\/keyframes\//);
   return Boolean(match && timelineShotIds.has(match[1]));
 }
 

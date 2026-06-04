@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { NextResponse } from 'next/server';
 import { getResourcePath } from '@/lib/projects';
+import { creativityTemperature } from '@/lib/ai-settings';
 
 const SETTINGS_PATH = path.resolve(process.cwd(), '../.local/ai-settings.json');
 
@@ -61,7 +62,7 @@ export async function POST(request: Request) {
       },
       body: JSON.stringify({
         model,
-        temperature: 0.7,
+        temperature: creativityTemperature(settings.creativityVoiceover),
         messages: [
           {
             role: 'system',

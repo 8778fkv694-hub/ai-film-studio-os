@@ -14,6 +14,9 @@ interface AiSettings {
   multimodalEnabled: boolean;
   visionModel: string;
   promptOptimization: boolean;
+  creativitySplit: string;
+  creativityImage: string;
+  creativityVoiceover: string;
   imageWorkflow: string;
   imageModel: string;
   notes: string;
@@ -52,6 +55,9 @@ const EMPTY_SETTINGS: AiSettings = {
   multimodalEnabled: false,
   visionModel: '',
   promptOptimization: true,
+  creativitySplit: 'precise',
+  creativityImage: 'precise',
+  creativityVoiceover: 'creative',
   imageWorkflow: 'upload_first',
   imageModel: '',
   notes: ''
@@ -301,6 +307,35 @@ export default function SettingsTab() {
             />
             当前 API 支持多模态/看图
           </label>
+        </div>
+
+        {/* 创意 / 精准：按任务分档，统一控制各 LLM 调用的发挥程度 */}
+        <div className="mt-5 rounded-lg border border-slate-800 bg-slate-950 p-4">
+          <div className="mb-1 text-sm font-medium text-slate-200">创意 / 精准（按任务）</div>
+          <p className="mb-3 text-xs text-slate-500">
+            精准=低温、少发挥、抗幻觉漂移；平衡=适中；创意=高温、画面更丰富但更易偏离设定。
+          </p>
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+            {([
+              { key: 'creativitySplit', label: '剧本拆分分镜', hint: '建议精准，保证引用准确' },
+              { key: 'creativityImage', label: '画面 / 提示词优化', hint: '建议精准~平衡' },
+              { key: 'creativityVoiceover', label: '台词润色', hint: '建议创意，语言更自然' },
+            ] as const).map(item => (
+              <label key={item.key} className="block space-y-1">
+                <span className="text-sm text-slate-300">{item.label}</span>
+                <select
+                  value={(settings as any)[item.key] || 'precise'}
+                  onChange={e => update(item.key as any, e.target.value)}
+                  className="w-full rounded-lg border border-slate-700 bg-slate-900 px-2 py-1.5 text-sm text-slate-200"
+                >
+                  <option value="precise">精准（低温·抗漂移）</option>
+                  <option value="balanced">平衡</option>
+                  <option value="creative">创意（高温·更丰富）</option>
+                </select>
+                <span className="block text-[11px] text-slate-500">{item.hint}</span>
+              </label>
+            ))}
+          </div>
         </div>
 
         {settings.multimodalEnabled && (

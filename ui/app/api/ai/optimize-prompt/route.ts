@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { NextResponse } from 'next/server';
+import { creativityTemperature } from '@/lib/ai-settings';
 
 const SETTINGS_PATH = path.resolve(process.cwd(), '../.local/ai-settings.json');
 
@@ -43,15 +44,16 @@ export async function POST(request: Request) {
       },
       body: JSON.stringify({
         model,
-        temperature: 0.3,
+        temperature: creativityTemperature(settings.creativityImage),
         messages: [
           {
             role: 'system',
             content: [
               'You are a film storyboard prompt engineer.',
               'Rewrite prompts for static keyframe generation used in a voiced comic animatic.',
-              'Preserve character identity, scene continuity, wardrobe, props, lighting, and camera intent.',
-              'Do not add story facts that are not present.',
+              'Preserve character identity, scene continuity, wardrobe, props, lighting, and camera intent EXACTLY as given.',
+              'Hard constraints: do NOT invent characters, props, locations, wardrobe, or story facts that are not present in the input; do NOT change who/what/where; only rephrase and enrich visual/photographic wording.',
+              'If a detail is unknown, omit it rather than guessing.',
               'Return compact JSON with positive_prompt, negative_prompt, continuity_notes, and checklist.'
             ].join(' ')
           },
