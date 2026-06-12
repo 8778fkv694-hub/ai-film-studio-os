@@ -37,10 +37,11 @@ export default function Home() {
   useEffect(() => {
     loadActiveProject();
     const savedTheme = localStorage.getItem('afsos_theme') as 'dark' | 'light' | null;
-    if (savedTheme) {
-      setTheme(savedTheme);
-      applyTheme(savedTheme);
+    if (savedTheme === 'light') {
+      setTheme('light');
+      applyTheme('light');
     } else {
+      setTheme('dark');
       applyTheme('dark');
     }
   }, []);
