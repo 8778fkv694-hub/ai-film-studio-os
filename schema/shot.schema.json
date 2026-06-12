@@ -103,6 +103,70 @@
       },
       "additionalProperties": true
     },
+    "blocking": {
+      "type": "object",
+      "description": "Top-down spatial staging for this shot. All optional; absent means no spatial constraints (backward compatible). Coordinates are a 0-100 normalized top-down plane: x 0=left(west) 100=right(east), y 0=far/back(north) 100=near/front(south).",
+      "properties": {
+        "grid": {"type": "string", "description": "e.g. '5x5' or 'continuous'"},
+        "mode": {
+          "type": "string",
+          "enum": ["lock", "guide", "off"],
+          "description": "Spatial enforcement when compiling prompts: 'lock' = AI must follow exactly (+gray-box scaffold); 'guide' = soft suggestion the AI may adjust (default); 'off' = inject nothing, AI composes freely. Absent = guide."
+        },
+        "floorplan_ref": {"type": "string", "description": "Reuse the scene-level floorplan; 'scene' = use this shot's scene_ref floorplan"},
+        "camera": {
+          "type": "object",
+          "description": "FrameForge-style camera record",
+          "properties": {
+            "x": {"type": "number", "minimum": 0, "maximum": 100},
+            "y": {"type": "number", "minimum": 0, "maximum": 100},
+            "facing": {"description": "Compass (N/NE/E/SE/S/SW/W/NW) or degrees (0=N, clockwise)"},
+            "height": {"type": "string", "enum": ["low", "eye_level", "high", "overhead"]},
+            "tilt": {"type": "number", "description": "Pitch in degrees; positive=looking up (low angle), negative=looking down (high angle)"},
+            "roll": {"type": "number", "description": "Dutch-angle roll in degrees"},
+            "lens": {"type": "string", "description": "Focal length e.g. '35mm'"},
+            "shot_size": {"type": "string"},
+            "dof": {"type": "string", "enum": ["shallow", "normal", "deep"]}
+          },
+          "additionalProperties": true
+        },
+        "entities": {
+          "type": "array",
+          "description": "Starting positions of characters/props on the top-down plane",
+          "items": {
+            "type": "object",
+            "required": ["ref", "x", "y"],
+            "properties": {
+              "ref": {"type": "string", "description": "Character/prop ref path, or 'prop:<id>' / 'fixture:<id>'"},
+              "x": {"type": "number", "minimum": 0, "maximum": 100},
+              "y": {"type": "number", "minimum": 0, "maximum": 100},
+              "facing": {"description": "Compass or degrees"},
+              "gaze_target": {"type": "string", "description": "ref/id this entity looks at, or 'camera'"},
+              "layer": {"type": "string", "enum": ["foreground", "midground", "background"]}
+            },
+            "additionalProperties": true
+          }
+        },
+        "motion": {
+          "type": "array",
+          "description": "Shot Designer-style movement commands (video stage)",
+          "items": {
+            "type": "object",
+            "required": ["who", "verb"],
+            "properties": {
+              "who": {"type": "string", "description": "entity ref/id or 'camera'"},
+              "verb": {"type": "string", "enum": ["walk_to", "turn_to", "track", "push_in", "pull_out", "pan_to", "hold"]},
+              "x": {"type": "number"},
+              "y": {"type": "number"},
+              "target": {"type": "string", "description": "entity ref/id or 'camera'"}
+            },
+            "additionalProperties": true
+          }
+        },
+        "axis_lock": {"type": "string", "description": "Action axis (e.g. 'A-B') for 180-degree continuity checks across shots"}
+      },
+      "additionalProperties": true
+    },
     "parent_shot_id": {
       "type": "string",
       "description": "The ID of the parent shot this segment was split from"

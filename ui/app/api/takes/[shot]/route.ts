@@ -1,33 +1,9 @@
 import fs from 'fs';
 import path from 'path';
-import crypto from 'crypto';
 import { NextResponse } from 'next/server';
-import { getResourcePath } from '@/lib/projects';
+import { getResourcePath, getCurrentProjectPath } from '@/lib/projects';
 import { writeJsonAtomic } from '@/lib/fs-atomic';
-
-// 把指定 take 的首帧/末帧刷进全局 keyframes（frame_00 作 poster、frame_last 备用），
-// 使预览画面与当前活动视频一致。
-function syncActiveTakeKeyframes(shotId: string, takeId: string): void {
-  const takeDir = path.join(getResourcePath('assets'), 'renders', shotId, 'takes', takeId);
-  const first = path.join(takeDir, 'keyframe_first.jpg');
-  const last = path.join(takeDir, 'keyframe.jpg');
-  const globalKeyframesDir = path.join(getResourcePath('assets'), 'renders', shotId, 'keyframes');
-  try {
-    fs.mkdirSync(globalKeyframesDir, { recursive: true });
-    if (fs.existsSync(first)) fs.copyFileSync(first, path.join(globalKeyframesDir, 'frame_00.jpg'));
-    if (fs.existsSync(last)) fs.copyFileSync(last, path.join(globalKeyframesDir, 'frame_last.jpg'));
-  } catch {}
-}
-
-function currentPromptHash(shotId: string): string {
-  const promptPath = path.join(getResourcePath('prompts'), `${shotId}.final.json`);
-  if (!fs.existsSync(promptPath)) return '';
-  return crypto
-    .createHash('md5')
-    .update(fs.readFileSync(promptPath, 'utf-8'))
-    .digest('hex')
-    .substring(0, 8);
-}
+import { syncActiveTakeKeyframes, currentPromptHash } from '@shared/conventions.js';
 
 export async function POST(
   request: Request,
@@ -46,7 +22,12 @@ export async function POST(
       return NextResponse.json({ error: '缺少 take_id' }, { status: 400 });
     }
 
-    const historyFile = path.join(getResourcePath('assets'), 'renders', shotId, 'history.json');
+    const projectPath = getCurrentProjectPath();
+    if (!projectPath) {
+      return NextResponse.json({ error: '没有活动项目' }, { status: 400 });
+    }
+
+    const historyFile = path.join(projectPath, 'assets', 'renders', shotId, 'history.json');
     if (!fs.existsSync(historyFile)) {
       return NextResponse.json({ error: '未找到该镜头的渲染历史记录' }, { status: 404 });
     }
@@ -60,13 +41,13 @@ export async function POST(
     if (action === 'set_active') {
       history.active_take_id = takeId;
       // 回退到该版本：把它的首帧/末帧刷进全局 keyframes，使预览 poster 与所选视频一致
-      syncActiveTakeKeyframes(shotId, takeId);
+      syncActiveTakeKeyframes(projectPath, shotId, takeId);
       console.log(`[Takes API] Shot ${shotId} active take switched to ${takeId}`);
 
     } else if (action === 'delete') {
       // 删除该视频版本（take）及其文件
       history.takes = (history.takes || []).filter((t: any) => t.take_id !== takeId);
-      const takeDir = path.join(getResourcePath('assets'), 'renders', shotId, 'takes', takeId);
+      const takeDir = path.join(projectPath, 'assets', 'renders', shotId, 'takes', takeId);
       try { fs.rmSync(takeDir, { recursive: true, force: true }); } catch {}
 
       // 若删的是当前活动版本，自动切到最新剩余版本；都删完则清空并移除派生关键帧
@@ -74,9 +55,9 @@ export async function POST(
         const takeNum = (t: any) => { const m = String(t.take_id).match(/take_(\d+)/); return m ? parseInt(m[1], 10) : 0; };
         const next = [...history.takes].sort((a, b) => takeNum(b) - takeNum(a))[0] || null;
         history.active_take_id = next ? next.take_id : null;
-        const globalKeyframesDir = path.join(getResourcePath('assets'), 'renders', shotId, 'keyframes');
+        const globalKeyframesDir = path.join(projectPath, 'assets', 'renders', shotId, 'keyframes');
         if (next) {
-          syncActiveTakeKeyframes(shotId, next.take_id);
+          syncActiveTakeKeyframes(projectPath, shotId, next.take_id);
         } else {
           for (const fn of ['frame_00.jpg', 'frame_last.jpg']) {
             try { fs.rmSync(path.join(globalKeyframesDir, fn), { force: true }); } catch {}
@@ -95,8 +76,6 @@ export async function POST(
       take.review = take.review || {};
       take.review.approved = false;
       take.status = 'rejected';
-      // If we reject the active take, reset active_take_id or keep it?
-      // Usually keep it but let user decide. We will keep it.
       console.log(`[Takes API] Shot ${shotId} ${takeId} rejected`);
 
     } else if (action === 'update_review') {
@@ -106,7 +85,7 @@ export async function POST(
       if (notes !== undefined) take.review.notes = notes;
       console.log(`[Takes API] Shot ${shotId} ${takeId} review updated`);
     } else if (action === 'refresh_prompt_hash') {
-      const hash = currentPromptHash(shotId);
+      const hash = currentPromptHash(projectPath, shotId);
       if (!hash) {
         return NextResponse.json({ error: '当前镜头缺少 final.json，请先同步 Prompt' }, { status: 400 });
       }

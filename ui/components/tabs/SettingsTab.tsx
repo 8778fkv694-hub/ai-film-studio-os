@@ -324,8 +324,8 @@ export default function SettingsTab() {
               <label key={item.key} className="block space-y-1">
                 <span className="text-sm text-slate-300">{item.label}</span>
                 <select
-                  value={(settings as any)[item.key] || 'precise'}
-                  onChange={e => update(item.key as any, e.target.value)}
+                  value={settings[item.key] || 'precise'}
+                  onChange={e => update(item.key, e.target.value)}
                   className="w-full rounded-lg border border-slate-700 bg-slate-900 px-2 py-1.5 text-sm text-slate-200"
                 >
                   <option value="precise">精准（低温·抗漂移）</option>

@@ -3,9 +3,14 @@ import path from 'node:path';
 import { execSync } from 'node:child_process';
 import { loadTemplate, renderTemplate, loadRules, applyRules, joinList, joinSentences } from './shared/template-engine.js';
 import { parseArgs } from './shared/dirs.js';
+import { compileBlocking } from './shared/blocking.js';
 
 const { workDir, projectRoot, remainingArgs } = parseArgs();
 const IMAGE_EXTS = new Set(['.jpg', '.jpeg', '.png', '.webp', '.svg']);
+
+// Optional global spatial-mode override: --spatial lock|guide|off (overrides per-shot blocking.mode)
+const spatialIdx = remainingArgs.indexOf('--spatial');
+const SPATIAL_OVERRIDE = spatialIdx >= 0 ? remainingArgs[spatialIdx + 1] : null;
 
 const CAMERA_MOTION = {
   'comic_panel_01': 'static wide establishing shot, slow dolly in from medium to close-up',
@@ -121,6 +126,28 @@ function resolveParentContext(shot) {
     dialogue_full: archived.dialogue?.text || null,
     action_beats_full: archived.action?.beats || []
   };
+}
+
+/** Build a ref -> display-label resolver for blocking entities/gaze targets. */
+function makeLabelFor(shot, scene) {
+  const map = new Map();
+  for (const item of shot.characters || []) {
+    if (!item.ref) continue;
+    const obj = readJson(item.ref);
+    if (obj?.name || obj?.id) map.set(item.ref, obj.name || obj.id);
+  }
+  for (const item of shot.props || []) {
+    if (!item.ref) continue;
+    const obj = readJson(item.ref);
+    const label = obj?.name || obj?.id;
+    if (!label) continue;
+    map.set(item.ref, label);
+    const m = item.ref.match(/([^/]+)\.json$/);
+    if (m) map.set(`prop:${m[1]}`, label);
+  }
+  for (const f of scene?.floorplan?.fixtures || []) map.set(`fixture:${f.id}`, f.label || f.id);
+  return ref => map.get(ref)
+    || String(ref || '').replace(/^(prop|fixture):/, '').replace(/\.json$/, '').split('/').pop();
 }
 
 function collectReferences(scene, characters, props) {
@@ -434,9 +461,43 @@ function compileVideoPrompt(shotFile, gitHash, projectDefaults, shotIndex = 0, t
 
   const template = loadTemplate('cinematic/video');
   const rendered = template ? renderTemplate(template, videoContext) : null;
-  const videoPrompt = rendered?.prompt
+  let videoPrompt = rendered?.prompt
     || buildVideoPromptLegacy(shot, scene, style, characters, props, contextContinuity, parentCtx);
   const videoPromptShotOnly = buildVideoPromptShotOnly(shot, parentCtx, contextContinuity);
+
+  // ---- SPATIAL BLOCKING (optional): space + camera + motion clauses ----
+  const blockingResult = shot.blocking
+    ? compileBlocking(shot.blocking, {
+        labelFor: makeLabelFor(shot, scene),
+        fixtures: shot.blocking.floorplan_ref ? (scene.floorplan?.fixtures || []) : [],
+        mode: SPATIAL_OVERRIDE
+      })
+    : null;
+  if (blockingResult) {
+    // mode-shaped injection (lock=hard / guide=soft / off=nothing)
+    const addendum = [
+      blockingResult.inject.space,
+      blockingResult.inject.camera,
+      blockingResult.inject.motion
+    ].filter(Boolean);
+    if (addendum.length) videoPrompt = joinSentences([videoPrompt, ...addendum]);
+
+    // Scaffold first frame: only when the mode wants it (off => AI free, no scaffold)
+    // and no real keyframe exists yet. build-blocking-diagrams.js produces this file.
+    if (blockingResult.inject.scaffold && existingKeyframes.length === 0) {
+      const grayRel = `assets/renders/${shot.shot_id}/blocking_grayframe.svg`;
+      if (fs.existsSync(path.join(workDir, grayRel))) {
+        references.push({
+          kind: 'blocking_scaffold',
+          id: 'graybox',
+          path: grayRel,
+          note: 'camera-view gray-box scaffold — first-frame layout guide until a real keyframe exists; rasterize to PNG if your tool needs it',
+          use_for: ['first_frame_layout'],
+          exists: true
+        });
+      }
+    }
+  }
 
   const negativePrompt = rendered?.negative
     || joinList([...new Set(
@@ -529,6 +590,17 @@ function compileVideoPrompt(shotFile, gitHash, projectDefaults, shotIndex = 0, t
     continuity_locks: formatStateNotes(shot.continuity?.state_changes) || null,
 
     structured_context: structuredContext,
+
+    spatial_blocking: blockingResult ? {
+      mode: blockingResult.mode,
+      injected: blockingResult.inject,
+      space: blockingResult.spaceClause,
+      camera: blockingResult.cameraClause,
+      motion: blockingResult.motionClause,
+      visible_entities: blockingResult.visibleEntities,
+      warnings: blockingResult.warnings,
+      grayframe: `assets/renders/${shot.shot_id}/blocking_grayframe.svg`
+    } : null,
 
     reference_images: references,
     conditioning_keyframes: existingKeyframes,

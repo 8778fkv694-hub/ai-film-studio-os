@@ -69,6 +69,7 @@ export default function Player({ shots, subtitleStyle, onSubtitleStyleChange, on
   const [textOverrides, setTextOverrides] = useState<Record<string, string>>({});
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
+  const playerRootRef = useRef<HTMLDivElement | null>(null);
   const safetyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const advanceRequestedRef = useRef(false);
   const subtitleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -512,6 +513,8 @@ export default function Player({ shots, subtitleStyle, onSubtitleStyleChange, on
   // Keyboard shortcuts
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
+      // tab 保活后播放器可能处于隐藏状态（display:none），此时快捷键不应响应
+      if (!playerRootRef.current || playerRootRef.current.offsetParent === null) return;
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
       switch (e.code) {
         case 'Space':
@@ -545,7 +548,7 @@ export default function Player({ shots, subtitleStyle, onSubtitleStyleChange, on
   const durMismatch = canCompare && (rawFit < 0.9 || rawFit > 1.1);
 
   return (
-    <div className="w-full overflow-hidden rounded-lg border border-slate-800 bg-black shadow-2xl">
+    <div ref={playerRootRef} className="w-full overflow-hidden rounded-lg border border-slate-800 bg-black shadow-2xl">
       <div className="relative w-full aspect-video bg-black">
         <div className="absolute inset-0 flex items-center justify-center overflow-hidden">
           {currentVideo && !videoHasError ? (

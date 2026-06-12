@@ -273,14 +273,14 @@ export default function ProjectTab() {
         </div>
 
         <div className="flex-1 p-2">
-          {[
-            { id: 'info', label: '项目信息', icon: <Settings size={18} /> },
-            { id: 'progress', label: '进度看板', icon: <BarChart3 size={18} /> },
-            { id: 'export', label: '导入导出', icon: <FolderArchive size={18} /> },
-          ].map((item) => (
+          {([
+            { id: 'info' as const, label: '项目信息', icon: <Settings size={18} /> },
+            { id: 'progress' as const, label: '进度看板', icon: <BarChart3 size={18} /> },
+            { id: 'export' as const, label: '导入导出', icon: <FolderArchive size={18} /> },
+          ]).map((item) => (
             <button
               key={item.id}
-              onClick={() => setActiveSection(item.id as any)}
+              onClick={() => setActiveSection(item.id)}
               className={`w-full flex items-center gap-2 p-3 rounded-lg mb-1 text-sm transition ${
                 activeSection === item.id
                   ? 'bg-blue-600/20 text-blue-300 border border-blue-500/50'

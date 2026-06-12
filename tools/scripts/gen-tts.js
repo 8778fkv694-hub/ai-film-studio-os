@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { execFile } from 'node:child_process';
 import { parseArgs } from './shared/dirs.js';
+import { speechHash } from './shared/conventions.js';
 import { promisify } from 'node:util';
 import { EdgeTTS } from 'node-edge-tts';
 
@@ -46,6 +47,22 @@ function speechSegmentsForShot(shot) {
 
 function safeSpeechText(text) {
   return String(text || '').replace(/["\n]/g, '').trim();
+}
+
+function audioMetaPath(outFile) {
+  return `${outFile}.meta.json`;
+}
+
+// 语音内容指纹来自 shared/conventions.js 的 speechHash（与 UI 同源）
+function writeAudioMeta(outFile, shot) {
+  try {
+    fs.writeFileSync(audioMetaPath(outFile), JSON.stringify({
+      text_hash: speechHash(shot),
+      generatedAt: new Date().toISOString()
+    }, null, 2));
+  } catch (e) {
+    console.warn(`[TTS] Failed to write audio meta for ${path.basename(outFile)}:`, e?.message || e);
+  }
 }
 
 async function getAudioDuration(mp3Path) {
@@ -228,15 +245,23 @@ async function main() {
       const { shot_id } = shot;
       const outFile = path.join(audioDir, `${shot_id}.mp3`);
 
-      // Skip if exists and looks non-empty (cheap caching)
+      // Skip if exists and looks non-empty (cheap caching)；
+      // 但若 meta 记录的台词指纹与当前不一致，说明台词改过，自动重新生成
       if (!force && fs.existsSync(outFile) && fs.statSync(outFile).size > 1024) {
-        console.log(`[TTS] Skipping ${shot_id} (already exists)`);
-        // 即使跳过生成，也根据已有音频更新时长
-        const actualDuration = await getAudioDuration(outFile);
-        if (actualDuration && actualDuration > 0) {
-          await updateShotDuration(shot_id, actualDuration);
+        const meta = readJson(audioMetaPath(outFile));
+        const currentHash = speechHash(shot);
+        if (meta?.text_hash && meta.text_hash !== currentHash) {
+          console.log(`[TTS] ${shot_id} 台词已修改（${meta.text_hash} → ${currentHash}），重新生成`);
+        } else {
+          if (!meta) writeAudioMeta(outFile, shot); // 旧音频补登记指纹
+          console.log(`[TTS] Skipping ${shot_id} (already exists)`);
+          // 即使跳过生成，也根据已有音频更新时长
+          const actualDuration = await getAudioDuration(outFile);
+          if (actualDuration && actualDuration > 0) {
+            await updateShotDuration(shot_id, actualDuration);
+          }
+          continue;
         }
-        continue;
       }
 
       console.log(`[TTS] Generating audio for ${shot_id}: ${segments.length} segment(s)...`);
@@ -277,11 +302,13 @@ async function main() {
           fs.rmSync(bestFile, { force: true });
           const gap = best.dur ? (best.dur - targetDuration) : 0;
           console.log(`[TTS] -> Saved ${shot_id}.mp3 (目标 ${targetDuration}s，实得 ${best.dur ? best.dur.toFixed(2) : '?'}s，语速 ${best.rate >= 0 ? '+' : ''}${best.rate}%，余差 ${gap.toFixed(2)}s → 余下由视频微调吸收)`);
+          writeAudioMeta(outFile, shot);
           generated += 1;
           // 配音对齐到画面：分镜时长以目标（画面）为准
           await updateShotDuration(shot_id, Math.round(targetDuration));
         } else {
           console.log(`[TTS] -> Saved to assets/audio/${shot_id}.mp3`);
+          writeAudioMeta(outFile, shot);
           generated += 1;
           // 根据实际音频时长自动调整分镜 duration_s
           const actualDuration = await getAudioDuration(outFile);

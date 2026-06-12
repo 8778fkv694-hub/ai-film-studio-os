@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import crypto from 'node:crypto';
 import { parseArgs } from './shared/dirs.js';
+import { md5Short as md5, currentPromptHash } from './shared/conventions.js';
 
 const { workDir, remainingArgs } = parseArgs();
 
@@ -11,10 +11,6 @@ function readJson(p) {
   } catch {
     return null;
   }
-}
-
-function md5(str) {
-  return crypto.createHash('md5').update(str).digest('hex').substring(0, 8);
 }
 
 function ensureDir(p) {
@@ -54,8 +50,7 @@ async function main() {
   }
   const takeId = `take_${String(maxNum + 1).padStart(3, '0')}`;
   // 3. Record a pending manual take slot. Actual videos/images are imported with import-take.js or the UI uploader.
-  const promptContent = fs.readFileSync(promptFile, 'utf-8');
-  const promptHash = md5(promptContent);
+  const promptHash = currentPromptHash(workDir, shotId);
 
   const newTake = {
     take_id: takeId,

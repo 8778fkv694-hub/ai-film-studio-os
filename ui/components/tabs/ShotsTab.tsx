@@ -22,13 +22,33 @@ export default function ShotsTab() {
         fetch('/api/shots'),
         fetch('/api/shots/draft')
       ]);
+      
+      let finalData: Shot[] = [];
+      let draftData: Shot[] = [];
+      
       if (shotsRes.ok) {
-        const data = await shotsRes.json();
-        setShots(data);
-        if (data.length > 0 && !selectedShot) setSelectedShot(data[0]);
+        finalData = await shotsRes.json();
+        setShots(finalData);
       }
       if (draftsRes.ok) {
-        setDraftShots(await draftsRes.json());
+        draftData = await draftsRes.json();
+        setDraftShots(draftData);
+      }
+      
+      const redirectShotId = localStorage.getItem('redirect_to_shot');
+      if (redirectShotId) {
+        const isDraftShot = redirectShotId.startsWith('D');
+        setViewMode(isDraftShot ? 'draft' : 'final');
+        const targetList = isDraftShot ? draftData : finalData;
+        const found = targetList.find(s => s.shot_id === redirectShotId);
+        if (found) {
+          setSelectedShot(found);
+        } else if (finalData.length > 0) {
+          setSelectedShot(finalData[0]);
+        }
+        localStorage.removeItem('redirect_to_shot');
+      } else {
+        if (finalData.length > 0 && !selectedShot) setSelectedShot(finalData[0]);
       }
     } catch (e) {
       console.error(e);

@@ -3,9 +3,14 @@ import path from 'node:path';
 import { execSync } from 'node:child_process';
 import { loadTemplate, renderTemplate, loadRules, applyRules, joinSentences, joinList, clean } from './shared/template-engine.js';
 import { parseArgs } from './shared/dirs.js';
+import { compileBlocking } from './shared/blocking.js';
 
 const { workDir, projectRoot, remainingArgs } = parseArgs();
 const IMAGE_EXTS = new Set(['.jpg', '.jpeg', '.png', '.webp', '.svg']);
+
+// Optional global spatial-mode override: --spatial lock|guide|off (overrides per-shot blocking.mode)
+const spatialIdx = remainingArgs.indexOf('--spatial');
+const SPATIAL_OVERRIDE = spatialIdx >= 0 ? remainingArgs[spatialIdx + 1] : null;
 
 function readJson(rel) {
   const projectPath = path.join(workDir, rel);
@@ -180,6 +185,38 @@ function resolveParentContext(shot) {
   };
 }
 
+/**
+ * Build a ref -> display-label resolver for blocking entities/gaze targets.
+ * Handles character/prop ref paths, "prop:<id>" forms, and scene fixtures.
+ */
+function makeLabelFor(shot, scene) {
+  const map = new Map();
+
+  for (const item of shot.characters || []) {
+    if (!item.ref) continue;
+    const obj = readJson(item.ref);
+    const label = obj?.name || obj?.id;
+    if (label) map.set(item.ref, label);
+  }
+
+  for (const item of shot.props || []) {
+    if (!item.ref) continue;
+    const obj = readJson(item.ref);
+    const label = obj?.name || obj?.id;
+    if (!label) continue;
+    map.set(item.ref, label);
+    const idMatch = item.ref.match(/([^/]+)\.json$/);
+    if (idMatch) map.set(`prop:${idMatch[1]}`, label);
+  }
+
+  for (const f of scene?.floorplan?.fixtures || []) {
+    map.set(`fixture:${f.id}`, f.label || f.id);
+  }
+
+  return ref => map.get(ref)
+    || String(ref || '').replace(/^(prop|fixture):/, '').replace(/\.json$/, '').split('/').pop();
+}
+
 function compileImagePrompt(shotFile, gitHash) {
   const shot = readJson(`shots/${shotFile}`);
   const scene = readJson(shot.scene_ref);
@@ -238,6 +275,18 @@ function compileImagePrompt(shotFile, gitHash) {
   const parentCtx = resolveParentContext(shot);
   const isSplitShot = !!parentCtx;
 
+  // Spatial blocking -> spatial/camera clauses + visibility (optional, backward compatible)
+  const blockingResult = shot.blocking
+    ? compileBlocking(shot.blocking, {
+        labelFor: makeLabelFor(shot, scene),
+        fixtures: shot.blocking.floorplan_ref ? (scene.floorplan?.fixtures || []) : [],
+        mode: SPATIAL_OVERRIDE
+      })
+    : null;
+  // mode-shaped injection (lock=hard / guide=soft / off=nothing)
+  const imagePromptSpace = blockingResult?.inject.space || '';
+  const imagePromptCamera = blockingResult?.inject.camera || '';
+
   const shotPrompt = [
     `shot ${shot.shot_id}`,
     shot.cam_setup_ref ? `camera intent: ${shot.cam_setup_ref}` : '',
@@ -294,7 +343,9 @@ function compileImagePrompt(shotFile, gitHash) {
     imagePromptScene,
     imagePromptCharacters,
     imagePromptProps,
-    imagePromptShot
+    imagePromptShot,
+    imagePromptSpace,
+    imagePromptCamera
   ]);
 
   return {
@@ -310,8 +361,13 @@ function compileImagePrompt(shotFile, gitHash) {
     image_prompt_characters: imagePromptCharacters,
     image_prompt_props: imagePromptProps,
     image_prompt_shot: imagePromptShot,
+    image_prompt_space: imagePromptSpace,
+    image_prompt_camera: imagePromptCamera,
     image_prompt_final: imagePromptFinal,
     negative_prompt: negativePrompt,
+    visible_entities: blockingResult?.visibleEntities || [],
+    blocking_mode: blockingResult?.mode || null,
+    blocking_warnings: blockingResult?.warnings || [],
     continuity_notes: continuityNotes,
     reference_images: references,
     context_refs: {

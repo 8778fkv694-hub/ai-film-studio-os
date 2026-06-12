@@ -6,6 +6,7 @@ import {
   FileText, MapPin, Users, Clapperboard, Volume2,
   ArrowRight, Play, RefreshCw, Sparkles, Image as ImageIcon, Hammer
 } from 'lucide-react';
+import type { TabId } from '../TabNav';
 
 interface ProjectStats {
   project: {
@@ -38,7 +39,7 @@ interface ProjectStats {
 }
 
 interface DashboardTabProps {
-  onNavigate: (tab: string) => void;
+  onNavigate: (tab: TabId) => void;
 }
 
 export default function DashboardTab({ onNavigate }: DashboardTabProps) {

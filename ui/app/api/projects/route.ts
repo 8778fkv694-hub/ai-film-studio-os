@@ -19,89 +19,6 @@ interface ProjectsData {
   activeProjectId: string | null;
 }
 
-// 自动迁移根目录的旧项目
-function migrateLegacyProject(projectsData: ProjectsData): ProjectsData {
-  const legacyProjectPath = path.resolve(process.cwd(), '../project.json');
-  
-  if (!fs.existsSync(legacyProjectPath)) {
-    return projectsData;
-  }
-
-  // 如果已有项目且包含旧项目ID，不重复迁移
-  if (projectsData.projects.some(p => p.id === 'legacy_project')) {
-    return projectsData;
-  }
-
-  try {
-    const legacyProject = JSON.parse(fs.readFileSync(legacyProjectPath, 'utf-8'));
-    const projectId = legacyProject.id || 'legacy_project';
-    
-    // 检查是否已存在同ID项目
-    if (projectsData.projects.some(p => p.id === projectId)) {
-      return projectsData;
-    }
-
-    // 创建项目目录
-    const projectDir = path.join(PROJECTS_DIR, projectId);
-    if (!fs.existsSync(projectDir)) {
-      fs.mkdirSync(projectDir, { recursive: true });
-    }
-
-    // 复制项目配置到新目录
-    const newProjectPath = path.join(projectDir, 'project.json');
-    if (!fs.existsSync(newProjectPath)) {
-      fs.copyFileSync(legacyProjectPath, newProjectPath);
-    }
-
-    // 创建子目录并软链接到根目录的资源
-    const subDirs = ['docs', 'shots', 'shots_draft', 'scenes', 'characters', 'props', 'assets', 'prompts', 'renders', 'reports', 'styles', 'schema'];
-    const rootPath = path.resolve(process.cwd(), '..');
-    
-    subDirs.forEach(dir => {
-      const srcDir = path.join(rootPath, dir);
-      const destDir = path.join(projectDir, dir);
-      
-      if (fs.existsSync(srcDir) && !fs.existsSync(destDir)) {
-        // 使用符号链接指向根目录的资源
-        try {
-          fs.symlinkSync(srcDir, destDir, 'dir');
-        } catch (e) {
-          // 如果符号链接失败，创建空目录
-          fs.mkdirSync(destDir, { recursive: true });
-        }
-      } else if (!fs.existsSync(destDir)) {
-        fs.mkdirSync(destDir, { recursive: true });
-      }
-    });
-
-    // 添加到项目列表
-    const now = new Date().toISOString();
-    projectsData.projects.push({
-      id: projectId,
-      name: legacyProject.name || '迁移的项目',
-      description: legacyProject.description || '',
-      createdAt: now,
-      updatedAt: now
-    });
-
-    // 设为活动项目
-    if (!projectsData.activeProjectId) {
-      projectsData.activeProjectId = projectId;
-    }
-
-    writeJsonAtomic(PROJECTS_FILE, projectsData);
-    
-    // 迁移完成后重命名旧文件，防止重复迁移
-    fs.renameSync(legacyProjectPath, legacyProjectPath + '.migrated');
-    
-    console.log(`Migrated legacy project: ${projectId}`);
-  } catch (e) {
-    console.error('Failed to migrate legacy project:', e);
-  }
-
-  return projectsData;
-}
-
 // 获取项目列表
 export async function GET() {
   try {
@@ -116,9 +33,6 @@ export async function GET() {
       const data = fs.readFileSync(PROJECTS_FILE, 'utf-8');
       projectsData = JSON.parse(data);
     }
-
-    // 自动迁移旧项目
-    projectsData = migrateLegacyProject(projectsData);
 
     // 扫描项目目录，获取每个项目的详细信息
     const projectsWithDetails: ProjectInfo[] = [];

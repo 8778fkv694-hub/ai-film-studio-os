@@ -32,11 +32,13 @@ outputs/
 .next/
 ui/.next/
 ui/tsconfig.tsbuildinfo
+ui/next-env.d.ts
 out/
 build/
 dist/
 
 # Project-specific generated assets
+projects/*/inbox/
 projects/*/exports/
 projects/*/assets/renders/
 projects/*/assets/audio/

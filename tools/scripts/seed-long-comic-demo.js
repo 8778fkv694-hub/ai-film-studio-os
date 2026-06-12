@@ -2,7 +2,30 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../');
+const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../');
+const DEMO_PROJECT_ID = 'red_mug_long_demo';
+// 演示数据只写入标准项目目录，不污染仓库根（根目录单项目结构已废弃）
+const ROOT = path.join(REPO_ROOT, 'projects', DEMO_PROJECT_ID);
+
+function registerDemoProject() {
+  const projectsFile = path.join(REPO_ROOT, 'projects.json');
+  let data = { projects: [], activeProjectId: null };
+  try {
+    data = JSON.parse(fs.readFileSync(projectsFile, 'utf-8'));
+  } catch {}
+  if (!data.projects.some(p => p.id === DEMO_PROJECT_ID)) {
+    const now = new Date().toISOString();
+    data.projects.push({
+      id: DEMO_PROJECT_ID,
+      name: '红杯（演示）',
+      description: '低成本配音静态图片漫画演示：中文悬疑短篇。',
+      createdAt: now,
+      updatedAt: now
+    });
+    if (!data.activeProjectId) data.activeProjectId = DEMO_PROJECT_ID;
+    fs.writeFileSync(projectsFile, `${JSON.stringify(data, null, 2)}\n`, 'utf-8');
+  }
+}
 
 const story = [
   ['午夜的雨把旧公寓包成一只黑盒。林澈回家时，厨房灯自己亮着。', '我出门前，明明关了灯。'],
@@ -166,6 +189,7 @@ function copyKeyframe(index) {
 }
 
 function main() {
+  registerDemoProject();
   story.forEach(([voiceoverText, dialogueText], index) => {
     writeShot(index, voiceoverText, dialogueText);
     copyKeyframe(index);

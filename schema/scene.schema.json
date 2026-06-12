@@ -30,6 +30,29 @@
       "additionalProperties": true
     },
     "forbidden": {"type": "array", "items": {"type": "string"}},
+    "floorplan": {
+      "type": "object",
+      "description": "Fixed set geometry reused by shots. Same 0-100 top-down plane as shot.blocking.",
+      "properties": {
+        "grid": {"type": "string"},
+        "fixtures": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "x", "y"],
+            "properties": {
+              "id": {"type": "string"},
+              "x": {"type": "number", "minimum": 0, "maximum": 100},
+              "y": {"type": "number", "minimum": 0, "maximum": 100},
+              "label": {"type": "string"},
+              "facing": {}
+            },
+            "additionalProperties": true
+          }
+        }
+      },
+      "additionalProperties": true
+    },
     "cam_setups": {
       "type": "object",
       "additionalProperties": {

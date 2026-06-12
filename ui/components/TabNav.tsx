@@ -1,8 +1,8 @@
 "use client";
 
-import { LayoutDashboard, FolderOpen, FileText, MapPin, Users, Clapperboard, Image as ImageIcon, Wrench, Settings } from 'lucide-react';
+import { LayoutDashboard, FolderOpen, FileText, MapPin, Users, Clapperboard, Image as ImageIcon, Wrench, Settings, HelpCircle } from 'lucide-react';
 
-export type TabId = 'dashboard' | 'project' | 'script' | 'scenes' | 'assets' | 'shots' | 'preview' | 'tools' | 'settings';
+export type TabId = 'dashboard' | 'project' | 'script' | 'scenes' | 'assets' | 'shots' | 'preview' | 'tools' | 'settings' | 'help';
 
 interface Tab {
   id: TabId;
@@ -20,6 +20,7 @@ const tabs: Tab[] = [
   { id: 'preview', label: '配音分镜', icon: <ImageIcon size={18} /> },
   { id: 'tools', label: '自动化', icon: <Wrench size={18} /> },
   { id: 'settings', label: '系统设置', icon: <Settings size={18} /> },
+  { id: 'help', label: '使用帮助', icon: <HelpCircle size={18} /> },
 ];
 
 interface TabNavProps {

@@ -12,6 +12,7 @@ import ShotsTab from '@/components/tabs/ShotsTab';
 import PreviewTab from '@/components/tabs/PreviewTab';
 import ToolsTab from '@/components/tabs/ToolsTab';
 import SettingsTab from '@/components/tabs/SettingsTab';
+import HelpTab from '@/components/tabs/HelpTab';
 import ProjectList from '@/components/ProjectList';
 import CreateProjectForm from '@/components/CreateProjectForm';
 
@@ -25,6 +26,7 @@ type ProjectView = 'main' | 'list' | 'create';
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState<TabId>('dashboard');
+  const [visitedTabs, setVisitedTabs] = useState<TabId[]>(['dashboard']);
   const [project, setProject] = useState<Project | null>(null);
   const [activeProjectId, setActiveProjectId] = useState<string | null>(null);
   const [projectView, setProjectView] = useState<ProjectView>('main');
@@ -87,7 +89,7 @@ export default function Home() {
   };
 
   const handleRunChecks = async () => {
-    setActiveTab('tools');
+    handleTabChange('tools');
   };
 
   const handleProjectChange = (projectId: string) => {
@@ -111,12 +113,17 @@ export default function Home() {
     fetchProject();
   };
 
-  const renderTabContent = () => {
-    switch (activeTab) {
+  const handleTabChange = (tab: TabId) => {
+    setActiveTab(tab);
+    setVisitedTabs(prev => (prev.includes(tab) ? prev : [...prev, tab]));
+  };
+
+  const renderTab = (tab: TabId) => {
+    switch (tab) {
       case 'dashboard':
-        return <DashboardTab key={refreshKey} onNavigate={(tab) => setActiveTab(tab as TabId)} />;
+        return <DashboardTab onNavigate={handleTabChange} />;
       case 'project':
-        return <ProjectTab key={refreshKey} />;
+        return <ProjectTab />;
       case 'script':
         return <ScriptTab />;
       case 'scenes':
@@ -124,17 +131,31 @@ export default function Home() {
       case 'assets':
         return <AssetsTab />;
       case 'shots':
-        return <ShotsTab key={refreshKey} />;
+        return <ShotsTab />;
       case 'preview':
-        return <PreviewTab key={refreshKey} />;
+        return <PreviewTab onNavigate={handleTabChange} />;
       case 'tools':
         return <ToolsTab onDataRefresh={handleDataRefresh} />;
       case 'settings':
         return <SettingsTab />;
+      case 'help':
+        return <HelpTab />;
       default:
         return null;
     }
   };
+
+  // 访问过的 tab 保持挂载、用 CSS 隐藏，切回时不丢状态不重新加载；
+  // refreshKey 变化（项目切换/数据刷新）时整体重挂载以获取新数据
+  const renderTabContent = () => (
+    <div key={refreshKey}>
+      {visitedTabs.map(tab => (
+        <div key={tab} className={tab === activeTab ? '' : 'hidden'}>
+          {renderTab(tab)}
+        </div>
+      ))}
+    </div>
+  );
 
   // 如果没有活动项目或用户选择查看项目列表
   if (projectView === 'list' || (!activeProjectId && projectView === 'main')) {
@@ -188,7 +209,7 @@ export default function Home() {
         onCreateNewProject={handleCreateNewProject}
         onManageProjects={handleManageProjects}
       />
-      <TabNav activeTab={activeTab} onTabChange={setActiveTab} />
+      <TabNav activeTab={activeTab} onTabChange={handleTabChange} />
       <main className="flex-1 overflow-x-hidden">
         {renderTabContent()}
       </main>

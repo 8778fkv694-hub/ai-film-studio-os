@@ -1,34 +1,30 @@
 import { NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
-import crypto from 'crypto';
 import { getResourcePath, getCurrentProjectPath } from '@/lib/projects';
+import { isSafeId, KEYFRAME_EXTS, VIDEO_EXTS, md5Short, speechHash } from '@shared/conventions.js';
 
-const KEYFRAME_EXTS = new Set(['.jpg', '.jpeg', '.png', '.webp']);
 const STALE_TOLERANCE_MS = 1000;
 
 function listKeyframes(shotId: string) {
-  if (!/^[A-Za-z0-9_-]+$/.test(shotId)) return [];
+  if (!isSafeId(shotId)) return [];
 
   const keyframeDir = path.join(getResourcePath('assets'), 'renders', shotId, 'keyframes');
   if (!fs.existsSync(keyframeDir)) return [];
 
   return fs.readdirSync(keyframeDir)
-    .filter(file => KEYFRAME_EXTS.has(path.extname(file).toLowerCase()))
+    .filter(file => KEYFRAME_EXTS.includes(path.extname(file).toLowerCase()))
     .sort()
     .map(file => `/api/assets/keyframes/${encodeURIComponent(shotId)}/${encodeURIComponent(file)}`);
 }
 
 function findUploadedVideo(shotId: string) {
-  if (!/^[A-Za-z0-9_-]+$/.test(shotId)) return null;
+  if (!isSafeId(shotId)) return null;
   const videoDir = path.join(getResourcePath('assets'), 'renders', shotId, 'video');
   if (!fs.existsSync(videoDir)) return null;
 
   const files = fs.readdirSync(videoDir);
-  const videoFile = files.find(file => {
-    const ext = path.extname(file).toLowerCase();
-    return ext === '.mp4' || ext === '.mov' || ext === '.webm' || ext === '.avi';
-  });
+  const videoFile = files.find(file => VIDEO_EXTS.includes(path.extname(file).toLowerCase()));
 
   if (!videoFile) return null;
   const fullPath = path.join(videoDir, videoFile);
@@ -62,10 +58,6 @@ function maxDirMtime(dirPath: string): number {
     max = Math.max(max, entry.isDirectory() ? maxDirMtime(fullPath) : fileMtime(fullPath));
   }
   return max;
-}
-
-function md5Short(value: string): string {
-  return crypto.createHash('md5').update(value).digest('hex').substring(0, 8);
 }
 
 function resolveResourcePath(projectPath: string | null, projectRoot: string, relPath?: string | null): string | null {
@@ -158,12 +150,25 @@ function buildSyncState(args: {
   }
 
   const hasVoiceText = Boolean(shot.voiceover?.text || shot.dialogue?.text);
-  let audioState: 'none' | 'missing' | 'ok' = 'none';
+  let audioState: 'none' | 'missing' | 'ok' | 'stale' = 'none';
   if (hasVoiceText) {
     audioState = hasAudio ? 'ok' : 'missing';
     if (audioState === 'missing') {
       reasons.push('有台词/旁白但尚未生成音频');
       actions.push('generate_tts');
+    } else if (projectPath) {
+      // 比对生成时记录的台词指纹，台词改了但音频没重生成 → 配音过期
+      const metaPath = path.join(projectPath, 'assets/audio', `${shot.shot_id}.mp3.meta.json`);
+      try {
+        if (fs.existsSync(metaPath)) {
+          const meta = JSON.parse(fs.readFileSync(metaPath, 'utf-8'));
+          if (meta?.text_hash && meta.text_hash !== speechHash(shot)) {
+            audioState = 'stale';
+            reasons.push('台词/旁白已修改，配音已过期');
+            actions.push('generate_tts');
+          }
+        }
+      } catch {}
     }
   }
 
@@ -174,6 +179,8 @@ function buildSyncState(args: {
     ? '旧视频'
     : audioState === 'missing'
     ? '待配音'
+    : audioState === 'stale'
+    ? '配音过期'
     : '已同步';
 
   return {
@@ -312,6 +319,7 @@ const SHOT_WHITELIST_FIELDS = [
   'budget',
   'context_refs',
   'prompt',
+  'blocking',
   'parent_shot_id',
   'parent_context',
   'segment_index',

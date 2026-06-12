@@ -42,5 +42,42 @@
   "prompt": {
     "positive": "16:9 cinematic wide establishing shot of a modern suspended-ceiling membrane-element production cleanroom; a calm Chinese female inspector (~50, blue cleanroom suit, hair under a blue cap) stands at the membrane-element Winding Station (卷制工位) where flat membrane sheets are wound onto a white central core tube, and puts on thin lightweight near-invisible XR glasses; faint holographic blue (#4a8eff) data bloom around the winding machine, showing winding-tension and layer-count readouts; brushed stainless steel wall panels, white LED suspended ceiling; soft even shadowless light, photorealistic, 8K",
     "negative": "physical display screens, wall monitors, control panels, bulky VR headset, cyberpunk neon, cluttered background, exposed cables, cartoon, blurry, low quality, distorted faces, wrong proportions, text artifacts, watermark, logo, extra limbs, dark lighting"
+  },
+  "blocking": {
+    "entities": [
+      {
+        "ref": "characters/inspector.json",
+        "x": 30,
+        "y": 45,
+        "facing": "S"
+      },
+      {
+        "ref": "props/xr_glasses.json",
+        "x": 48,
+        "y": 57,
+        "facing": "S"
+      },
+      {
+        "ref": "props/assembly_station.json",
+        "x": 66,
+        "y": 45,
+        "facing": "S"
+      },
+      {
+        "ref": "props/xr_overlay.json",
+        "x": 34,
+        "y": 57,
+        "facing": "S"
+      }
+    ],
+    "camera": {
+      "x": 50,
+      "y": 92,
+      "facing": "N",
+      "lens": "35mm",
+      "height": "eye_level",
+      "shot_size": "medium"
+    },
+    "mode": "lock"
   }
 }

@@ -13,6 +13,13 @@
       "description": "滤芯装配车间 XR 概念预告 / 企业愿景片（点检·监控·学习三场景）",
       "createdAt": "2026-06-02T00:00:00.000Z",
       "updatedAt": "2026-06-02T00:00:00.000Z"
+    },
+    {
+      "id": "red_mug_long_demo",
+      "name": "红杯（演示）",
+      "description": "低成本配音静态图片漫画演示：中文悬疑短篇（原根目录旧结构数据，已迁移为标准项目）。",
+      "createdAt": "2026-06-12T13:41:07.669Z",
+      "updatedAt": "2026-06-12T13:41:07.669Z"
     }
   ],
   "activeProjectId": "vision"

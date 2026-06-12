@@ -30,7 +30,7 @@ function resolveActiveProjectDir() {
     if (projectDir) return projectDir;
   }
 
-  return fs.existsSync(path.join(ROOT, 'project.json')) ? ROOT : ROOT;
+  return null;
 }
 
 // 解析 --project-dir 参数，返回实际工作目录
@@ -55,6 +55,12 @@ function parseArgs() {
   const resolvedProjectDir = projectDir
     ? path.resolve(process.cwd(), projectDir)
     : (resolveProjectDir(projectId) || resolveActiveProjectDir());
+
+  // 根目录单项目兼容模式已移除：解析不到项目就明确报错，避免静默读写错误位置
+  if (!resolvedProjectDir) {
+    console.error('❌ 未能解析项目目录：请在 projects.json 中设置 activeProjectId，或显式传 --project-dir / --project-id');
+    process.exit(1);
+  }
 
   return {
     workDir: resolvedProjectDir,

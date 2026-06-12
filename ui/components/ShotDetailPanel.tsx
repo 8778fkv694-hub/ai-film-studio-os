@@ -1,11 +1,12 @@
 "use client";
 
 import { useState, useEffect, useRef } from 'react';
-import { 
-  Clapperboard, Clock, MessageSquare, Camera, Sparkles, 
-  CheckCircle, AlertCircle, Loader2, Copy, Upload, Trash2, 
-  Star, FileText, Link, Film, Play
+import {
+  Clapperboard, Clock, MessageSquare, Camera, Sparkles,
+  CheckCircle, AlertCircle, Loader2, Copy, Upload, Trash2,
+  Star, FileText, Link, Film, Play, Move
 } from 'lucide-react';
+import BlockingEditor from './BlockingEditor';
 
 export interface Shot {
   shot_id: string;
@@ -19,6 +20,7 @@ export interface Shot {
   voiceover?: { speaker?: string; text: string };
   budget: { tier: string; max_regen: number };
   prompt: { positive: string; negative: string };
+  blocking?: any;
   context_refs?: string[];
   _keyframes?: string[];
   _video_url?: string | null;
@@ -41,7 +43,7 @@ export default function ShotDetailPanel({
   onReload
 }: ShotDetailPanelProps) {
   const [shot, setShot] = useState<Shot>(initialShot);
-  const [activeTab, setActiveTab] = useState<'edit' | 'assets' | 'prompts' | 'takes'>('edit');
+  const [activeTab, setActiveTab] = useState<'edit' | 'blocking' | 'assets' | 'prompts' | 'takes'>('edit');
   const [loading, setLoading] = useState(false);
   const [detailData, setDetailData] = useState<any>(null);
   
@@ -61,6 +63,14 @@ export default function ShotDetailPanel({
   useEffect(() => {
     setShot(initialShot);
     fetchShotDetails(initialShot.shot_id);
+
+    if (typeof window !== 'undefined') {
+      const subtab = localStorage.getItem('redirect_to_subtab');
+      if (subtab === 'blocking') {
+        setActiveTab('blocking');
+        localStorage.removeItem('redirect_to_subtab');
+      }
+    }
   }, [initialShot]);
 
   const fetchShotDetails = async (shotId: string) => {
@@ -383,6 +393,7 @@ export default function ShotDetailPanel({
       <div className="flex border-b border-slate-800 bg-slate-950 px-4">
         {[
           { id: 'edit', label: '分镜编辑', icon: FileText },
+          { id: 'blocking', label: '空间调度', icon: Move },
           { id: 'assets', label: '资源与引用', icon: Link },
           { id: 'prompts', label: '编译提示词', icon: Sparkles },
           { id: 'takes', label: '版本审片', icon: Film }
@@ -668,6 +679,32 @@ export default function ShotDetailPanel({
                   >
                     {saving ? <Loader2 size={16} className="animate-spin" /> : null}
                     保存修改
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* TAB: Spatial blocking */}
+            {activeTab === 'blocking' && (
+              <div className="space-y-4">
+                <div className="bg-slate-950/40 p-3 rounded-lg border border-slate-850 text-xs text-slate-400">
+                  俯视摆位 → 自动生成空间从句 + 灰模脚手架首帧，并支持越轴 / 跳切 / 瞬移校验。俯视图仅供你和 Lint，喂给视频 AI 的是灰模图与文字。
+                </div>
+                <BlockingEditor
+                  shotId={shot.shot_id}
+                  characters={shot.characters || []}
+                  props={shot.props || []}
+                  value={shot.blocking}
+                  onChange={(blocking) => setShot({ ...shot, blocking })}
+                />
+                <div className="flex justify-end">
+                  <button
+                    onClick={handleSave}
+                    disabled={saving}
+                    className="flex items-center gap-1.5 px-6 py-2.5 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white rounded-lg text-sm font-semibold transition"
+                  >
+                    {saving ? <Loader2 size={16} className="animate-spin" /> : null}
+                    保存调度
                   </button>
                 </div>
               </div>

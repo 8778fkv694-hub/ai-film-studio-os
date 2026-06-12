@@ -219,7 +219,7 @@ export default function ScriptTab() {
             </div>
             <select
               value={mode}
-              onChange={(e) => setMode(e.target.value as any)}
+              onChange={(e) => setMode(e.target.value as 'fiction' | 'explainer' | 'documentary')}
               className="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-blue-500 w-full sm:w-64 transition cursor-pointer"
             >
               <option value="fiction">🎬 剧情故事 / 悬疑短片</option>

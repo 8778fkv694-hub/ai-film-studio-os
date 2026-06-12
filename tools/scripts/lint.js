@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { parseArgs } from './shared/dirs.js';
+import { compileBlocking, sideOfLine, angleAtPivot, dist } from './shared/blocking.js';
 
 const { workDir, projectRoot, remainingArgs } = parseArgs();
 
@@ -151,6 +152,27 @@ for (const s of shots) {
     }
   }
 
+  // --- BLOCKING (spatial) per-shot checks ---
+  if (shot.blocking && Array.isArray(shot.blocking.entities)) {
+    const entities = shot.blocking.entities;
+    const refSet = new Set(entities.map(e => e.ref));
+    // Rule: gaze_target must be 'camera' or resolve to another entity in this shot
+    for (const e of entities) {
+      if (!e.gaze_target || e.gaze_target === 'camera') continue;
+      if (!refSet.has(e.gaze_target)) {
+        warn(`blocking gaze_target not found among shot entities: "${e.gaze_target}" (on ${e.ref})`, s.file);
+      }
+    }
+    // Rule: if a camera is defined, at least one entity should fall inside the frustum
+    const cam = shot.blocking.camera;
+    if (cam && typeof cam.x === 'number' && typeof cam.y === 'number' && entities.length) {
+      const r = compileBlocking(shot.blocking, {});
+      if (r.visibleEntities.length === 0) {
+        warn('blocking: all entities fall outside the camera frustum (widen lens or move camera)', s.file);
+      }
+    }
+  }
+
   // duration and budget sanity
   if ((shot?.budget?.tier || 'cheap') === 'cheap') {
     if (shot.duration_s > 12 && !parentShotIds.has(shot.shot_id)) {
@@ -236,6 +258,84 @@ for (const s of shots) {
          warn(`Shot defines custom references but misses scene anchors: ${missingAnchors.join(', ')}. Scene consistency at risk.`, s.file);
        }
      }
+  }
+}
+
+// --- BLOCKING (spatial) cross-shot continuity checks ---
+{
+  // Order shots by timeline when available, else by filename.
+  const byFile = new Map(shots.map(s => [`shots/${path.basename(s.abs)}`, s]));
+  let ordered;
+  if (project?.timeline?.length) {
+    ordered = project.timeline.map(t => byFile.get(t.shot_file)).filter(Boolean);
+  } else {
+    ordered = shots;
+  }
+
+  const camPos = b => (b?.camera && typeof b.camera.x === 'number' && typeof b.camera.y === 'number')
+    ? { x: b.camera.x, y: b.camera.y } : null;
+  const entMap = b => new Map((b?.entities || [])
+    .filter(e => typeof e.x === 'number' && typeof e.y === 'number')
+    .map(e => [e.ref, { x: e.x, y: e.y }]));
+  const resolveAxisEndpoint = (token, b) => {
+    const t = String(token).trim().toLowerCase();
+    for (const e of b?.entities || []) {
+      const ref = String(e.ref).toLowerCase();
+      if (ref.includes(t) || ref.replace(/^(prop|fixture):/, '').includes(t)) {
+        return { x: e.x, y: e.y };
+      }
+    }
+    return null;
+  };
+
+  for (let i = 1; i < ordered.length; i++) {
+    const prev = ordered[i - 1].obj, cur = ordered[i].obj;
+    const bp = prev.blocking, bc = cur.blocking;
+    if (!bp || !bc) continue;
+    const camP = camPos(bp), camC = camPos(bc);
+    const where = ordered[i].file;
+
+    // Rule: 180-degree axis crossing (shared axis_lock)
+    if (camP && camC && bp.axis_lock && bp.axis_lock === bc.axis_lock) {
+      const toks = String(bp.axis_lock).split(/[-|/]/).map(t => t.trim()).filter(Boolean);
+      if (toks.length === 2) {
+        const a1 = resolveAxisEndpoint(toks[0], bp), a2 = resolveAxisEndpoint(toks[1], bp);
+        const c1 = resolveAxisEndpoint(toks[0], bc), c2 = resolveAxisEndpoint(toks[1], bc);
+        if (a1 && a2 && c1 && c2) {
+          const sPrev = sideOfLine(camP, a1, a2);
+          const sCur = sideOfLine(camC, c1, c2);
+          if (sPrev !== 0 && sCur !== 0 && sPrev !== sCur) {
+            warn(`crosses 180° action axis (${bp.axis_lock}) vs ${ordered[i - 1].file}; screen left/right will flip`, where);
+          }
+        }
+      }
+    }
+
+    // Rule: 30-degree rule (same scene, shared subject, near-identical angle)
+    if (camP && camC && prev.scene_ref === cur.scene_ref) {
+      const mp = entMap(bp), mc = entMap(bc);
+      const shared = [...mp.keys()].find(k => mc.has(k));
+      const sizeSame = String(bp.camera.shot_size || '') === String(bc.camera.shot_size || '');
+      if (shared && sizeSame) {
+        const ang = angleAtPivot(mp.get(shared), camP, camC);
+        if (ang < 30) {
+          warn(`<30° camera move on same subject vs ${ordered[i - 1].file} (${ang.toFixed(0)}°), same shot size — risks a jump cut`, where);
+        }
+      }
+    }
+
+    // Rule: teleport (shared entity jumps far with no motion bridging it)
+    {
+      const mp = entMap(bp), mc = entMap(bc);
+      const motionWho = new Set((bc.motion || []).map(m => m.who));
+      for (const [ref, pPrev] of mp) {
+        const pCur = mc.get(ref);
+        if (!pCur) continue;
+        if (dist(pPrev, pCur) > 40 && !motionWho.has(ref)) {
+          warn(`entity "${ref}" jumps far from ${ordered[i - 1].file} with no motion bridging it (possible teleport)`, where);
+        }
+      }
+    }
   }
 }
 

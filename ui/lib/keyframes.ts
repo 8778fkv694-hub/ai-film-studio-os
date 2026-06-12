@@ -1,7 +1,8 @@
 import fs from 'fs';
 import path from 'path';
+import { KEYFRAME_EXTS as SHARED_KEYFRAME_EXTS, isSafeId } from '@shared/conventions.js';
 
-export const KEYFRAME_EXTS = new Set(['.jpg', '.jpeg', '.png', '.webp']);
+export const KEYFRAME_EXTS = new Set(SHARED_KEYFRAME_EXTS);
 
 export type KeyframeSaveMode = 'append' | 'replace';
 
@@ -35,7 +36,7 @@ function nextFrameSlot(existing: string[]) {
 }
 
 export function safeShotId(shotId: string) {
-  return /^[A-Za-z0-9_-]+$/.test(shotId);
+  return isSafeId(shotId);
 }
 
 export function saveKeyframeBuffer(options: SaveKeyframeOptions) {

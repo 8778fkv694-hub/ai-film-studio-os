@@ -1,14 +1,10 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import crypto from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 import { parseArgs } from './shared/dirs.js';
+import { md5Short as md5, VIDEO_EXTS, currentPromptHash, syncActiveTakeKeyframes } from './shared/conventions.js';
 
 const { workDir, remainingArgs } = parseArgs();
-
-function md5(str) {
-  return crypto.createHash('md5').update(str).digest('hex').substring(0, 8);
-}
 
 function ensureDir(p) {
   fs.mkdirSync(p, { recursive: true });
@@ -60,7 +56,7 @@ async function main() {
     process.exit(1);
   }
   const ext = path.extname(videoFilePath).toLowerCase();
-  const allowedExts = new Set(['.mp4', '.mov', '.webm', '.avi']);
+  const allowedExts = new Set(VIDEO_EXTS);
   if (!allowedExts.has(ext)) {
     console.error(`❌ Unsupported video extension "${ext}". Expected: .mp4, .mov, .webm, .avi`);
     process.exit(1);
@@ -104,12 +100,9 @@ async function main() {
   }
 
   // 7. Calculate prompt hash
-  const promptFile = path.join(workDir, `prompts/${shotId}.final.json`);
-  let promptHash = '';
-  if (fs.existsSync(promptFile)) {
-    promptHash = md5(fs.readFileSync(promptFile, 'utf-8'));
-  } else {
-    console.warn(`⚠️  Warning: prompts/${shotId}.final.json not found. prompt_hash will be empty.`);
+  const promptHash = currentPromptHash(workDir, shotId);
+  if (!promptHash) {
+    console.warn(`⚠️  Warning: prompts/${shotId}.final.json not found or empty. prompt_hash will be empty.`);
   }
 
   // 7.1 Probe actual video duration using ffprobe/ffmpeg
@@ -176,11 +169,7 @@ async function main() {
   if (!history.active_take_id) {
     history.active_take_id = takeId;
     console.log(`⭐️ Set ${takeId} as active take.`);
-    if (ffmpegSuccess) {
-      const globalKeyframesDir = path.join(workDir, `assets/renders/${shotId}/keyframes`);
-      ensureDir(globalKeyframesDir);
-      fs.copyFileSync(destKeyframePath, path.join(globalKeyframesDir, 'frame_last.jpg'));
-    }
+    syncActiveTakeKeyframes(workDir, shotId, takeId);
   }
 
   // 10. Save history

@@ -108,34 +108,30 @@ export function getCurrentProjectPath(): string | null {
   return null;
 }
 
-// 统一资源路径：优先使用活动项目目录，否则回退到根目录（向后兼容）
+// 必须有活动项目；根目录单项目兼容模式已移除，解析不到就明确报错而不是静默读写错误位置
+function requireProjectPath(): string {
+  const projectPath = getCurrentProjectPath();
+  if (!projectPath) {
+    throw new Error('没有活动项目：请先在项目管理中创建或激活一个项目');
+  }
+  return projectPath;
+}
+
+// 统一资源路径：始终位于活动项目目录内
 export function getResourcePath(resourceType: string): string {
-  const projectPath = getCurrentProjectPath();
-  if (projectPath) {
-    const dir = path.join(projectPath, resourceType);
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
-    }
-    return dir;
+  const dir = path.join(requireProjectPath(), resourceType);
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
   }
-  // 回退到根目录
-  return path.resolve(process.cwd(), '..', resourceType);
+  return dir;
 }
 
-// 获取脚本文件路径（项目级优先）
+// 获取脚本文件路径
 export function getScriptPath(): string {
-  const projectPath = getCurrentProjectPath();
-  if (projectPath) {
-    return path.join(projectPath, 'docs/script.txt');
-  }
-  return path.resolve(process.cwd(), '../docs/script.txt');
+  return path.join(requireProjectPath(), 'docs/script.txt');
 }
 
-// 获取项目 project.json 路径（项目级优先，回退根目录）
+// 获取项目 project.json 路径
 export function getProjectJsonPath(): string {
-  const projectPath = getCurrentProjectPath();
-  if (projectPath) {
-    return path.join(projectPath, 'project.json');
-  }
-  return path.resolve(process.cwd(), '../project.json');
+  return path.join(requireProjectPath(), 'project.json');
 }
