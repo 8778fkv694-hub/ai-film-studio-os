@@ -1,6 +1,6 @@
 "use client";
 
-import { Film, RefreshCw, CheckCircle } from 'lucide-react';
+import { Film, RefreshCw, CheckCircle, Sun, Moon } from 'lucide-react';
 import ProjectSelector from './ProjectSelector';
 
 interface ToolbarProps {
@@ -11,6 +11,8 @@ interface ToolbarProps {
   onProjectChange: (projectId: string) => void;
   onCreateNewProject: () => void;
   onManageProjects: () => void;
+  theme: 'dark' | 'light';
+  onToggleTheme: () => void;
 }
 
 export default function Toolbar({ 
@@ -20,7 +22,9 @@ export default function Toolbar({
   onRunChecks, 
   onProjectChange, 
   onCreateNewProject,
-  onManageProjects
+  onManageProjects,
+  theme,
+  onToggleTheme
 }: ToolbarProps) {
   return (
     <header className="bg-slate-900 border-b border-slate-800 px-3 py-3 sm:px-6 sticky top-0 z-50">
@@ -59,8 +63,20 @@ export default function Toolbar({
           <RefreshCw size={16} />
           <span className="hidden sm:inline">刷新</span>
         </button>
+
+        <button
+          onClick={onToggleTheme}
+          aria-label={theme === 'dark' ? "切换到白天模式" : "切换到暗黑模式"}
+          className="flex flex-shrink-0 items-center gap-2 rounded-lg bg-slate-700 px-3 py-2 text-sm text-white transition hover:bg-slate-600 sm:px-4"
+        >
+          {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
+          <span className="hidden sm:inline">
+            {theme === 'dark' ? '白天模式' : '暗黑模式'}
+          </span>
+        </button>
       </div>
       </div>
     </header>
   );
 }
+

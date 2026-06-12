@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
+import { Sun, Moon } from 'lucide-react';
 import Toolbar from '@/components/Toolbar';
 import TabNav, { TabId } from '@/components/TabNav';
 import DashboardTab from '@/components/tabs/DashboardTab';
@@ -31,10 +32,36 @@ export default function Home() {
   const [activeProjectId, setActiveProjectId] = useState<string | null>(null);
   const [projectView, setProjectView] = useState<ProjectView>('main');
   const [refreshKey, setRefreshKey] = useState(0);
+  const [theme, setTheme] = useState<'dark' | 'light'>('dark');
 
   useEffect(() => {
     loadActiveProject();
+    const savedTheme = localStorage.getItem('afsos_theme') as 'dark' | 'light' | null;
+    if (savedTheme) {
+      setTheme(savedTheme);
+      applyTheme(savedTheme);
+    } else {
+      applyTheme('dark');
+    }
   }, []);
+
+  const applyTheme = (t: 'dark' | 'light') => {
+    if (t === 'light') {
+      document.documentElement.classList.add('light');
+      document.documentElement.classList.remove('dark');
+    } else {
+      document.documentElement.classList.add('dark');
+      document.documentElement.classList.remove('light');
+    }
+  };
+
+  const handleToggleTheme = () => {
+    const nextTheme = theme === 'dark' ? 'light' : 'dark';
+    setTheme(nextTheme);
+    localStorage.setItem('afsos_theme', nextTheme);
+    applyTheme(nextTheme);
+  };
+
 
   const loadActiveProject = async () => {
     try {
@@ -161,8 +188,16 @@ export default function Home() {
   if (projectView === 'list' || (!activeProjectId && projectView === 'main')) {
     return (
       <div className="min-h-screen bg-slate-950 flex flex-col">
-        <header className="bg-slate-900 border-b border-slate-800 px-6 py-4">
+        <header className="bg-slate-900 border-b border-slate-800 px-6 py-4 flex justify-between items-center">
           <h1 className="text-xl font-bold text-slate-100">AI 影视工作室</h1>
+          <button
+            onClick={handleToggleTheme}
+            aria-label={theme === 'dark' ? "切换到白天模式" : "切换到暗黑模式"}
+            className="flex items-center gap-2 rounded-lg bg-slate-700 px-3 py-2 text-sm text-white transition hover:bg-slate-600"
+          >
+            {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
+            <span>{theme === 'dark' ? '白天模式' : '暗黑模式'}</span>
+          </button>
         </header>
         <main className="flex-1">
           <ProjectList
@@ -184,8 +219,16 @@ export default function Home() {
   if (projectView === 'create') {
     return (
       <div className="min-h-screen bg-slate-950 flex flex-col">
-        <header className="bg-slate-900 border-b border-slate-800 px-6 py-4">
+        <header className="bg-slate-900 border-b border-slate-800 px-6 py-4 flex justify-between items-center">
           <h1 className="text-xl font-bold text-slate-100">AI 影视工作室</h1>
+          <button
+            onClick={handleToggleTheme}
+            aria-label={theme === 'dark' ? "切换到白天模式" : "切换到暗黑模式"}
+            className="flex items-center gap-2 rounded-lg bg-slate-700 px-3 py-2 text-sm text-white transition hover:bg-slate-600"
+          >
+            {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
+            <span>{theme === 'dark' ? '白天模式' : '暗黑模式'}</span>
+          </button>
         </header>
         <main className="flex-1">
           <CreateProjectForm
@@ -208,6 +251,8 @@ export default function Home() {
         onProjectChange={handleProjectChange}
         onCreateNewProject={handleCreateNewProject}
         onManageProjects={handleManageProjects}
+        theme={theme}
+        onToggleTheme={handleToggleTheme}
       />
       <TabNav activeTab={activeTab} onTabChange={handleTabChange} />
       <main className="flex-1 overflow-x-hidden">

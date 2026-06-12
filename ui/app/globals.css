@@ -3,13 +3,47 @@
 @tailwind utilities;
 
 :root {
-  --foreground-rgb: 255, 255, 255;
-  --background-start-rgb: 0, 0, 0;
-  --background-end-rgb: 0, 0, 0;
+  /* 默认是 Dark 模式 */
+  --slate-50: 248 250 252;
+  --slate-100: 241 245 249;
+  --slate-200: 226 232 240;
+  --slate-300: 203 213 225;
+  --slate-400: 148 163 184;
+  --slate-500: 100 116 139;
+  --slate-600: 71 85 105;
+  --slate-700: 51 65 85;
+  --slate-800: 30 41 59;
+  --slate-850: 23 33 51;
+  --slate-900: 15 23 42;
+  --slate-950: 2 6 23;
+
+  --foreground-rgb: 226, 232, 240;
+  --background-start-rgb: 2, 6, 23;
+  --background-end-rgb: 15, 23, 42;
+}
+
+.light {
+  /* 浅色模式 - 颜色完全反转 */
+  --slate-950: 248 250 252; /* 原本最黑 -> 现在最白 (slate-50) */
+  --slate-900: 241 245 249; /* 原本深背景 -> 现在浅灰色背景 (slate-100) */
+  --slate-850: 235 240 245;
+  --slate-800: 226 232 240; /* 边框/输入框背景变浅 (slate-200) */
+  --slate-700: 203 213 225; /* 中等边框 (slate-300) */
+  --slate-600: 148 163 184;
+  --slate-500: 100 116 139;
+  --slate-400: 71 85 105;   /* 文字色变深 (slate-600) */
+  --slate-300: 51 65 85;   /* 正文文字色变极深 (slate-700) */
+  --slate-200: 30 41 59;   /* 强调文字变黑色 (slate-800) */
+  --slate-100: 15 23 42;
+  --slate-50: 2 6 23;
+
+  --foreground-rgb: 15, 23, 42;
+  --background-start-rgb: 248, 250, 252;
+  --background-end-rgb: 241, 245, 249;
 }
 
 body {
-  color: rgb(var(--foreground-rgb));
+  color: rgb(var(--slate-200));
   background: linear-gradient(
       to bottom,
       transparent,
@@ -17,3 +51,47 @@ body {
     )
     rgb(var(--background-start-rgb));
 }
+
+/* 解决 Light 模式下裸 text-white 和输入框文字看不清的问题 */
+.light input, 
+.light select, 
+.light textarea {
+  color: rgb(var(--slate-50)) !important; /* 映射为极黑 (2 6 23) */
+  background-color: rgb(var(--slate-900)) !important; /* 浅灰色背景 */
+  border-color: rgb(var(--slate-800)) !important;
+}
+
+/* 表单输入框占位符颜色调整 */
+.light input::placeholder,
+.light textarea::placeholder {
+  color: rgb(var(--slate-500)) !important;
+}
+
+/* 白天模式下特定裸文字的重载，排除按钮内部、有色徽章标签等 */
+.light h1.text-white,
+.light h2.text-white,
+.light h3.text-white,
+.light h4.text-white,
+.light h5.text-white,
+.light h6.text-white,
+.light span.text-white:not(.bg-blue-600 *, .bg-emerald-600 *, .bg-red-600 *, .bg-purple-600 *, .bg-amber-600 *, .bg-slate-700 *, button *, a *, .px-4 *, .px-5 *, .py-2 *, .bg-indigo-900 *),
+.light div.text-white:not(.bg-blue-600 *, .bg-emerald-600 *, .bg-red-600 *, .bg-purple-600 *, .bg-amber-600 *, .bg-slate-700 *, button *, a *, .px-4 *, .px-5 *, .py-2 *, .bg-indigo-900 *) {
+  color: rgb(var(--slate-50)) !important; /* 改为深色 */
+}
+
+/* 滚动条白天模式自适应 */
+.light ::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.light ::-webkit-scrollbar-track {
+  background: rgb(var(--slate-950));
+}
+.light ::-webkit-scrollbar-thumb {
+  background: rgb(var(--slate-800));
+  border-radius: 4px;
+}
+.light ::-webkit-scrollbar-thumb:hover {
+  background: rgb(var(--slate-700));
+}
+
